@@ -40,10 +40,14 @@ import com.project.tripplanner.ui.components.LoginSeparator
 import com.project.tripplanner.ui.components.PasswordTextField
 import com.project.tripplanner.ui.components.text.BodyMedium
 import com.project.tripplanner.ui.theme.additionalColorPalette
+import io.github.jan.supabase.compose.auth.ComposeAuth
+import io.github.jan.supabase.compose.auth.composable.NativeSignInResult
+import io.github.jan.supabase.compose.auth.composable.rememberSignInWithGoogle
 
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel
+    viewModel: LoginViewModel,
+    supabaseComposeAuth: ComposeAuth
 ) {
     LaunchedEffect(Unit) {
         viewModel.emitEvent(LoginEvent.ScreenVisibleEvent)
@@ -52,6 +56,29 @@ fun LoginScreen(
     val loadingState = (uiState as? LoginUiState.Loading)
     val loginState = (uiState as? Login)
     val errorState = (uiState as? GlobalError)
+
+    val supabaseAuthState = supabaseComposeAuth.rememberSignInWithGoogle(
+        onResult = { result ->
+            when (result) {
+                NativeSignInResult.ClosedByUser -> {
+                    // do nothing
+                }
+
+                is NativeSignInResult.Error -> {
+                    // notify vm about error
+                }
+
+                is NativeSignInResult.NetworkError -> {
+                    // notify vm about error
+                }
+
+                NativeSignInResult.Success -> {
+                    viewModel.emitEvent(LoginEvent.GoogleSignInSuccessEvent)
+                }
+            }
+        },
+        fallback = {}
+    )
 
     when {
         loginState != null -> {
@@ -71,7 +98,7 @@ fun LoginScreen(
                     viewModel.emitEvent(LoginEvent.RegisterButtonClickedEvent)
                 },
                 onGoogleSignInClicked = {
-                    viewModel.emitEvent(LoginEvent.GoogleSignInButtonClickedEvent)
+                    supabaseAuthState.startFlow()
                 },
                 userName = loginState.userName,
                 password = loginState.password

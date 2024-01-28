@@ -51,7 +51,7 @@ class LoginViewModel @Inject constructor() : BaseViewModel<LoginEvent, LoginUiSt
     }
 
     private fun onGoogleSignInClicked(
-        event: LoginEvent.GoogleSignInButtonClickedEvent,
+        event: LoginEvent.GoogleSignInSuccessEvent,
         emit: Emitter<LoginUiState, Unused>
     ) {
         // open google account picker

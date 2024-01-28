@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.kapt3.base.Kapt.kapt
+import java.util.Properties
 
 @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.org.jetbrains.kotlin.android)
     alias(libs.plugins.hilt)
     kotlin("kapt")
+    kotlin("plugin.serialization") version embeddedKotlinVersion
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
 }
@@ -25,6 +26,18 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        val properties = Properties().apply {
+            val localPropertiesFile = rootProject.file("local.properties")
+            if (localPropertiesFile.exists()) {
+                load(localPropertiesFile.inputStream())
+            }
+        }
+
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${properties.getProperty("SUPABASE_ANON_KEY")}\"")
+        buildConfigField("String", "SUPABASE_URL", "\"${properties.getProperty("SUPABASE_URL")}\"")
+        buildConfigField("String", "SUPABASE_CLIENT_ID", "\"${properties.getProperty("SUPABASE_CLIENT_ID")}\"")
+
     }
 
     buildTypes {
@@ -42,6 +55,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.4.3"
@@ -72,8 +86,11 @@ dependencies {
     implementation(libs.hilt)
     implementation(libs.coroutines)
     implementation(libs.coroutines.android)
-    implementation("com.google.firebase:firebase-crashlytics:18.6.0")
-    implementation("com.google.firebase:firebase-analytics:21.5.0")
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.analytics)
+    implementation(libs.ktor.android.client)
+    implementation(libs.supabase.compose.auth)
+    implementation(libs.supabase.gotrue.auth)
     kapt(libs.hilt.compiler)
     testImplementation(libs.coroutines.test)
     testImplementation(libs.junit)

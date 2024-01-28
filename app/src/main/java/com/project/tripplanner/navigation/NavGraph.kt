@@ -14,13 +14,16 @@ import com.project.tripplanner.login.LoginEvent
 import com.project.tripplanner.login.LoginViewModel
 import com.project.tripplanner.ui.screens.HomeScreen
 import com.project.tripplanner.ui.screens.LoginScreen
+import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.compose.auth.ComposeAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
 @Composable
 fun NavGraph(
-    navController: NavHostController
+    navController: NavHostController,
+    supabaseComposeAuth: ComposeAuth
 ) {
     NavHost(
         navController = navController,
@@ -40,6 +43,7 @@ fun NavGraph(
             }
             LoginScreen(
                 viewModel = viewModel,
+                supabaseComposeAuth = supabaseComposeAuth
             )
         }
         composable(route = Screen.Home.route) { HomeScreen() }

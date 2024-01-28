@@ -8,5 +8,5 @@ sealed class LoginEvent : Event {
     object ScreenVisibleEvent : LoginEvent()
     object ForgotPasswordClickedEvent : LoginEvent()
     object RegisterButtonClickedEvent : LoginEvent()
-    object GoogleSignInButtonClickedEvent : LoginEvent()
+    object GoogleSignInSuccessEvent : LoginEvent()
 }
