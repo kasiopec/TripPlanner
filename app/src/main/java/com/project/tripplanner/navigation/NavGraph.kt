@@ -48,7 +48,15 @@ fun NavGraph(
         }
         composable(route = Screen.Home.route) { HomeScreen() }
         composable(route = Screen.RegisterForm.route) {
-            val registerViewModel = viewModel<RegisterViewModel>()
+            val registerViewModel = hiltViewModel<RegisterViewModel>()
+            ObserveAsNavigationEvent(flow = registerViewModel.navigationEvent) {
+                when (it) {
+                    NavigationEvent.Back -> navController.navigateUp()
+                    else -> {
+                        // don't navigate
+                    }
+                }
+            }
             RegisterScreen(
                 viewModel = registerViewModel
             )

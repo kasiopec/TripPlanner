@@ -1,16 +1,26 @@
 <resources>
     <string name="app_name">TripPlanner</string>
     <string name="email_hint">Email</string>
+    <string name="name_hint">Name</string>
     <string name="password_hint">Password</string>
+    <string name="password_repeat_hint">Repeat password</string>
     <string name="login_button_label">Login</string>
     <string name="register_button_label">Register</string>
     <string name="forgot_password_label">Forgot Password?</string>
     <string name="forgot_action_label">Recover here</string>
     <string name="login_or_label">or</string>
+    <string name="screen_registration_title">Registration</string>
     <string name="login_google_button_label">Continue with Google</string>
     <string name="login_no_account_label">Do not have an account?</string>
     <string name="error_no_connection_title">Missing internet connection</string>
     <string name="error_no_connection_message">Make sure you have Wi-Fi or mobile data connection on your device</string>
     <string name="error_unknown_title">Something is not right!</string>
     <string name="error_unknown_message">We have some difficulties, please try again or make sure you are up to date.</string>
+    <string name="error_email_wrong">This email does not meet criteria</string>
+    <string name="error_password_no_upper_case">Password must contain upper case letter</string>
+    <string name="error_password_no_digit">Password must contain a digit</string>
+    <string name="error_password_white_space">Password must not contain whitespaces</string>
+    <string name="error_password_length">Password must be 8 character long</string>
+    <string name="error_password_special_char">Password must contain some special characters. Example: $#!^</string>
+    <string name="error_password_repeat">Password do not match</string>
 </resources>

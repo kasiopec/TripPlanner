@@ -4,4 +4,5 @@ sealed class NavigationEvent {
     object Home : NavigationEvent()
     object Login : NavigationEvent()
     object RegisterForm : NavigationEvent()
+    object Back : NavigationEvent()
 }

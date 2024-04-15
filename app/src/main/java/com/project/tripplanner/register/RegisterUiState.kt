@@ -8,6 +8,8 @@ sealed class RegisterUiState : State {
         val name: String = "",
         val email: String = "",
         val password: String = "",
-        val passwordRepeat: String = ""
+        val secondPassword: String = "",
+        val passwordErrors: List<PasswordError> = emptyList(),
+        val isEmailValid: Boolean = true
     ) : RegisterUiState()
 }

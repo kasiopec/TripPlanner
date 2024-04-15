@@ -10,6 +10,7 @@ import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -18,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -30,9 +32,10 @@ fun PasswordTextField(
     modifier: Modifier = Modifier,
     password: () -> String,
     onPasswordTextChanged: (String) -> Unit,
-    keyboardActions: KeyboardActions,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
     keyboardOptions: KeyboardOptions,
-    labelText: String
+    labelText: String,
+    isError: Boolean = false
 ) {
     var isPasswordVisible by remember { mutableStateOf(false) }
     OutlinedTextField(
@@ -42,9 +45,15 @@ fun PasswordTextField(
         onValueChange = { onPasswordTextChanged(it) },
         singleLine = true,
         keyboardOptions = keyboardOptions,
+        isError = isError,
+        colors = OutlinedTextFieldDefaults.colors(
+            errorBorderColor = MaterialTheme.colorScheme.error,
+            errorLabelColor = MaterialTheme.colorScheme.error,
+        ),
         label = {
             BodyRegular(
-                text = labelText
+                text = labelText,
+                color = if (isError) MaterialTheme.colorScheme.error else Color.Unspecified
             )
         },
         visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
