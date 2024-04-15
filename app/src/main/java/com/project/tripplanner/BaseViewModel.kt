@@ -55,7 +55,7 @@ open class BaseViewModel<EVENT : Event, STATE : State, EFFECT : Effect> @Inject 
         } catch (e: Throwable) {
             e.printStackTrace()
             Log.w("Error caught in ViewModel ${this::class.simpleName}", e)
-            // mapException(e) handle exception here ??
+            mapException(e)
         }
     }
 
@@ -74,6 +74,27 @@ open class BaseViewModel<EVENT : Event, STATE : State, EFFECT : Effect> @Inject 
         }
 
         viewModelHandlers[name] = handler
+    }
+
+    inline fun <reified ERROR : Exception> addErrorHandler(errorHandler: MviErrorHandler<STATE, EFFECT, ERROR>) {
+        addErrorHandler(errorHandler::handleError)
+    }
+
+    inline fun <reified ERROR : Exception> addErrorHandler(noinline handler: ErrorHandler<ERROR, STATE, EFFECT>) {
+        errorHandlers[ERROR::class] = handler
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private suspend fun mapException(e: Throwable) {
+        val exception = e as? Exception ?: Exception(e)
+
+        val errorHandler = errorHandlers.firstNotNullOfOrNull { (exceptionClass, errorHandler) ->
+            errorHandler.takeIf {
+                exceptionClass.isInstance(exception)
+            }
+        } as? ErrorHandler<Exception, STATE, EFFECT>
+
+        errorHandler?.invoke(exception, emitter)
     }
 
     private val _state = MutableStateFlow(initialState)

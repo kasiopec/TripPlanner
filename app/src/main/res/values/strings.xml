@@ -9,4 +9,8 @@
     <string name="login_or_label">or</string>
     <string name="login_google_button_label">Continue with Google</string>
     <string name="login_no_account_label">Do not have an account?</string>
+    <string name="error_no_connection_title">Missing internet connection</string>
+    <string name="error_no_connection_message">Make sure you have Wi-Fi or mobile data connection on your device</string>
+    <string name="error_unknown_title">Something is not right!</string>
+    <string name="error_unknown_message">We have some difficulties, please try again or make sure you are up to date.</string>
 </resources>

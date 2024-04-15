@@ -80,6 +80,7 @@ dependencies {
     implementation(libs.compose.ui.graphics)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.navigation)
+    implementation(libs.compose.hilt)
     implementation(libs.compose.accompanist.permissions)
     implementation(libs.compose.accompanist.navigation.material)
     implementation(libs.material3)
