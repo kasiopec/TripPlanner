@@ -1,4 +1,4 @@
-package com.project.tripplanner.login
+package com.project.tripplanner.features.login
 
 import androidx.lifecycle.viewModelScope
 import com.project.tripplanner.BaseViewModel
@@ -6,13 +6,16 @@ import com.project.tripplanner.Emitter
 import com.project.tripplanner.MviDefaultErrorHandler
 import com.project.tripplanner.MviErrorHandler
 import com.project.tripplanner.Unused
-import com.project.tripplanner.login.LoginEvent.ScreenVisibleEvent
+import com.project.tripplanner.features.login.LoginEvent.ScreenVisibleEvent
 import com.project.tripplanner.navigation.NavigationEvent
+import com.project.tripplanner.repositories.UserPrefRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.annotations.SupabaseInternal
 import io.github.jan.supabase.compose.auth.ComposeAuth
+import io.github.jan.supabase.exceptions.UnknownRestException
 import io.github.jan.supabase.gotrue.Auth
 import io.github.jan.supabase.gotrue.providers.Google
+import io.github.jan.supabase.gotrue.providers.builtin.Email
 import io.ktor.client.request.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,7 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val auth: Auth,
-    private val composeAuth: ComposeAuth
+    private val userPrefRepository: UserPrefRepository
 ) : BaseViewModel<LoginEvent, LoginUiState, LoginEffect>(
     initialState = LoginUiState.Loading
 ) {
@@ -41,7 +44,13 @@ class LoginViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
-                auth.signInWith(Google)
+                auth.signInWith(Email) {
+                    email = event.userName
+                    password = event.password
+                }
+                val supabaseAccessToken = auth.currentAccessTokenOrNull().orEmpty()
+                userPrefRepository.saveUserAccessToken(supabaseAccessToken)
+                navigate(NavigationEvent.Home)
             } catch (e: Exception) {
                 println("Got an error")
             }
@@ -52,7 +61,23 @@ class LoginViewModel @Inject constructor(
         event: ScreenVisibleEvent,
         emit: Emitter<LoginUiState, LoginEffect>
     ) {
-        emit.state(LoginUiState.Login())
+        val supabaseAccessToken = userPrefRepository.getUserAccessToken()
+        if (supabaseAccessToken.isNullOrEmpty()) {
+            emit.state(LoginUiState.Login())
+        } else {
+            viewModelScope.launch {
+                try {
+                    auth.retrieveUser(supabaseAccessToken)
+                    auth.refreshCurrentSession()
+                    val refreshedAccessToken = auth.currentAccessTokenOrNull().orEmpty()
+                    userPrefRepository.saveUserAccessToken(refreshedAccessToken)
+                    navigate(NavigationEvent.Home)
+                } catch (ex: UnknownRestException) {
+                    userPrefRepository.saveUserAccessToken("")
+                    emit.state(LoginUiState.Login())
+                }
+            }
+        }
     }
 
     private fun onForgotPassword(
@@ -66,7 +91,6 @@ class LoginViewModel @Inject constructor(
         event: LoginEvent.RegisterButtonClickedEvent,
         emit: Emitter<LoginUiState, LoginEffect>
     ) {
-        //emit.effect(LoginEffect.NavigateToRegisterFormEffect)
         navigate(NavigationEvent.RegisterForm)
     }
 
@@ -74,7 +98,9 @@ class LoginViewModel @Inject constructor(
         event: LoginEvent.GoogleSignInSuccessEvent,
         emit: Emitter<LoginUiState, LoginEffect>
     ) {
-        // save token
+        val supabaseAccessToken = auth.currentAccessTokenOrNull().orEmpty()
+        userPrefRepository.saveUserAccessToken(supabaseAccessToken)
+        navigate(NavigationEvent.Home)
     }
 
     private fun onGoogleSignInClicked(

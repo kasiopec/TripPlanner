@@ -2,9 +2,13 @@ package com.project.tripplanner.ui.screens
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
@@ -15,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -26,26 +29,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.project.tripplanner.R
-import com.project.tripplanner.navigation.Screen
-import com.project.tripplanner.register.PasswordError
-import com.project.tripplanner.register.PasswordError.*
-import com.project.tripplanner.register.RegisterEvent
-import com.project.tripplanner.register.RegisterEvent.BackClickedEvent
-import com.project.tripplanner.register.RegisterEvent.RegisterClickedEvent
-import com.project.tripplanner.register.RegisterUiState
-import com.project.tripplanner.register.RegisterViewModel
+import com.project.tripplanner.features.register.validators.PasswordError
+import com.project.tripplanner.features.register.validators.PasswordError.*
+import com.project.tripplanner.features.register.RegisterEvent
+import com.project.tripplanner.features.register.RegisterEvent.BackClickedEvent
+import com.project.tripplanner.features.register.RegisterEvent.RegisterClickedEvent
+import com.project.tripplanner.features.register.RegisterUiState
+import com.project.tripplanner.features.register.RegisterViewModel
 import com.project.tripplanner.ui.IcBackArrow24
 import com.project.tripplanner.ui.IcError24
 import com.project.tripplanner.ui.Icons
 import com.project.tripplanner.ui.components.BaseOutlinedTextField
+import com.project.tripplanner.ui.components.LargeRoundedButton
 import com.project.tripplanner.ui.components.PasswordTextField
 import com.project.tripplanner.ui.components.TextWithLeftIcon
 import com.project.tripplanner.ui.components.text.BodyMedium
-import com.project.tripplanner.ui.components.text.TitleLargeBold
-import com.project.tripplanner.ui.theme.additionalColorPalette
 
 @Composable
 fun RegisterScreen(
@@ -64,9 +66,7 @@ fun RegisterScreen(
 
     when {
         registerState != null -> RegisterContent(
-            onNavigateBack = {
-                viewModel.emitEvent(BackClickedEvent)
-            },
+            onNavigateBack = { viewModel.emitEvent(BackClickedEvent) },
             onRegisterClicked = { name, email, password, secondPassword ->
                 viewModel.emitEvent(
                     RegisterClickedEvent(
@@ -77,6 +77,7 @@ fun RegisterScreen(
                     )
                 )
             },
+            onLoginButtonClicked = { viewModel.emitEvent(RegisterEvent.LoginButtonClicked) },
             isEmailValid = registerState.isEmailValid,
             passwordErrors = registerState.passwordErrors,
         )
@@ -88,6 +89,7 @@ fun RegisterScreen(
 fun RegisterContent(
     onNavigateBack: () -> Unit,
     onRegisterClicked: (name: String, email: String, password: String, secondPassword: String) -> Unit,
+    onLoginButtonClicked: () -> Unit,
     isEmailValid: Boolean,
     passwordErrors: List<PasswordError>,
 ) {
@@ -166,6 +168,7 @@ fun RegisterContent(
                     item {
                         if (isEmailError) {
                             TextWithLeftIcon(
+                                modifier = Modifier.fillMaxWidth(),
                                 icon = { Icons.IcError24(tint = MaterialTheme.colorScheme.error) },
                                 text = context.getString(R.string.error_email_wrong),
                                 textColor = MaterialTheme.colorScheme.error
@@ -182,11 +185,35 @@ fun RegisterContent(
                             ERROR_NOT_SAME -> context.getString(R.string.error_password_repeat)
                         }
                         TextWithLeftIcon(
+                            modifier = Modifier.fillMaxWidth(),
                             icon = { Icons.IcError24(tint = MaterialTheme.colorScheme.error) },
                             text = errorMessage,
                             textColor = MaterialTheme.colorScheme.error
                         )
                     }
+                }
+                LargeRoundedButton(
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp),
+                    text = context.resources.getString(R.string.register_button_label),
+                    onClick = { onRegisterClicked(enteredName, enteredEmail, enteredPassword, enteredSecondPassword) }
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, bottom = 32.dp, end = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    BodyMedium(
+                        modifier = Modifier.padding(end = 4.dp),
+                        text = context.resources.getString(R.string.register_have_account_label)
+                    )
+                    BodyMedium(
+                        modifier = Modifier.clickable { onLoginButtonClicked() },
+                        text = context.resources.getString(R.string.login_button_label),
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }

@@ -6,6 +6,7 @@
     <string name="password_repeat_hint">Repeat password</string>
     <string name="login_button_label">Login</string>
     <string name="register_button_label">Register</string>
+    <string name="register_have_account_label">Already have an account?</string>
     <string name="forgot_password_label">Forgot Password?</string>
     <string name="forgot_action_label">Recover here</string>
     <string name="login_or_label">or</string>

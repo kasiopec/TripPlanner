@@ -1,4 +1,4 @@
-package com.project.tripplanner.login
+package com.project.tripplanner.features.login
 
 import com.project.tripplanner.Event
 

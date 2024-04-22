@@ -8,12 +8,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavOptions
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.project.tripplanner.login.LoginViewModel
+import com.project.tripplanner.features.login.LoginViewModel
 import com.project.tripplanner.ui.screens.RegisterScreen
-import com.project.tripplanner.register.RegisterViewModel
+import com.project.tripplanner.features.register.RegisterViewModel
 import com.project.tripplanner.ui.screens.HomeScreen
 import com.project.tripplanner.ui.screens.LoginScreen
 import io.github.jan.supabase.compose.auth.ComposeAuth
@@ -34,7 +36,12 @@ fun NavGraph(
             val loginViewModel = hiltViewModel<LoginViewModel>()
             ObserveAsNavigationEvent(flow = loginViewModel.navigationEvent) {
                 when (it) {
-                    NavigationEvent.Home -> navController.navigate(Screen.Home.route)
+                    NavigationEvent.Home -> navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) {
+                            inclusive = true
+                        }
+                    }
+
                     NavigationEvent.RegisterForm -> navController.navigate(Screen.RegisterForm.route)
                     else -> {
                         // not interested
@@ -52,6 +59,12 @@ fun NavGraph(
             ObserveAsNavigationEvent(flow = registerViewModel.navigationEvent) {
                 when (it) {
                     NavigationEvent.Back -> navController.navigateUp()
+                    NavigationEvent.Login -> navController.navigate(route = Screen.Login.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            inclusive = true
+                        }
+                    }
+
                     else -> {
                         // don't navigate
                     }

@@ -1,16 +1,28 @@
-package com.project.tripplanner.register
+package com.project.tripplanner.features.register
 
+import androidx.lifecycle.viewModelScope
 import com.project.tripplanner.BaseViewModel
 import com.project.tripplanner.Emitter
+import com.project.tripplanner.MviDefaultErrorHandler
 import com.project.tripplanner.Unused
+import com.project.tripplanner.data.UserPrefsStorage
+import com.project.tripplanner.features.login.LoginUiState
 import com.project.tripplanner.navigation.NavigationEvent
+import com.project.tripplanner.features.register.validators.EmailValidator
+import com.project.tripplanner.features.register.validators.PasswordValidator
+import com.project.tripplanner.repositories.UserPrefRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.jan.supabase.gotrue.Auth
+import io.github.jan.supabase.gotrue.providers.builtin.Email
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val passwordValidator: PasswordValidator,
-    private val emailValidator: EmailValidator
+    private val emailValidator: EmailValidator,
+    private val auth: Auth,
+    private val userPrefRepository: UserPrefRepository
 ) : BaseViewModel<RegisterEvent, RegisterUiState, Unused>(
     initialState = RegisterUiState.Loading
 ) {
@@ -18,6 +30,8 @@ class RegisterViewModel @Inject constructor(
         addEventHandler(::onScreenVisible)
         addEventHandler(::onRegisterClicked)
         addEventHandler(::onBackClicked)
+        addEventHandler(::onLoginClicked)
+        addErrorHandler(MviDefaultErrorHandler(RegisterUiState::GlobalError))
     }
 
     private fun onScreenVisible(
@@ -56,8 +70,15 @@ class RegisterViewModel @Inject constructor(
             }
 
             validatedPassword.isValid && isEmailValid -> {
-                println("ALL OK")
-                // supabase creation
+                viewModelScope.launch {
+                    auth.signUpWith(Email) {
+                        email = event.email
+                        password = event.secondPassword
+                    }
+                    val supabaseAccessToken = auth.currentAccessTokenOrNull().orEmpty()
+                    userPrefRepository.saveUserAccessToken(supabaseAccessToken)
+                    navigate(NavigationEvent.Home)
+                }
             }
         }
 
@@ -68,5 +89,12 @@ class RegisterViewModel @Inject constructor(
         emit: Emitter<RegisterUiState, Unused>
     ) {
         navigate(NavigationEvent.Back)
+    }
+
+    private fun onLoginClicked(
+        event: RegisterEvent.LoginButtonClicked,
+        emit: Emitter<RegisterUiState, Unused>
+    ) {
+        navigate(NavigationEvent.Login)
     }
 }

@@ -29,11 +29,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.project.tripplanner.R
-import com.project.tripplanner.login.LoginEvent
-import com.project.tripplanner.login.LoginUiState
-import com.project.tripplanner.login.LoginUiState.GlobalError
-import com.project.tripplanner.login.LoginUiState.Login
-import com.project.tripplanner.login.LoginViewModel
+import com.project.tripplanner.features.login.LoginEvent
+import com.project.tripplanner.features.login.LoginUiState
+import com.project.tripplanner.features.login.LoginUiState.GlobalError
+import com.project.tripplanner.features.login.LoginUiState.Login
+import com.project.tripplanner.features.login.LoginViewModel
 import com.project.tripplanner.ui.components.BaseOutlinedTextField
 import com.project.tripplanner.ui.components.GoogleSignInButton
 import com.project.tripplanner.ui.components.LargeRoundedButton

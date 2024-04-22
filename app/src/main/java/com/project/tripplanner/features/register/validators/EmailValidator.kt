@@ -1,4 +1,4 @@
-package com.project.tripplanner.register
+package com.project.tripplanner.features.register.validators
 
 import javax.inject.Inject
 

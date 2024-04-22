@@ -1,4 +1,4 @@
-package com.project.tripplanner.register
+package com.project.tripplanner.features.register
 
 import com.project.tripplanner.Event
 
@@ -12,4 +12,5 @@ sealed class RegisterEvent : Event {
 
     object ScreenVisibleEvent : RegisterEvent()
     object BackClickedEvent : RegisterEvent()
+    object LoginButtonClicked : RegisterEvent()
 }
