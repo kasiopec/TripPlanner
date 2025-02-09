@@ -1,4 +1,4 @@
-package com.project.tripplanner.ui.screens
+package com.project.tripplanner.features.login.content
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,128 +14,28 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.project.tripplanner.R
-import com.project.tripplanner.features.login.LoginEvent
-import com.project.tripplanner.features.login.LoginUiState
-import com.project.tripplanner.features.login.LoginUiState.GlobalError
-import com.project.tripplanner.features.login.LoginUiState.Login
-import com.project.tripplanner.features.login.LoginViewModel
 import com.project.tripplanner.ui.components.BaseOutlinedTextField
 import com.project.tripplanner.ui.components.GoogleSignInButton
 import com.project.tripplanner.ui.components.LargeRoundedButton
 import com.project.tripplanner.ui.components.LoginSeparator
 import com.project.tripplanner.ui.components.PasswordTextField
 import com.project.tripplanner.ui.components.text.BodyMedium
-import com.project.tripplanner.ui.components.text.TitleLargeBold
 import com.project.tripplanner.ui.theme.additionalColorPalette
-import io.github.jan.supabase.compose.auth.ComposeAuth
-import io.github.jan.supabase.compose.auth.composable.NativeSignInResult.ClosedByUser
-import io.github.jan.supabase.compose.auth.composable.NativeSignInResult.Error
-import io.github.jan.supabase.compose.auth.composable.NativeSignInResult.NetworkError
-import io.github.jan.supabase.compose.auth.composable.NativeSignInResult.Success
-import io.github.jan.supabase.compose.auth.composable.NativeSignInState
-import io.github.jan.supabase.compose.auth.composable.rememberSignInWithGoogle
-import io.github.jan.supabase.compose.auth.composable.rememberSignOutWithGoogle
-import kotlinx.coroutines.launch
+
 
 @Composable
-fun LoginScreen(
-    viewModel: LoginViewModel,
-    supabaseComposeAuth: ComposeAuth
-) {
-
-    val supabaseAuthState = runCatching {
-        supabaseComposeAuth.rememberSignInWithGoogle(
-            onResult = { result ->
-                when (result) {
-                    ClosedByUser -> {
-                        // do nothing
-                    }
-
-                    is Error -> {
-                        println(result.message)
-                    }
-
-                    is NetworkError -> {
-                        println("no internet")
-                    }
-
-                    Success -> {
-                        viewModel.emitEvent(LoginEvent.GoogleSignInSuccessEvent)
-                    }
-                }
-            },
-            fallback = {}
-        )
-    }.onFailure {
-        println("error in the onFailure")
-    }
-    val supabaseLogOutState = supabaseComposeAuth.rememberSignOutWithGoogle()
-
-    LaunchedEffect(Unit) {
-        viewModel.emitEvent(LoginEvent.ScreenVisibleEvent)
-    }
-    val uiState by viewModel.state.collectAsState()
-    val loadingState = (uiState as? LoginUiState.Loading)
-    val loginState = (uiState as? Login)
-    val errorState = (uiState as? GlobalError)
-
-
-    when {
-        loginState != null -> {
-            LoginScreenContent(
-                onLoginButtonClicked = { userName, password ->
-                    viewModel.emitEvent(
-                        LoginEvent.LoginClickedEvent(
-                            userName = userName,
-                            password = password
-                        )
-                    )
-                },
-                onForgotPasswordClicked = {
-                    supabaseLogOutState.startFlow()
-                    viewModel.emitEvent(LoginEvent.ForgotPasswordClickedEvent)
-                },
-                onRegisterClicked = {
-                    viewModel.emitEvent(LoginEvent.RegisterButtonClickedEvent)
-                },
-                onGoogleSignInClicked = {
-                    supabaseAuthState.onSuccess { it.startFlow() }
-                },
-                userName = loginState.userName,
-                password = loginState.password
-            )
-        }
-
-        errorState != null -> {
-            val context = LocalContext.current
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(color = MaterialTheme.colorScheme.background)
-            ) {
-                TitleLargeBold(text = context.resources.getString(errorState.errorState.message))
-            }
-        }
-    }
-}
-
-@Composable
-private fun LoginScreenContent(
+fun LoginScreenContent(
     onLoginButtonClicked: (userName: String, password: String) -> Unit,
     onForgotPasswordClicked: () -> Unit,
     onRegisterClicked: () -> Unit,
@@ -226,17 +126,4 @@ private fun LoginScreenContent(
             }
         }
     }
-}
-
-@Preview(apiLevel = 29)
-@Composable
-fun LoginScreenPreview() {
-    LoginScreenContent(
-        onLoginButtonClicked = { _, _ -> },
-        onForgotPasswordClicked = {},
-        onRegisterClicked = {},
-        onGoogleSignInClicked = {},
-        userName = "Username",
-        password = ""
-    )
 }

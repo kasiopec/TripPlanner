@@ -2,22 +2,21 @@ package com.project.tripplanner.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.NavOptions
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.project.tripplanner.features.login.LoginViewModel
-import com.project.tripplanner.ui.screens.RegisterScreen
+import com.project.tripplanner.features.register.RegisterScreen
 import com.project.tripplanner.features.register.RegisterViewModel
-import com.project.tripplanner.ui.screens.HomeScreen
-import com.project.tripplanner.ui.screens.LoginScreen
+import com.project.tripplanner.features.home.HomeScreen
+import com.project.tripplanner.features.login.LoginScreen
+import com.project.tripplanner.features.resetpassword.ResetPasswordScreen
+import com.project.tripplanner.features.resetpassword.ResetPasswordViewModel
 import io.github.jan.supabase.compose.auth.ComposeAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -43,6 +42,7 @@ fun NavGraph(
                     }
 
                     NavigationEvent.RegisterForm -> navController.navigate(Screen.RegisterForm.route)
+                    NavigationEvent.ResetPassword -> navController.navigate(Screen.ResetPassword.route)
                     else -> {
                         // not interested
                     }
@@ -70,9 +70,28 @@ fun NavGraph(
                     }
                 }
             }
-            RegisterScreen(
-                viewModel = registerViewModel
-            )
+            RegisterScreen(viewModel = registerViewModel)
+        }
+        composable(route = Screen.ResetPassword.route) {
+            val resetPasswordViewModel = hiltViewModel<ResetPasswordViewModel>()
+            ObserveAsNavigationEvent(flow = resetPasswordViewModel.navigationEvent) {
+                when (it) {
+                    NavigationEvent.Home -> {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Home.route) {
+                                inclusive = true
+                            }
+                        }
+                    }
+
+                    NavigationEvent.Back -> navController.navigateUp()
+
+                    else -> {
+                        // don't navigate
+                    }
+                }
+            }
+            ResetPasswordScreen(viewModel = resetPasswordViewModel)
         }
     }
 }

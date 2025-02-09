@@ -7,6 +7,7 @@ sealed class LoginEvent : Event {
     data class LoginClickedEvent(val userName: String, val password: String) : LoginEvent()
     object ScreenVisibleEvent : LoginEvent()
     object ForgotPasswordClickedEvent : LoginEvent()
+    data class ResetPasswordClickedEvent(val email: String) : LoginEvent()
     object RegisterButtonClickedEvent : LoginEvent()
     object GoogleSignInSuccessEvent : LoginEvent()
     object OnGoogleSignInClickedEvent : LoginEvent()

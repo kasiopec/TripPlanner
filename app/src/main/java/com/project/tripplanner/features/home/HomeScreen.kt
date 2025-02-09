@@ -1,4 +1,4 @@
-package com.project.tripplanner.ui.screens
+package com.project.tripplanner.features.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

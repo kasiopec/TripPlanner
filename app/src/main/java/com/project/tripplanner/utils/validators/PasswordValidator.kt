@@ -1,11 +1,11 @@
-package com.project.tripplanner.features.register.validators
+package com.project.tripplanner.utils.validators
 
-import com.project.tripplanner.features.register.validators.PasswordError.ERROR_DIGIT
-import com.project.tripplanner.features.register.validators.PasswordError.ERROR_LENGTH
-import com.project.tripplanner.features.register.validators.PasswordError.ERROR_NOT_SAME
-import com.project.tripplanner.features.register.validators.PasswordError.ERROR_SPECIAL
-import com.project.tripplanner.features.register.validators.PasswordError.ERROR_UPPER
-import com.project.tripplanner.features.register.validators.PasswordError.ERROR_WHITESPACE
+import com.project.tripplanner.utils.validators.PasswordError.ERROR_DIGIT
+import com.project.tripplanner.utils.validators.PasswordError.ERROR_LENGTH
+import com.project.tripplanner.utils.validators.PasswordError.ERROR_NOT_SAME
+import com.project.tripplanner.utils.validators.PasswordError.ERROR_SPECIAL
+import com.project.tripplanner.utils.validators.PasswordError.ERROR_UPPER
+import com.project.tripplanner.utils.validators.PasswordError.ERROR_WHITESPACE
 import javax.inject.Inject
 
 

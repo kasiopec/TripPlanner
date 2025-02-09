@@ -1,4 +1,4 @@
-package com.project.tripplanner.ui.screens
+package com.project.tripplanner.features.register
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -33,13 +33,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.project.tripplanner.R
-import com.project.tripplanner.features.register.validators.PasswordError
-import com.project.tripplanner.features.register.validators.PasswordError.*
-import com.project.tripplanner.features.register.RegisterEvent
+import com.project.tripplanner.utils.validators.PasswordError
+import com.project.tripplanner.utils.validators.PasswordError.*
 import com.project.tripplanner.features.register.RegisterEvent.BackClickedEvent
 import com.project.tripplanner.features.register.RegisterEvent.RegisterClickedEvent
-import com.project.tripplanner.features.register.RegisterUiState
-import com.project.tripplanner.features.register.RegisterViewModel
 import com.project.tripplanner.ui.IcBackArrow24
 import com.project.tripplanner.ui.IcError24
 import com.project.tripplanner.ui.Icons

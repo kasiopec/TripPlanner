@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TripPlanner</string>
+    `<string name="app_name">TripPlanner</string>
     <string name="email_hint">Email</string>
     <string name="name_hint">Name</string>
     <string name="password_hint">Password</string>
@@ -23,5 +23,5 @@
     <string name="error_password_white_space">Password must not contain whitespaces</string>
     <string name="error_password_length">Password must be 8 character long</string>
     <string name="error_password_special_char">Password must contain some special characters. Example: $#!^</string>
-    <string name="error_password_repeat">Password do not match</string>
+    <string name="error_password_repeat">Password do not match</string>`
 </resources>

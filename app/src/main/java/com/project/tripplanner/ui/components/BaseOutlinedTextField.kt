@@ -15,6 +15,7 @@ fun BaseOutlinedTextField(
     onTextChanged: (String) -> Unit,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     keyboardOptions: KeyboardOptions,
+    isError: Boolean = false,
     labelText: String,
 ) {
     OutlinedTextField(
@@ -22,6 +23,7 @@ fun BaseOutlinedTextField(
         value = text(),
         onValueChange = { onTextChanged(it) },
         singleLine = true,
+        isError = isError,
         label = {
             BodyRegular(
                 text = labelText
