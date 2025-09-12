@@ -25,7 +25,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import com.project.tripplanner.R
 import com.project.tripplanner.ui.components.text.BodyRegular
-import com.project.tripplanner.ui.theme.CustomRippleTheme
 
 @Composable
 fun PasswordTextField(
@@ -58,24 +57,26 @@ fun PasswordTextField(
         },
         visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         trailingIcon = {
-            CompositionLocalProvider(LocalRippleTheme provides CustomRippleTheme(rippleColor = MaterialTheme.colorScheme.outline)) {
-                val iconId = if (isPasswordVisible) R.drawable.ic_hide_pass_32 else R.drawable.ic_show_pass_32
-                Icon(
-                    painter = painterResource(id = iconId),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .wrapContentSize()
-                        .clip(CircleShape)
-                        .clickable(
-                            onClick = {
-                                isPasswordVisible = when (isPasswordVisible) {
-                                    true -> false
-                                    false -> true
-                                }
+            val iconId = if (isPasswordVisible) R.drawable.ic_hide_pass_32 else R.drawable.ic_show_pass_32
+            Icon(
+                painter = painterResource(id = iconId),
+                contentDescription = null,
+                modifier = Modifier
+                    .wrapContentSize()
+                    .clip(CircleShape)
+                    .clickable(
+                        onClick = {
+                            isPasswordVisible = when (isPasswordVisible) {
+                                true -> false
+                                false -> true
                             }
-                        )
-                )
-            }
+                        }
+                    )
+            )
+            // TODO: Add ripple effect for the icon
+//            CompositionLocalProvider(LocalRippleTheme provides CustomRippleTheme(rippleColor = MaterialTheme.colorScheme.outline)) {
+//
+//            }
         },
         keyboardActions = keyboardActions
     )

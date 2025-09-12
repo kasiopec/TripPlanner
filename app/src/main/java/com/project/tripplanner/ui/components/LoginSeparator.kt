@@ -2,6 +2,8 @@ package com.project.tripplanner.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,19 +22,21 @@ fun LoginSeparator(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Divider(
+        HorizontalDivider(
             modifier = Modifier
                 .weight(1f)
-                .height(1.dp)
+                .height(1.dp),
+            thickness = DividerDefaults.Thickness, color = DividerDefaults.color
         )
         BodyRegular(
             text = context.resources.getString(R.string.login_or_label),
             modifier = Modifier.padding(horizontal = 16.dp)
         )
-        Divider(
+        HorizontalDivider(
             modifier = Modifier
                 .weight(1f)
-                .height(1.dp)
+                .height(1.dp),
+            thickness = DividerDefaults.Thickness, color = DividerDefaults.color
         )
     }
 }

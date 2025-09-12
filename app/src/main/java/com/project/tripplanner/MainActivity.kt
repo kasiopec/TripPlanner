@@ -1,8 +1,6 @@
 package com.project.tripplanner
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -45,12 +43,5 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-
-    override fun onNewIntent(intent: Intent?) {
-        setIntent(intent)
-        val deeplink = intent?.data
-        Log.d("pavelDebug", "Deeplink caught -> Path: ${deeplink?.path}")
-        super.onNewIntent(intent)
     }
 }

@@ -5,15 +5,13 @@ import com.project.tripplanner.BaseViewModel
 import com.project.tripplanner.Emitter
 import com.project.tripplanner.MviDefaultErrorHandler
 import com.project.tripplanner.Unused
-import com.project.tripplanner.data.UserPrefsStorage
-import com.project.tripplanner.features.login.LoginUiState
 import com.project.tripplanner.navigation.NavigationEvent
+import com.project.tripplanner.repositories.UserPrefRepository
 import com.project.tripplanner.utils.validators.EmailValidator
 import com.project.tripplanner.utils.validators.PasswordValidator
-import com.project.tripplanner.repositories.UserPrefRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.jan.supabase.gotrue.Auth
-import io.github.jan.supabase.gotrue.providers.builtin.Email
+import io.github.jan.supabase.auth.Auth
+import io.github.jan.supabase.auth.providers.builtin.Email
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

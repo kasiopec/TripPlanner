@@ -9,7 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.tooling.preview.Preview
 import com.project.tripplanner.features.login.LoginUiState.GlobalError
 import com.project.tripplanner.features.login.LoginUiState.Login
@@ -21,7 +21,6 @@ import io.github.jan.supabase.compose.auth.composable.NativeSignInResult.Error
 import io.github.jan.supabase.compose.auth.composable.NativeSignInResult.NetworkError
 import io.github.jan.supabase.compose.auth.composable.NativeSignInResult.Success
 import io.github.jan.supabase.compose.auth.composable.rememberSignInWithGoogle
-import io.github.jan.supabase.compose.auth.composable.rememberSignOutWithGoogle
 
 @Composable
 fun LoginScreen(
@@ -54,7 +53,9 @@ fun LoginScreen(
     }.onFailure {
         println("error in the onFailure")
     }
-    val supabaseLogOutState = supabaseComposeAuth.rememberSignOutWithGoogle()
+    val supabaseLogOutState = supabaseComposeAuth.rememberSignInWithGoogle {
+        //TODO: fix this
+    }
 
     LaunchedEffect(Unit) {
         viewModel.emitEvent(LoginEvent.ScreenVisibleEvent)
@@ -88,13 +89,12 @@ fun LoginScreen(
         }
 
         is GlobalError -> {
-            val context = LocalContext.current
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(color = MaterialTheme.colorScheme.background)
             ) {
-                TitleLargeBold(text = context.resources.getString(state.errorState.message))
+                TitleLargeBold(text = LocalResources.current.getString(state.errorState.message))
             }
         }
 

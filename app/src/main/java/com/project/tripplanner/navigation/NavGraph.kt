@@ -2,19 +2,19 @@ package com.project.tripplanner.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.project.tripplanner.features.home.HomeScreen
+import com.project.tripplanner.features.login.LoginScreen
 import com.project.tripplanner.features.login.LoginViewModel
 import com.project.tripplanner.features.register.RegisterScreen
 import com.project.tripplanner.features.register.RegisterViewModel
-import com.project.tripplanner.features.home.HomeScreen
-import com.project.tripplanner.features.login.LoginScreen
 import com.project.tripplanner.features.resetpassword.ResetPasswordScreen
 import com.project.tripplanner.features.resetpassword.ResetPasswordViewModel
 import io.github.jan.supabase.compose.auth.ComposeAuth

@@ -105,6 +105,7 @@ dependencies {
 
     implementation(platform(libs.supabase.bom))
     implementation(libs.supabase.compose.auth)
+    implementation(libs.supabase.auth.kt)
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)

@@ -6,7 +6,7 @@ import com.project.tripplanner.Emitter
 import com.project.tripplanner.Unused
 import com.project.tripplanner.utils.validators.EmailValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.jan.supabase.gotrue.Auth
+import io.github.jan.supabase.auth.Auth
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

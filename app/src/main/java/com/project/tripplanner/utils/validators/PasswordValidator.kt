@@ -18,7 +18,7 @@ class PasswordValidator @Inject constructor() {
 
     fun isValid(password: String?, secondPassword: String?): PasswordResult {
         if (password == null) {
-            return PasswordResult(isValid = false, errors = PasswordError.values().asList())
+            return PasswordResult(isValid = false, errors = PasswordError.entries)
         } else {
             val errors = mutableListOf<PasswordError>()
             errors.apply {
