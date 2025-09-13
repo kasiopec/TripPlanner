@@ -66,6 +66,15 @@ open class BaseViewModel<EVENT : Event, STATE : State, EFFECT : Effect> @Inject 
         mapHandler(name, handler)
     }
 
+    inline fun <reified T : EVENT> addEventHandler(noinline handler: suspend (Emitter<STATE, EFFECT>) -> Unit) {
+        val name = T::class.simpleName
+            ?: throw IllegalArgumentException("Anonymous objects not supported as type")
+
+        @Suppress("UNCHECKED_CAST")
+        val wrapped: EventHandler<EVENT, STATE, EFFECT> = { _, emit -> handler(emit) }
+        mapHandler(name, wrapped)
+    }
+
     fun mapHandler(name: String, handler: EventHandler<EVENT, STATE, EFFECT>) {
         if (viewModelHandlers.containsKey(name)) {
             throw IllegalStateException("only one handler per event can be registered for $name")
@@ -111,6 +120,7 @@ open class BaseViewModel<EVENT : Event, STATE : State, EFFECT : Effect> @Inject 
         }
     }
 
+    @Deprecated("Use effects for navigation instead", ReplaceWith("emitter.effect(NavigationEffect.*)"))
     fun navigate(event: NavigationEvent) {
         viewModelScope.launch {
             _navigationEventChannel.send(event)

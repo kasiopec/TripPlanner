@@ -10,9 +10,11 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.project.tripplanner.Effect
 import com.project.tripplanner.features.home.HomeScreen
 import com.project.tripplanner.features.login.LoginScreen
 import com.project.tripplanner.features.login.LoginViewModel
+import com.project.tripplanner.features.register.RegisterEffect
 import com.project.tripplanner.features.register.RegisterScreen
 import com.project.tripplanner.features.register.RegisterViewModel
 import com.project.tripplanner.features.resetpassword.ResetPasswordScreen
@@ -56,21 +58,19 @@ fun NavGraph(
         composable(route = Screen.Home.route) { HomeScreen() }
         composable(route = Screen.RegisterForm.route) {
             val registerViewModel = hiltViewModel<RegisterViewModel>()
-            ObserveAsNavigationEvent(flow = registerViewModel.navigationEvent) {
-                when (it) {
-                    NavigationEvent.Back -> navController.navigateUp()
-                    NavigationEvent.Login -> navController.navigate(route = Screen.Login.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            inclusive = true
-                        }
+            RegisterScreen(viewModel = registerViewModel)
+            ObserveNavigationEffect(flow = registerViewModel.effect) { effect ->
+                when (effect) {
+                    RegisterEffect.GoBack -> navController.navigateUp()
+                    RegisterEffect.GoToLogin -> navController.navigate(route = Screen.Login.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
                     }
 
-                    else -> {
-                        // don't navigate
+                    RegisterEffect.GoToHome -> navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
                     }
                 }
             }
-            RegisterScreen(viewModel = registerViewModel)
         }
         composable(route = Screen.ResetPassword.route) {
             val resetPasswordViewModel = hiltViewModel<ResetPasswordViewModel>()
@@ -103,6 +103,18 @@ fun ObserveAsNavigationEvent(flow: Flow<NavigationEvent>, onEvent: (NavigationEv
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
             withContext(Dispatchers.Main.immediate) {
                 flow.collect(onEvent)
+            }
+        }
+    }
+}
+
+@Composable
+fun <T : Effect> ObserveNavigationEffect(flow: Flow<T>, effect: (T) -> Unit) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(flow, lifecycleOwner.lifecycle) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            withContext(Dispatchers.Main.immediate) {
+                flow.collect(effect)
             }
         }
     }
