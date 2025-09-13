@@ -1,5 +1,6 @@
 package com.project.tripplanner
 
+import com.project.tripplanner.navigation.NavigationEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -24,6 +25,7 @@ interface Emitter<STATE, EFFECT> {
     fun <S : STATE> updatedState(transform: (currentState: S) -> S)
     val effect: (effect: EFFECT) -> Unit
     val state: (state: STATE) -> Unit
+    val navigate: (navigation: NavigationEvent) -> Unit
 }
 
 typealias EventHandler<EVENT, STATE, EFFECT> = suspend (

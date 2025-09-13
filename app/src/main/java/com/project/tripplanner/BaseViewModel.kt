@@ -41,6 +41,9 @@ open class BaseViewModel<EVENT : Event, STATE : State, EFFECT : Effect> @Inject 
         override val state: (state: STATE) -> Unit = { state: STATE ->
             viewModelScope.launch { _state.emit(state) }
         }
+        override val navigate: (navigation: NavigationEvent) -> Unit = { navigation: NavigationEvent ->
+            viewModelScope.launch { _navigationEventChannel.send(navigation) }
+        }
     }
 
     private suspend fun toEvent(event: EVENT) {
@@ -64,6 +67,15 @@ open class BaseViewModel<EVENT : Event, STATE : State, EFFECT : Effect> @Inject 
         val name = T::class.simpleName
             ?: throw IllegalArgumentException("Anonymous objects not supported as type")
         mapHandler(name, handler)
+    }
+
+    inline fun <reified T : EVENT> addEventHandlerWithoutEvent(noinline handler: NoEventEventHandler<STATE, EFFECT>) {
+        val eventHandler: EventHandler<EVENT, STATE, EFFECT> = { _: EVENT, emit: Emitter<STATE, EFFECT> ->
+            handler(emit)
+        }
+        val name = T::class.simpleName
+            ?: throw IllegalArgumentException("Anonymous objects not supported as type")
+        mapHandler(name, eventHandler)
     }
 
     fun mapHandler(name: String, handler: EventHandler<EVENT, STATE, EFFECT>) {
@@ -125,3 +137,5 @@ open class BaseViewModel<EVENT : Event, STATE : State, EFFECT : Effect> @Inject 
         }
     }
 }
+
+typealias NoEventEventHandler<STATE, EFFECT> = suspend (emit: Emitter<STATE, EFFECT>) -> Unit
