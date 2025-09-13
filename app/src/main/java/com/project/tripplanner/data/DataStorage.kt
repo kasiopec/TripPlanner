@@ -2,6 +2,7 @@ package com.project.tripplanner.data
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
+import androidx.core.content.edit
 
 interface DataStorage {
     fun contains(key: String): Boolean
@@ -15,13 +16,16 @@ interface DataStorage {
     fun clear()
 }
 
-abstract class DataStorageImpl(@ApplicationContext context: Context, storageName: String) : DataStorage {
+abstract class DataStorageImpl(
+    @ApplicationContext context: Context,
+    storageName: String
+) : DataStorage {
     private val storage = context.getSharedPreferences(storageName, 0)
 
     override fun contains(key: String) = storage.contains(key)
 
     override fun <T : Any> put(key: String, data: T) {
-        with(storage.edit()) {
+        storage.edit {
             when (data) {
                 is Boolean -> putBoolean(key, data)
                 is Float -> putFloat(key, data)
@@ -30,7 +34,6 @@ abstract class DataStorageImpl(@ApplicationContext context: Context, storageName
                 is String -> putString(key, data)
                 else -> throw IllegalArgumentException("Unsupported type")
             }
-            apply()
         }
     }
 
@@ -45,10 +48,10 @@ abstract class DataStorageImpl(@ApplicationContext context: Context, storageName
     override fun getString(key: String) = storage.getString(key, null)
 
     override fun remove(key: String) {
-        storage.edit().remove(key).apply()
+        storage.edit { remove(key) }
     }
 
     override fun clear() {
-        storage.edit().clear().apply()
+        storage.edit { clear() }
     }
 }

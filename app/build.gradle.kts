@@ -91,8 +91,6 @@ dependencies {
 
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
-    implementation(libs.accompanist.permissions)
-    implementation(libs.accompanist.navigation.material)
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.crashlytics)
