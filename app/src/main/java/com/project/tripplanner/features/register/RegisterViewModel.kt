@@ -4,7 +4,6 @@ import androidx.lifecycle.viewModelScope
 import com.project.tripplanner.BaseViewModel
 import com.project.tripplanner.Emitter
 import com.project.tripplanner.MviDefaultErrorHandler
-import com.project.tripplanner.Unused
 import com.project.tripplanner.navigation.NavigationEvent
 import com.project.tripplanner.repositories.UserPrefRepository
 import com.project.tripplanner.utils.validators.EmailValidator
@@ -21,32 +20,36 @@ class RegisterViewModel @Inject constructor(
     private val emailValidator: EmailValidator,
     private val auth: Auth,
     private val userPrefRepository: UserPrefRepository
-) : BaseViewModel<RegisterEvent, RegisterUiState, Unused>(
+) : BaseViewModel<RegisterEvent, RegisterUiState, RegisterEffect>(
     initialState = RegisterUiState.Loading
 ) {
     init {
-        addEventHandler(::onScreenVisible)
+        // Demonstrate different handler types
+        addSimpleEventHandler<RegisterEvent.ScreenVisibleEvent> { emit ->
+            emit.state(RegisterUiState.Register())
+        }
+
         addEventHandler(::onRegisterClicked)
-        addEventHandler(::onBackClicked)
-        addEventHandler(::onLoginClicked)
+
+        // Simple navigation handlers using new approach
+        addNoParamHandler<RegisterEvent.BackClickedEvent> {
+            emitEffect(RegisterEffect.NavigateBack)
+        }
+
+        addNoParamHandler<RegisterEvent.LoginButtonClicked> {
+            emitEffect(RegisterEffect.NavigateToLogin)
+        }
+
         addErrorHandler(MviDefaultErrorHandler(RegisterUiState::GlobalError))
     }
 
-    private fun onScreenVisible(
-        event: RegisterEvent.ScreenVisibleEvent,
-        emit: Emitter<RegisterUiState, Unused>
-    ) {
-        emit.state(RegisterUiState.Register())
-    }
-
-    private fun onRegisterClicked(
+    private suspend fun onRegisterClicked(
         event: RegisterEvent.RegisterClickedEvent,
-        emit: Emitter<RegisterUiState, Unused>
+        emit: Emitter<RegisterUiState, RegisterEffect>
     ) {
         val validatedPassword = passwordValidator.isValid(event.password, event.secondPassword)
         val isEmailValid = emailValidator.isValid(event.email)
-        println("password: ${event.password}")
-        println("isEmailValid: $isEmailValid")
+
         when {
             validatedPassword.isValid.not() && isEmailValid.not() -> {
                 emit.state(
@@ -59,12 +62,10 @@ class RegisterViewModel @Inject constructor(
 
             validatedPassword.isValid.not() -> {
                 emit.state(RegisterUiState.Register(passwordErrors = validatedPassword.errors))
-                println("pass not valid: ${validatedPassword.errors}")
             }
 
             isEmailValid.not() -> {
                 emit.state(RegisterUiState.Register(isEmailValid = isEmailValid))
-                println("email not valid")
             }
 
             validatedPassword.isValid && isEmailValid -> {
@@ -75,24 +76,11 @@ class RegisterViewModel @Inject constructor(
                     }
                     val supabaseAccessToken = auth.currentAccessTokenOrNull().orEmpty()
                     userPrefRepository.saveUserAccessToken(supabaseAccessToken)
-                    navigate(NavigationEvent.Home)
+
+                    // Use the new effect-based navigation
+                    emit.effect(RegisterEffect.NavigateToHome)
                 }
             }
         }
-
-    }
-
-    private fun onBackClicked(
-        event: RegisterEvent.BackClickedEvent,
-        emit: Emitter<RegisterUiState, Unused>
-    ) {
-        navigate(NavigationEvent.Back)
-    }
-
-    private fun onLoginClicked(
-        event: RegisterEvent.LoginButtonClicked,
-        emit: Emitter<RegisterUiState, Unused>
-    ) {
-        navigate(NavigationEvent.Login)
     }
 }

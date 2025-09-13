@@ -10,9 +10,11 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.project.tripplanner.Effect
 import com.project.tripplanner.features.home.HomeScreen
 import com.project.tripplanner.features.login.LoginScreen
 import com.project.tripplanner.features.login.LoginViewModel
+import com.project.tripplanner.features.register.RegisterEffect
 import com.project.tripplanner.features.register.RegisterScreen
 import com.project.tripplanner.features.register.RegisterViewModel
 import com.project.tripplanner.features.resetpassword.ResetPasswordScreen
@@ -56,6 +58,26 @@ fun NavGraph(
         composable(route = Screen.Home.route) { HomeScreen() }
         composable(route = Screen.RegisterForm.route) {
             val registerViewModel = hiltViewModel<RegisterViewModel>()
+
+            // Handle new effects approach
+            ObserveAsEffect(flow = registerViewModel.effect) { effect ->
+                when (effect) {
+                    RegisterEffect.NavigateBack -> navController.navigateUp()
+                    RegisterEffect.NavigateToLogin -> navController.navigate(route = Screen.Login.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            inclusive = true
+                        }
+                    }
+
+                    RegisterEffect.NavigateToHome -> navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            }
+
+            // Keep old navigation events for backward compatibility during transition
             ObserveAsNavigationEvent(flow = registerViewModel.navigationEvent) {
                 when (it) {
                     NavigationEvent.Back -> navController.navigateUp()
@@ -64,7 +86,11 @@ fun NavGraph(
                             inclusive = true
                         }
                     }
-
+                    NavigationEvent.Home -> navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) {
+                            inclusive = true
+                        }
+                    }
                     else -> {
                         // don't navigate
                     }
@@ -103,6 +129,18 @@ fun ObserveAsNavigationEvent(flow: Flow<NavigationEvent>, onEvent: (NavigationEv
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
             withContext(Dispatchers.Main.immediate) {
                 flow.collect(onEvent)
+            }
+        }
+    }
+}
+
+@Composable
+fun <T : Effect> ObserveAsEffect(flow: Flow<T>, onEffect: (T) -> Unit) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(flow, lifecycleOwner.lifecycle) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            withContext(Dispatchers.Main.immediate) {
+                flow.collect(onEffect)
             }
         }
     }
