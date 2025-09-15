@@ -7,4 +7,17 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Error State Colors from Figma -->
+    <color name="error_placeholder_bg">#FCDDCF</color>
+    <color name="error_close_icon">#E0125D</color>
+    <color name="error_check_bg">#1F8B24</color>
+    <color name="error_check_icon">#C5F2C7</color>
+    <color name="error_document_icon">#616161</color>
+    <color name="error_title_text">#414141</color>
+    <color name="error_body_text">#818181</color>
+    <color name="error_button_primary_bg">#A90E46</color>
+    <color name="error_button_primary_text">#FAC1D6</color>
+    <color name="error_button_secondary_border">#C0C0C0</color>
+    <color name="error_button_secondary_text">#818181</color>
 </resources>
