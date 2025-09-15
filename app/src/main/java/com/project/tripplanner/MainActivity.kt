@@ -13,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import com.project.tripplanner.navigation.NavGraph
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.compose.auth.ComposeAuth
 import javax.inject.Inject
 
@@ -20,7 +21,7 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     @Inject
-    lateinit var supabaseComposeAuth: ComposeAuth
+    lateinit var supabaseAuth: Auth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +38,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                         NavGraph(
                             navController = navController,
-                            supabaseComposeAuth = supabaseComposeAuth
+                            supabaseAuth = supabaseAuth
                         )
                     }
                 }

@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.project.tripplanner.Effect
 import com.project.tripplanner.features.home.HomeScreen
+import com.project.tripplanner.features.login.LoginEffect
 import com.project.tripplanner.features.login.LoginScreen
 import com.project.tripplanner.features.login.LoginViewModel
 import com.project.tripplanner.features.register.RegisterEffect
@@ -19,7 +20,7 @@ import com.project.tripplanner.features.register.RegisterScreen
 import com.project.tripplanner.features.register.RegisterViewModel
 import com.project.tripplanner.features.resetpassword.ResetPasswordScreen
 import com.project.tripplanner.features.resetpassword.ResetPasswordViewModel
-import io.github.jan.supabase.compose.auth.ComposeAuth
+import io.github.jan.supabase.auth.Auth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -27,7 +28,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun NavGraph(
     navController: NavHostController,
-    supabaseComposeAuth: ComposeAuth
+    supabaseAuth: Auth
 ) {
     NavHost(
         navController = navController,
@@ -35,25 +36,22 @@ fun NavGraph(
     ) {
         composable(route = Screen.Login.route) {
             val loginViewModel = hiltViewModel<LoginViewModel>()
-            ObserveAsNavigationEvent(flow = loginViewModel.navigationEvent) {
-                when (it) {
-                    NavigationEvent.Home -> navController.navigate(Screen.Home.route) {
+            LoginScreen(
+                viewModel = loginViewModel,
+                supabaseAuth = supabaseAuth
+            )
+            ObserveNavigationEffect(flow = loginViewModel.effect) { effect ->
+                when (effect) {
+                    LoginEffect.NavigateToHomeScreenEffect -> navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Home.route) {
                             inclusive = true
                         }
                     }
 
-                    NavigationEvent.RegisterForm -> navController.navigate(Screen.RegisterForm.route)
-                    NavigationEvent.ResetPassword -> navController.navigate(Screen.ResetPassword.route)
-                    else -> {
-                        // not interested
-                    }
+                    LoginEffect.NavigateToRegisterFormEffect -> navController.navigate(Screen.RegisterForm.route)
+                    LoginEffect.NavigateToResetPasswordScreenEffect -> navController.navigate(Screen.ResetPassword.route)
                 }
             }
-            LoginScreen(
-                viewModel = loginViewModel,
-                supabaseComposeAuth = supabaseComposeAuth
-            )
         }
         composable(route = Screen.Home.route) { HomeScreen() }
         composable(route = Screen.RegisterForm.route) {

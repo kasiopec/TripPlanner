@@ -4,8 +4,10 @@ import androidx.lifecycle.viewModelScope
 import com.project.tripplanner.BaseViewModel
 import com.project.tripplanner.Emitter
 import com.project.tripplanner.MviDefaultErrorHandler
+import com.project.tripplanner.features.login.LoginEvent.ForgotPasswordClickedEvent
+import com.project.tripplanner.features.login.LoginEvent.GoogleSignInSuccessEvent
+import com.project.tripplanner.features.login.LoginEvent.RegisterButtonClickedEvent
 import com.project.tripplanner.features.login.LoginEvent.ScreenVisibleEvent
-import com.project.tripplanner.navigation.NavigationEvent
 import com.project.tripplanner.repositories.UserPrefRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.auth.Auth
@@ -23,12 +25,11 @@ class LoginViewModel @Inject constructor(
 ) {
 
     init {
-        addEventHandler(::onScreenVisible)
+        addEventHandler<ScreenVisibleEvent>(::onScreenVisible)
         addEventHandler(::onLoginClicked)
-        addEventHandler(::onForgotPassword)
-        addEventHandler(::onRegisterClicked)
-        addEventHandler(::googleSignInSucceeded)
-        addEventHandler(::onGoogleSignInClicked)
+        addEventHandler<ForgotPasswordClickedEvent>(::onForgotPassword)
+        addEventHandler<RegisterButtonClickedEvent>(::onRegisterClicked)
+        addEventHandler<GoogleSignInSuccessEvent>(::googleSignInSucceeded)
         addErrorHandler(MviDefaultErrorHandler(LoginUiState::GlobalError))
     }
 
@@ -44,17 +45,14 @@ class LoginViewModel @Inject constructor(
                 }
                 val supabaseAccessToken = auth.currentAccessTokenOrNull().orEmpty()
                 userPrefRepository.saveUserAccessToken(supabaseAccessToken)
-                navigate(NavigationEvent.Home)
+                emit.effect(LoginEffect.NavigateToHomeScreenEffect)
             } catch (e: Exception) {
                 println("Got an error")
             }
         }
     }
 
-    private fun onScreenVisible(
-        event: ScreenVisibleEvent,
-        emit: Emitter<LoginUiState, LoginEffect>
-    ) {
+    private fun onScreenVisible(emit: Emitter<LoginUiState, LoginEffect>) {
         val supabaseAccessToken = userPrefRepository.getUserAccessToken()
         if (supabaseAccessToken.isNullOrEmpty()) {
             emit.state(LoginUiState.Login())
@@ -65,7 +63,7 @@ class LoginViewModel @Inject constructor(
                     auth.refreshCurrentSession()
                     val refreshedAccessToken = auth.currentAccessTokenOrNull().orEmpty()
                     userPrefRepository.saveUserAccessToken(refreshedAccessToken)
-                    navigate(NavigationEvent.Home)
+                    emit.effect(LoginEffect.NavigateToHomeScreenEffect)
                 } catch (ex: UnknownRestException) {
                     userPrefRepository.saveUserAccessToken("")
                     emit.state(LoginUiState.Login())
@@ -74,35 +72,17 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    private fun onForgotPassword(
-        event: LoginEvent.ForgotPasswordClickedEvent,
-        emit: Emitter<LoginUiState, LoginEffect>
-    ) {
-        navigate(NavigationEvent.ResetPassword)
+    private fun onForgotPassword(emit: Emitter<LoginUiState, LoginEffect>) {
+        emit.effect(LoginEffect.NavigateToResetPasswordScreenEffect)
     }
 
-    private fun onRegisterClicked(
-        event: LoginEvent.RegisterButtonClickedEvent,
-        emit: Emitter<LoginUiState, LoginEffect>
-    ) {
-        navigate(NavigationEvent.RegisterForm)
+    private fun onRegisterClicked(emit: Emitter<LoginUiState, LoginEffect>) {
+        emit.effect(LoginEffect.NavigateToRegisterFormEffect)
     }
 
-    private fun googleSignInSucceeded(
-        event: LoginEvent.GoogleSignInSuccessEvent,
-        emit: Emitter<LoginUiState, LoginEffect>
-    ) {
+    private fun googleSignInSucceeded(emit: Emitter<LoginUiState, LoginEffect>) {
         val supabaseAccessToken = auth.currentAccessTokenOrNull().orEmpty()
         userPrefRepository.saveUserAccessToken(supabaseAccessToken)
-        navigate(NavigationEvent.Home)
+        emit.effect(LoginEffect.NavigateToHomeScreenEffect)
     }
-
-    private fun onGoogleSignInClicked(
-        event: LoginEvent.OnGoogleSignInClickedEvent,
-        emit: Emitter<LoginUiState, LoginEffect>
-    ) {
-        emit.effect(LoginEffect.StartGoogleSignInEffect)
-    }
-
-
 }

@@ -35,8 +35,8 @@ android {
 
         buildConfigField(
             "String",
-            "SUPABASE_ANON_KEY",
-            "\"${properties.getProperty("SUPABASE_ANON_KEY")}\""
+            "SUPABASE_PUBLISHABLE_KEY",
+            "\"${properties.getProperty("SUPABASE_PUBLISHABLE_KEY")}\""
         )
         buildConfigField("String", "SUPABASE_URL", "\"${properties.getProperty("SUPABASE_URL")}\"")
         buildConfigField(
@@ -104,6 +104,9 @@ dependencies {
     implementation(platform(libs.supabase.bom))
     implementation(libs.supabase.compose.auth)
     implementation(libs.supabase.auth.kt)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.service.auth)
+    implementation(libs.googleid)
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)

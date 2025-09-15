@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -91,6 +92,7 @@ fun RegisterContent(
     passwordErrors: List<PasswordError>,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     Scaffold(
         topBar = {
             TopAppBar(
@@ -122,7 +124,7 @@ fun RegisterContent(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     text = { enteredName },
                     onTextChanged = { enteredName = it },
-                    labelText = context.resources.getString(R.string.name_hint),
+                    labelText = resources.getString(R.string.name_hint),
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Next
                     )
@@ -131,7 +133,7 @@ fun RegisterContent(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     text = { enteredEmail },
                     onTextChanged = { enteredEmail = it },
-                    labelText = context.resources.getString(R.string.email_hint),
+                    labelText = resources.getString(R.string.email_hint),
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Next
                     )
@@ -144,7 +146,7 @@ fun RegisterContent(
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Next
                     ),
-                    labelText = context.resources.getString(R.string.password_hint)
+                    labelText = resources.getString(R.string.password_hint)
                 )
                 PasswordTextField(
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp),
@@ -159,7 +161,7 @@ fun RegisterContent(
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Go
                     ),
-                    labelText = context.resources.getString(R.string.password_hint)
+                    labelText = resources.getString(R.string.password_hint)
                 )
                 LazyColumn(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp)) {
                     item {

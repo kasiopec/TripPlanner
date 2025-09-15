@@ -22,7 +22,7 @@ object SupabaseModule {
     @Singleton
     fun providesSupabase(): SupabaseClient {
         return createSupabaseClient(
-            supabaseKey = BuildConfig.SUPABASE_ANON_KEY,
+            supabaseKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
             supabaseUrl = BuildConfig.SUPABASE_URL
         ) {
             install(Auth)
