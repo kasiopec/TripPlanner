@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Supabase
+# https://supabase.com/docs/guides/auth/social-login/auth-google?queryGroups=platform&platform=android
+-if class androidx.credentials.CredentialManager-keep class androidx.credentials.playservices.** {  *;}

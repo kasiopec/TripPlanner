@@ -13,7 +13,8 @@ navigationCompose = "2.9.4"
 hiltNavigationCompose = "1.3.0"
 hilt = "2.57.1"
 coroutines = "1.10.2"
-accompanist = "0.36.0"
+androidxCredentials = "1.5.0"
+googleid = "1.1.1"
 firebaseBom = "34.2.0"
 ktor = "3.3.0"
 supabaseBom = "3.2.3"
@@ -64,6 +65,10 @@ ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serializatio
 supabase-bom = { group = "io.github.jan-tennert.supabase", name = "bom", version.ref = "supabaseBom" }
 supabase-compose-auth = { group = "io.github.jan-tennert.supabase", name = "compose-auth"}
 supabase-auth-kt = { group = "io.github.jan-tennert.supabase", name = "auth-kt"}
+androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "androidxCredentials"}
+androidx-credentials-play-service-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "androidxCredentials"}
+googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid"}
+
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }
