@@ -1,15 +1,10 @@
 package com.project.tripplanner.features.login
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.tooling.preview.Preview
@@ -18,10 +13,11 @@ import androidx.credentials.GetCredentialRequest
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.project.tripplanner.BuildConfig
+import com.project.tripplanner.R
 import com.project.tripplanner.features.login.LoginUiState.GlobalError
 import com.project.tripplanner.features.login.LoginUiState.Login
 import com.project.tripplanner.features.login.content.LoginScreenContent
-import com.project.tripplanner.ui.components.text.TitleLargeBold
+import com.project.tripplanner.ui.components.FullScreenError
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.IDToken
@@ -35,6 +31,7 @@ fun LoginScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     LaunchedEffect(Unit) {
         viewModel.emitEvent(LoginEvent.ScreenVisibleEvent)
@@ -98,13 +95,14 @@ fun LoginScreen(
         }
 
         is GlobalError -> {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(color = MaterialTheme.colorScheme.background)
-            ) {
-                TitleLargeBold(text = LocalResources.current.getString(state.errorState.message))
-            }
+            FullScreenError(
+                titleText = resources.getString(R.string.error_unknown_title),
+                primaryActionText = resources.getString(R.string.error_unknown_primary_button_title),
+                messageText = resources.getString(state.errorState.message),
+                onPrimaryActionClick = {
+                    viewModel.emitEvent(LoginEvent.CloseErrorClickedEvent)
+                }
+            )
         }
 
         is LoginUiState.Loading -> {

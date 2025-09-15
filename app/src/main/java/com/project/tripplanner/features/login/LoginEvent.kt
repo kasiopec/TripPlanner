@@ -1,6 +1,5 @@
 package com.project.tripplanner.features.login
 
-import co.touchlab.kermit.Message
 import com.project.tripplanner.Event
 
 sealed class LoginEvent : Event {
@@ -11,5 +10,6 @@ sealed class LoginEvent : Event {
     data class ResetPasswordClickedEvent(val email: String) : LoginEvent()
     object RegisterButtonClickedEvent : LoginEvent()
     object GoogleSignInSuccessEvent : LoginEvent()
+    object CloseErrorClickedEvent : LoginEvent()
     data class GoogleSignInFailureEvent(val errorMessage: String) : LoginEvent()
 }

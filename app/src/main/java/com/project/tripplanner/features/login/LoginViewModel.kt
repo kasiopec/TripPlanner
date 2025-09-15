@@ -3,8 +3,11 @@ package com.project.tripplanner.features.login
 import androidx.lifecycle.viewModelScope
 import com.project.tripplanner.BaseViewModel
 import com.project.tripplanner.Emitter
+import com.project.tripplanner.ErrorState
 import com.project.tripplanner.MviDefaultErrorHandler
+import com.project.tripplanner.features.login.LoginEvent.CloseErrorClickedEvent
 import com.project.tripplanner.features.login.LoginEvent.ForgotPasswordClickedEvent
+import com.project.tripplanner.features.login.LoginEvent.GoogleSignInFailureEvent
 import com.project.tripplanner.features.login.LoginEvent.GoogleSignInSuccessEvent
 import com.project.tripplanner.features.login.LoginEvent.RegisterButtonClickedEvent
 import com.project.tripplanner.features.login.LoginEvent.ScreenVisibleEvent
@@ -26,10 +29,12 @@ class LoginViewModel @Inject constructor(
 
     init {
         addEventHandler<ScreenVisibleEvent>(::onScreenVisible)
+        addEventHandler<CloseErrorClickedEvent>(::onCloseErrorClicked)
         addEventHandler(::onLoginClicked)
         addEventHandler<ForgotPasswordClickedEvent>(::onForgotPassword)
         addEventHandler<RegisterButtonClickedEvent>(::onRegisterClicked)
         addEventHandler<GoogleSignInSuccessEvent>(::googleSignInSucceeded)
+        addEventHandler<GoogleSignInFailureEvent>(::googleSignInFailed)
         addErrorHandler(MviDefaultErrorHandler(LoginUiState::GlobalError))
     }
 
@@ -84,5 +89,13 @@ class LoginViewModel @Inject constructor(
         val supabaseAccessToken = auth.currentAccessTokenOrNull().orEmpty()
         userPrefRepository.saveUserAccessToken(supabaseAccessToken)
         emit.effect(LoginEffect.NavigateToHomeScreenEffect)
+    }
+
+    private fun googleSignInFailed(emit: Emitter<LoginUiState, LoginEffect>) {
+        emit.state(LoginUiState.GlobalError(errorState = ErrorState.NoConnectionError()))
+    }
+
+    private fun onCloseErrorClicked(emit: Emitter<LoginUiState, LoginEffect>) {
+        emit.state(LoginUiState.Login())
     }
 }
