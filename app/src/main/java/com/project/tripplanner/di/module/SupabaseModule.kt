@@ -25,7 +25,9 @@ object SupabaseModule {
             supabaseKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
             supabaseUrl = BuildConfig.SUPABASE_URL
         ) {
-            install(Auth)
+            install(Auth) {
+                alwaysAutoRefresh = true
+            }
             install(ComposeAuth) {
                 googleNativeLogin(BuildConfig.SUPABASE_CLIENT_ID)
             }

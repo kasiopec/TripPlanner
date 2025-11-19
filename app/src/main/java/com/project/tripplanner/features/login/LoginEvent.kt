@@ -12,4 +12,5 @@ sealed class LoginEvent : Event {
     object GoogleSignInSuccessEvent : LoginEvent()
     object CloseErrorClickedEvent : LoginEvent()
     data class GoogleSignInFailureEvent(val errorMessage: String) : LoginEvent()
+    object ForcedLogoutSessionExpiredEvent : LoginEvent()
 }
