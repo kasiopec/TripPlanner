@@ -35,13 +35,6 @@ fun NavGraph(
     supabaseAuth: Auth
 ) {
     LaunchedEffect(Unit) {
-        supabaseAuth.events.collect { event ->
-
-        }
-    }
-
-
-    LaunchedEffect(Unit) {
         supabaseAuth.sessionStatus.collect { status ->
             when (status) {
                 is SessionStatus.Authenticated -> {
