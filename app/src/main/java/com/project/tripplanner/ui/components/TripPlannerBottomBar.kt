@@ -7,8 +7,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -47,66 +52,77 @@ fun TripPlannerBottomBar(
     modifier: Modifier = Modifier
 ) {
     var selectedItem by remember { mutableStateOf(items.firstOrNull { it.isSelectable }) }
-
-    Row(
+    val paddingValues = WindowInsets.navigationBars.asPaddingValues()
+    val bottomBarHeight = paddingValues.calculateBottomPadding()
+    Column(
         modifier = modifier
             .background(color = MaterialTheme.colorScheme.surface)
-            .fillMaxWidth()
-            .heightIn(min = 49.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceAround
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.Top
     ) {
-        items.forEach { item ->
-            val isSelected = item == selectedItem
-            val contentColor = when {
-                !item.isSelectable -> Color.Unspecified
-                isSelected -> MaterialTheme.colorScheme.primary
-                else -> MaterialTheme.colorScheme.onSurface
-            }
+        Row(
+            modifier = Modifier
+                .background(color = MaterialTheme.colorScheme.surface)
+                .fillMaxWidth()
+                .heightIn(min = 49.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            items.forEach { item ->
+                val isSelected = item == selectedItem
+                val contentColor = when {
+                    !item.isSelectable -> Color.Unspecified
+                    isSelected -> MaterialTheme.colorScheme.primary
+                    else -> MaterialTheme.colorScheme.onSurface
+                }
 
-            Column(
-                modifier = Modifier
-                    .heightIn(min = 48.dp)
-                    .widthIn(min = 48.dp)
-                    .clip(CircleShape)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = ripple(bounded = true, color = MaterialTheme.colorScheme.primary),
-                        onClick = {
-                            if (item.isSelectable) {
-                                selectedItem = item
+                Column(
+                    modifier = Modifier
+                        .heightIn(min = 48.dp)
+                        .widthIn(min = 48.dp)
+                        .clip(CircleShape)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = ripple(bounded = true, color = MaterialTheme.colorScheme.primary),
+                            onClick = {
+                                if (item.isSelectable) {
+                                    selectedItem = item
+                                }
+                                onItemClick(item)
                             }
-                            onItemClick(item)
-                        }
-                    ),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top
-            ) {
-                val topPadding = if (item.isSelectable) 12.dp else 5.dp
-                val bottomPadding = if (!item.isSelectable) 5.dp else 0.dp
-                Icon(
-                    modifier = Modifier.padding(top = topPadding, bottom = bottomPadding),
-                    painter = painterResource(item.icon),
-                    contentDescription = item.contentDescription,
-                    tint = contentColor
-                )
+                        ),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Top
+                ) {
+                    val topPadding = if (item.isSelectable) 12.dp else 5.dp
+                    val bottomPadding = if (!item.isSelectable) 5.dp else 0.dp
+                    Icon(
+                        modifier = Modifier.padding(top = topPadding, bottom = bottomPadding),
+                        painter = painterResource(item.icon),
+                        contentDescription = item.contentDescription,
+                        tint = contentColor
+                    )
 
-                if (isSelected) {
-                    Box(
-                        modifier = Modifier
-                            .padding(bottom = 8.dp)
-                            .size(4.dp)
-                            .background(color = contentColor, shape = CircleShape)
-                    )
-                } else if (item.isSelectable) {
-                    Box(
-                        modifier = Modifier
-                            .size(4.dp)
-                    )
+                    if (isSelected) {
+                        Box(
+                            modifier = Modifier
+                                .padding(bottom = 8.dp)
+                                .size(4.dp)
+                                .background(color = contentColor, shape = CircleShape)
+                        )
+                    } else if (item.isSelectable) {
+                        Box(
+                            modifier = Modifier
+                                .size(4.dp)
+                        )
+                    }
                 }
             }
         }
+        Spacer(modifier = Modifier.fillMaxWidth().height(bottomBarHeight))
     }
+
+
 }
 
 @Composable
