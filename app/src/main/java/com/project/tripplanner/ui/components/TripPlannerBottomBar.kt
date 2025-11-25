@@ -1,30 +1,138 @@
 package com.project.tripplanner.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.dp
 import com.project.tripplanner.R
+import com.project.tripplanner.ui.theme.TripPlannerTheme
+
+data class BottomBarItem(
+    val icon: Int,
+    val contentDescription: String? = null,
+    val isSelectable: Boolean = true
+)
 
 @Composable
-fun TripPlannerBottomBar(modifier: Modifier = Modifier) {
+fun TripPlannerBottomBar(
+    items: List<BottomBarItem>,
+    onItemClick: (BottomBarItem) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var selectedItem by remember { mutableStateOf(items.firstOrNull { it.isSelectable }) }
+
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .background(color = MaterialTheme.colorScheme.surface)
+            .fillMaxWidth()
+            .heightIn(min = 49.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceAround
     ) {
-        Icon(
-            painter = painterResource(R.drawable.home_alt_24),
-            tint = MaterialTheme.colorScheme.primary,
-            contentDescription = null
-        )
+        items.forEach { item ->
+            val isSelected = item == selectedItem
+            val contentColor = when {
+                !item.isSelectable -> Color.Unspecified
+                isSelected -> MaterialTheme.colorScheme.primary
+                else -> MaterialTheme.colorScheme.onSurface
+            }
+
+            Column(
+                modifier = Modifier
+                    .heightIn(min = 48.dp)
+                    .widthIn(min = 48.dp)
+                    .clip(CircleShape)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = ripple(bounded = true, color = MaterialTheme.colorScheme.primary),
+                        onClick = {
+                            if (item.isSelectable) {
+                                selectedItem = item
+                            }
+                            onItemClick(item)
+                        }
+                    ),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
+                val topPadding = if (item.isSelectable) 12.dp else 5.dp
+                val bottomPadding = if (!item.isSelectable) 5.dp else 0.dp
+                Icon(
+                    modifier = Modifier.padding(top = topPadding, bottom = bottomPadding),
+                    painter = painterResource(item.icon),
+                    contentDescription = item.contentDescription,
+                    tint = contentColor
+                )
+
+                if (isSelected) {
+                    Box(
+                        modifier = Modifier
+                            .padding(bottom = 8.dp)
+                            .size(4.dp)
+                            .background(color = contentColor, shape = CircleShape)
+                    )
+                } else if (item.isSelectable) {
+                    Box(
+                        modifier = Modifier
+                            .size(4.dp)
+                    )
+                }
+            }
+        }
     }
 }
 
-@Preview
 @Composable
+@PreviewLightDark
 fun TripPlannerBottomBarPreview() {
-    TripPlannerBottomBar()
+    TripPlannerTheme {
+        val items = listOf(
+            BottomBarItem(R.drawable.home_alt_24, "Home"),
+            BottomBarItem(R.drawable.ic_document_24, "Docs"),
+            BottomBarItem(R.drawable.plus_fab_38, "Add", isSelectable = false),
+            BottomBarItem(R.drawable.ic_error_24, "Check"),
+            BottomBarItem(R.drawable.home_alt_24, "Profile")
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .systemBarsPadding()
+                .navigationBarsPadding()
+                .background(Color.Gray),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            TripPlannerBottomBar(
+                items = items,
+                onItemClick = {}
+            )
+        }
+    }
 }
