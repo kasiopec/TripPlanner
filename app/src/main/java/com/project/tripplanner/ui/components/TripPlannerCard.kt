@@ -14,19 +14,19 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.project.tripplanner.R
+import com.project.tripplanner.ui.components.text.BodyMedium
+import com.project.tripplanner.ui.components.text.Headline3
+import com.project.tripplanner.ui.components.text.MetaText
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 import java.util.Locale
 
@@ -43,24 +43,10 @@ fun TripPlannerCard(
 ) {
     val shape = RoundedCornerShape(14.dp)
     val colors = TripPlannerTheme.colors
-    val typography = TripPlannerTheme.typography
     val containerColor = if (accent) colors.mutedSurface else colors.surface
     val border = if (accent) BorderStroke(1.dp, colors.primary.copy(alpha = 0.1f)) else null
     val iconContainerColor = Color(0xFFF0F3FA)
     val badgeContainerColor = colors.primaryContainer
-    val titleStyle = typography.titleSmall.copy(
-        fontSize = 16.sp,
-        lineHeight = 20.sp,
-        fontWeight = FontWeight.SemiBold
-    )
-    val descriptionStyle = typography.bodyMedium.copy(
-        color = colors.onSurfaceVariant
-    )
-    val badgeStyle = typography.labelMedium.copy(
-        fontSize = 12.sp,
-        fontWeight = FontWeight.SemiBold,
-        letterSpacing = 0.5.sp
-    )
 
     val cardContent: @Composable () -> Unit = {
         Column(
@@ -91,10 +77,9 @@ fun TripPlannerCard(
                     Spacer(modifier = Modifier.weight(1f))
 
                     if (!badgeText.isNullOrBlank()) {
-                        Text(
+                        MetaText(
                             text = badgeText.uppercase(Locale.getDefault()),
                             color = colors.primary,
-                            style = badgeStyle,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
@@ -105,18 +90,17 @@ fun TripPlannerCard(
                 }
             }
 
-            Text(
+            Headline3(
                 text = title,
-                style = titleStyle,
                 color = colors.onSurface,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
 
             if (!description.isNullOrBlank()) {
-                Text(
+                BodyMedium(
                     text = description,
-                    style = descriptionStyle,
+                    color = colors.onSurfaceVariant,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )

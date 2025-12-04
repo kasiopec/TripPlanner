@@ -1,6 +1,5 @@
 package com.project.tripplanner.ui.components
 
-import android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -18,7 +17,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,8 +27,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.project.tripplanner.R
+import com.project.tripplanner.ui.components.text.BodyMedium
+import com.project.tripplanner.ui.components.text.BodyRegular
+import com.project.tripplanner.ui.components.text.LabelText
 import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 
@@ -39,12 +42,12 @@ fun PlannerOutlinedTextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    label: String? = null, // External label support
+    label: String? = null,
     placeholder: String = "",
     supportingText: String? = null,
     errorMessage: String? = null,
     isError: Boolean = false,
-    trailingIcon: @Composable (() -> Unit)? = null, // Nullable to allow removal
+    trailingIcon: @Composable (() -> Unit)? = null,
     singleLine: Boolean = true,
     enabled: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
@@ -54,44 +57,39 @@ fun PlannerOutlinedTextField(
     val isFocused by interactionSource.collectIsFocusedAsState()
 
     val colors = TripPlannerTheme.colors
-    val borderColor = remember(isError, isFocused, enabled) {
-        when {
-            isError && isFocused -> colors.error
-            isError -> colors.error
-            isFocused -> colors.onBackground
-            !enabled -> Color(0xFFE6E9F0)
-            else -> Color(0xFFD5DBE6)
-        }
+    val borderColor = when {
+        isError && isFocused -> colors.error
+        isError -> colors.error
+        isFocused -> colors.primaryStrong
+        else -> TripPlannerTheme.additionalColors.inactive
     }
 
     Column(modifier = modifier) {
-        // Label (Optional per patterns.forms: "labels above fields")
         if (label != null) {
-            Text(
+            LabelText(
+                modifier = Modifier.padding(bottom = 6.dp),
                 text = label,
-                style = TripPlannerTheme.typography.bodyMedium,
-                color = colors.secondary,
-                modifier = Modifier.padding(bottom = 6.dp) //
+                color = if (enabled) colors.onBackground else TripPlannerTheme.additionalColors.inactive,
+                fontWeight = FontWeight.W700
             )
         }
 
-        // Input Container
         BasicTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(44.dp)
+                .height(Dimensions.textFieldHeight)
                 .background(
                     color = TripPlannerTheme.colors.background,
-                    shape = RoundedCornerShape(Dimensions.radiusM) //
+                    shape = RoundedCornerShape(Dimensions.radiusM)
                 )
                 .border(
-                    width = 1.dp,
+                    width = Dimensions.strokeThin,
                     color = borderColor,
-                    shape = RoundedCornerShape(10.dp)
+                    shape = RoundedCornerShape(Dimensions.radiusM)
                 ),
-            textStyle = TripPlannerTheme.typography.bodyMedium.copy(
+            textStyle = TripPlannerTheme.typography.body.copy(
                 color = if (enabled) TripPlannerTheme.colors.onBackground else TripPlannerTheme.colors.secondary
             ),
             singleLine = singleLine,
@@ -102,23 +100,21 @@ fun PlannerOutlinedTextField(
             cursorBrush = SolidColor(TripPlannerTheme.colors.primary),
             decorationBox = { innerTextField ->
                 Row(
-                    modifier = Modifier.padding(horizontal = 12.dp), //
+                    modifier = Modifier.padding(horizontal = Dimensions.spacingM), //
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(modifier = Modifier.weight(1f)) {
                         if (value.isEmpty()) {
-                            Text(
+                            BodyMedium(
                                 text = placeholder,
-                                style = TripPlannerTheme.typography.bodyMedium,
                                 color = TripPlannerTheme.additionalColors.inactive
                             )
                         }
                         innerTextField()
                     }
 
-                    // Trailing Icon (Optional)
                     if (trailingIcon != null) {
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(Dimensions.spacingS))
                         Box(contentAlignment = Alignment.Center) {
                             trailingIcon()
                         }
@@ -127,14 +123,12 @@ fun PlannerOutlinedTextField(
             }
         )
 
-        // Supporting Text or Error Message
         val feedbackText = if (isError) errorMessage else supportingText
         if (feedbackText != null) {
-            Text(
+            BodyRegular(
+                modifier = Modifier.padding(top = Dimensions.spacingS, start = Dimensions.spacingS),
                 text = feedbackText,
-                style = TripPlannerTheme.typography.bodySmall,
-                color = if (isError) TripPlannerTheme.colors.error else TripPlannerTheme.colors.secondary,
-                modifier = Modifier.padding(top = 4.dp, start = 4.dp)
+                color = if (isError) TripPlannerTheme.colors.error else TripPlannerTheme.colors.secondary
             )
         }
     }
@@ -144,55 +138,64 @@ fun PlannerOutlinedTextField(
 @Preview(showBackground = true)
 fun CalmTextFieldPreview() {
     var text by remember { mutableStateOf("") }
+    TripPlannerTheme {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .background(Color(0xFFF0F1F6)) //
+        ) {
+            PlannerOutlinedTextField(
+                label = "Destination",
+                value = text,
+                onValueChange = { text = it },
+                placeholder = "Where to?",
+                trailingIcon = {
+                    // Icon style:
+                    Icon(
+                        painter = painterResource(R.drawable.ic_hide_pass_32),
+                        contentDescription = null,
+                        tint = Color(0xFF9DA3AE)
+                    )
+                }
+            )
 
-    Column(
-        modifier = Modifier
-            .padding(16.dp)
-            .background(Color(0xFFF0F1F6)) //
-    ) {
-        // 1. Standard State with Icon
-        PlannerOutlinedTextField(
-            label = "Destination",
-            value = text,
-            onValueChange = { text = it },
-            placeholder = "Where to?",
-            trailingIcon = {
-                // Icon style:
-                Icon(
-                    painter = painterResource(R.drawable.ic_menu_search),
-                    contentDescription = null,
-                    tint = Color(0xFF9DA3AE)
-                )
-            }
-        )
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
+            PlannerOutlinedTextField(
+                label = "Email Address",
+                value = "invalid-email",
+                onValueChange = { },
+                isError = true,
+                errorMessage = "Please enter a valid email",
+                trailingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_error_24),
+                        contentDescription = "Error",
+                        tint = TripPlannerTheme.colors.error
+                    )
+                }
+            )
 
-        // 2. Error State
-        PlannerOutlinedTextField(
-            label = "Email Address",
-            value = "invalid-email",
-            onValueChange = { },
-            isError = true,
-            errorMessage = "Please enter a valid email",
-            trailingIcon = {
-                Icon(
-                    painter = painterResource(R.drawable.ic_delete),
-                    contentDescription = "Error",
-                    tint = TripPlannerTheme.colors.error
-                )
-            }
-        )
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
+            PlannerOutlinedTextField(
+                label = "Notes",
+                value = "Random text",
+                onValueChange = { text = it },
+                placeholder = "Add details...",
+                trailingIcon = null
+            )
 
-        // 3. No Trailing Icon (Clean state)
-        PlannerOutlinedTextField(
-            label = "Notes",
-            value = text,
-            onValueChange = { text = it },
-            placeholder = "Add details...",
-            trailingIcon = null // Icon removed as requested
-        )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            PlannerOutlinedTextField(
+                label = "Notes",
+                enabled = false,
+                value = text,
+                onValueChange = { text = it },
+                placeholder = "I am disabled",
+                trailingIcon = null
+            )
+        }
     }
 }

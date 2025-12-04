@@ -20,7 +20,7 @@ object Dimensions {
 
     val touchTarget = 48.dp
     val buttonMinHeight = 56.dp
-    val textFieldHeight = 56.dp
+    val textFieldHeight = 48.dp
     val chipHeight = 32.dp
     val iconSize = 24.dp
     val iconButtonSize = 40.dp
