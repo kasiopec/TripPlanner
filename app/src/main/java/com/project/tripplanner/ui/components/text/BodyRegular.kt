@@ -4,9 +4,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import com.project.tripplanner.ui.theme.Typography
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 import com.project.tripplanner.ui.theme.scaledSp
 
@@ -25,7 +25,11 @@ fun BodyRegular(
         modifier = modifier,
         color = color,
         maxLines = maxLines,
-        style = if (scalable) Typography.body_regular else Typography.body_regular.copy(fontSize = 17.scaledSp()),
+        style = if (scalable) {
+            TripPlannerTheme.typography.bodyRegular
+        } else {
+            TripPlannerTheme.typography.bodyRegular.copy(fontSize = 14.scaledSp())
+        },
         textAlign = textAlign,
         overflow = overflow
     )

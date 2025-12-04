@@ -17,8 +17,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val LocalTripTypography = staticCompositionLocalOf { MaterialTypography }
-
 object TripPlannerTheme {
     val colors: TripPlannerColorScheme
         @Composable
@@ -30,7 +28,7 @@ object TripPlannerTheme {
         @ReadOnlyComposable
         get() = LocalAdditionalColorPalette.current
 
-    val typography: Typography
+    val typography: ThemeTypography
         @Composable
         @ReadOnlyComposable
         get() = LocalTripTypography.current
@@ -43,7 +41,6 @@ fun TripPlannerTheme(
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
     val additionalColorPalette = if (darkTheme) AdditionalColorPaletteDark else AdditionalColorPaletteLight
-
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
@@ -56,7 +53,7 @@ fun TripPlannerTheme(
     CompositionLocalProvider(
         LocalTripPlannerColorScheme provides if (darkTheme) DarkColorScheme else LightColorScheme,
         LocalAdditionalColorPalette provides additionalColorPalette,
-        LocalTripTypography provides MaterialTypography,
+        LocalTripTypography provides TripPlannerTypography,
         content = content
     )
 }

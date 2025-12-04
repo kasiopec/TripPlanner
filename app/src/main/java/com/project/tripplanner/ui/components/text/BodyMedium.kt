@@ -8,7 +8,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
-import com.project.tripplanner.ui.theme.Typography
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 import com.project.tripplanner.ui.theme.scaledSp
 
@@ -31,7 +30,7 @@ fun BodyMedium(
         maxLines = maxLines,
         textDecoration = textDecoration,
         fontWeight = fontWeight,
-        style = if (scalable) Typography.body_medium else Typography.body_medium.copy(fontSize = 17.scaledSp()),
+        style = if (scalable) TripPlannerTheme.typography.body else TripPlannerTheme.typography.body.copy(fontSize = 14.scaledSp()),
         textAlign = textAlign,
         overflow = overflow
     )

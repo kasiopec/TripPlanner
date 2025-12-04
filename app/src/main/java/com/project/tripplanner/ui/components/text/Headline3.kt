@@ -6,12 +6,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import com.project.tripplanner.ui.theme.Typography
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 import com.project.tripplanner.ui.theme.scaledSp
 
 @Composable
-fun TitleMediumBold(
+fun Headline3(
     modifier: Modifier = Modifier,
     text: String,
     color: Color = TripPlannerTheme.colors.onBackground,
@@ -25,7 +24,7 @@ fun TitleMediumBold(
         modifier = modifier,
         color = color,
         maxLines = maxLines,
-        style = if (scalable) Typography.titleMedium else Typography.titleMedium.copy(fontSize = 22.scaledSp()),
+        style = if (scalable) TripPlannerTheme.typography.h3 else TripPlannerTheme.typography.h3.copy(fontSize = 16.scaledSp()),
         textAlign = textAlign,
         overflow = overflow
     )

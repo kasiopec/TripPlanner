@@ -1,7 +1,6 @@
-package com.project.tripplanner.ui.components.text
+package com.project.tripplanner.ui.components
 
 import android.R
-import android.graphics.drawable.Icon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -32,6 +31,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 
 @Composable
@@ -84,7 +84,7 @@ fun PlannerOutlinedTextField(
                 .height(44.dp)
                 .background(
                     color = TripPlannerTheme.colors.background,
-                    shape = RoundedCornerShape(10.dp) //
+                    shape = RoundedCornerShape(Dimensions.radiusM) //
                 )
                 .border(
                     width = 1.dp,
@@ -177,7 +177,7 @@ fun CalmTextFieldPreview() {
             errorMessage = "Please enter a valid email",
             trailingIcon = {
                 Icon(
-                    painter = painterResource(android.R.drawable.ic_delete),
+                    painter = painterResource(R.drawable.ic_delete),
                     contentDescription = "Error",
                     tint = TripPlannerTheme.colors.error
                 )

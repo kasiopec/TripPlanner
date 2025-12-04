@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.project.tripplanner.ui.components.text.TitleSmallBold
+import com.project.tripplanner.ui.components.text.Headline2
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 
 @Composable
@@ -25,7 +25,7 @@ fun LargeGhostButton(
             .heightIn(min = 56.dp),
         onClick = onClick
     ) {
-        TitleSmallBold(
+        Headline2(
             text = text,
             color = TripPlannerTheme.colors.primary
         )

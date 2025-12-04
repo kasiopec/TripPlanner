@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -20,7 +19,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.project.tripplanner.R
-import com.project.tripplanner.ui.components.text.TitleSmallBold
+import com.project.tripplanner.ui.components.text.Headline2
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 
 @Composable
@@ -56,7 +55,7 @@ fun LargeRoundedButton(
             horizontalArrangement = Arrangement.Center
         ) {
             icon?.let { Box(content = icon) }
-            TitleSmallBold(
+            Headline2(
                 text = text,
                 color = textColor
             )

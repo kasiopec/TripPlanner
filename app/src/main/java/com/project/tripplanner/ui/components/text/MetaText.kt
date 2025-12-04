@@ -5,26 +5,33 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 import com.project.tripplanner.ui.theme.scaledSp
 
 @Composable
-fun TitleLargeBold(
+fun MetaText(
     modifier: Modifier = Modifier,
     text: String,
     color: Color = TripPlannerTheme.colors.onBackground,
     maxLines: Int = Int.MAX_VALUE,
     textAlign: TextAlign = TextAlign.Start,
     overflow: TextOverflow = TextOverflow.Ellipsis,
-    scalable: Boolean = true
+    scalable: Boolean = true,
+    textDecoration: TextDecoration? = null
 ) {
     Text(
         text = text,
         modifier = modifier,
         color = color,
         maxLines = maxLines,
-        style = if (scalable) TripPlannerTheme.typography.display else TripPlannerTheme.typography.display.copy(fontSize = 24.scaledSp()),
+        textDecoration = textDecoration,
+        style = if (scalable) {
+            TripPlannerTheme.typography.meta
+        } else {
+            TripPlannerTheme.typography.meta.copy(fontSize = 12.scaledSp())
+        },
         textAlign = textAlign,
         overflow = overflow
     )

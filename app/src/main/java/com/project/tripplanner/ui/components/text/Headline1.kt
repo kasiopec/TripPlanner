@@ -10,7 +10,7 @@ import com.project.tripplanner.ui.theme.TripPlannerTheme
 import com.project.tripplanner.ui.theme.scaledSp
 
 @Composable
-fun TitleLargeBold(
+fun Headline1(
     modifier: Modifier = Modifier,
     text: String,
     color: Color = TripPlannerTheme.colors.onBackground,
@@ -24,7 +24,7 @@ fun TitleLargeBold(
         modifier = modifier,
         color = color,
         maxLines = maxLines,
-        style = if (scalable) TripPlannerTheme.typography.display else TripPlannerTheme.typography.display.copy(fontSize = 24.scaledSp()),
+        style = if (scalable) TripPlannerTheme.typography.h1 else TripPlannerTheme.typography.h1.copy(fontSize = 20.scaledSp()),
         textAlign = textAlign,
         overflow = overflow
     )
