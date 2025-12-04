@@ -6,13 +6,10 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,6 +22,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import com.project.tripplanner.R
 import com.project.tripplanner.ui.components.text.BodyRegular
+import com.project.tripplanner.ui.theme.TripPlannerTheme
 
 @Composable
 fun PasswordTextField(
@@ -37,6 +35,7 @@ fun PasswordTextField(
     isError: Boolean = false
 ) {
     var isPasswordVisible by remember { mutableStateOf(false) }
+    val colors = TripPlannerTheme.colors
     OutlinedTextField(
         modifier = modifier
             .fillMaxWidth(),
@@ -46,13 +45,13 @@ fun PasswordTextField(
         keyboardOptions = keyboardOptions,
         isError = isError,
         colors = OutlinedTextFieldDefaults.colors(
-            errorBorderColor = MaterialTheme.colorScheme.error,
-            errorLabelColor = MaterialTheme.colorScheme.error,
+            errorBorderColor = colors.error,
+            errorLabelColor = colors.error,
         ),
         label = {
             BodyRegular(
                 text = labelText,
-                color = if (isError) MaterialTheme.colorScheme.error else Color.Unspecified
+                color = if (isError) colors.error else Color.Unspecified
             )
         },
         visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -74,7 +73,7 @@ fun PasswordTextField(
                     )
             )
             // TODO: Add ripple effect for the icon
-//            CompositionLocalProvider(LocalRippleTheme provides CustomRippleTheme(rippleColor = MaterialTheme.colorScheme.outline)) {
+//            CompositionLocalProvider(LocalRippleTheme provides CustomRippleTheme(rippleColor = TripPlannerTheme.colors.outline)) {
 //
 //            }
         },

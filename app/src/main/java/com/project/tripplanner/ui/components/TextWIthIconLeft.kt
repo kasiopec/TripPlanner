@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,13 +14,14 @@ import androidx.compose.ui.unit.dp
 import com.project.tripplanner.ui.IcError24
 import com.project.tripplanner.ui.Icons
 import com.project.tripplanner.ui.components.text.BodyMedium
+import com.project.tripplanner.ui.theme.TripPlannerTheme
 
 @Composable
 fun TextWithLeftIcon(
     modifier: Modifier = Modifier,
     icon: @Composable BoxScope.() -> Unit,
     text: String,
-    textColor: Color = MaterialTheme.colorScheme.onBackground
+    textColor: Color = TripPlannerTheme.colors.onBackground
 ) {
     Row(modifier = modifier) {
         Box(
@@ -47,10 +47,10 @@ fun TextWithIconLeftPreview() {
     Column() {
         TextWithLeftIcon(
             icon = {
-                Icons.IcError24(tint = MaterialTheme.colorScheme.error)
+                Icons.IcError24(tint = TripPlannerTheme.colors.error)
             },
             text = "Some error text",
-            textColor = MaterialTheme.colorScheme.error
+            textColor = TripPlannerTheme.colors.error
         )
     }
 }

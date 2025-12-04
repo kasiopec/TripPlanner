@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.project.tripplanner.R
 import com.project.tripplanner.ui.components.text.TitleSmallBold
+import com.project.tripplanner.ui.theme.TripPlannerTheme
 
 @Composable
 fun GoogleSignInButton(
@@ -35,6 +35,7 @@ fun GoogleSignInButton(
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
+    val colors = TripPlannerTheme.colors
     OutlinedButton(
         modifier = modifier
             .fillMaxWidth()
@@ -43,9 +44,9 @@ fun GoogleSignInButton(
         shape = RoundedCornerShape(5.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Unspecified,
-            contentColor = MaterialTheme.colorScheme.onBackground,
-            disabledContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-            disabledContentColor = MaterialTheme.colorScheme.onTertiaryContainer
+            contentColor = colors.onBackground,
+            disabledContainerColor = colors.tertiaryContainer,
+            disabledContentColor = colors.onTertiaryContainer
         ),
         contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp)
     ) {
@@ -61,7 +62,9 @@ fun GoogleSignInButton(
                 contentDescription = context.resources.getString(R.string.login_google_button_label)
             )
             Row(
-                modifier = Modifier.fillMaxWidth().padding(end = 16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 16.dp),
                 horizontalArrangement = Arrangement.Center
             ) {
                 TitleSmallBold(text = context.resources.getString(R.string.login_google_button_label))

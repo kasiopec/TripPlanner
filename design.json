@@ -1,0 +1,432 @@
+{
+  "style": {
+    "tone": "Calm, organized, optimistic travel assistant with friendly rounded shapes and generous breathing room.",
+    "principles": [
+      "Clarity first: single dominant action per screen, short hierarchies, consistent alignment.",
+      "Soft geometry: rounded corners, pill chips, circular icons, and dashed outlines for secondary groupings.",
+      "Light, airy surfaces: off-white backgrounds, white cards, subtle shadows, and thin dividers instead of heavy borders.",
+      "Color with intent: primary blue for actions, pastel tints for category cues, neutral greys for structure.",
+      "Human warmth: avatar-friendly proportions, approachable iconography, concise copy, and small uppercase labels."
+    ],
+    "structure": {
+      "screenBackground": "#F0F1F6",
+      "surface": "#FFFFFF",
+      "sectionSpacing": 16,
+      "contentWidth": "mobile single column; horizontal carousels for featured cards."
+    }
+  },
+  "palette": {
+    "primary": {
+      "brand": "#5182FF",
+      "brandTint": "#E6EEFF",
+      "brandDark": "#1F5AE7"
+    },
+    "neutrals": {
+      "background": "#F0F1F6",
+      "surface": "#FFFFFF",
+      "mutedSurface": "#F7F8FD",
+      "border": "#E2E5ED",
+      "divider": "#ECEEF3",
+      "textPrimary": "#1B1D25",
+      "textSecondary": "#6F7785",
+      "textTertiary": "#9DA3AE",
+      "iconMuted": "#C7CED8"
+    },
+    "semantic": {
+      "ratingGold": "#F5B400",
+      "danger": "#FF3B30",
+      "success": "#43C565"
+    },
+    "categories": {
+      "flight": { "icon": "#FF3B30", "tint": "#FFF1F0" },
+      "hotel": { "icon": "#24C3FF", "tint": "#E6FBFF" },
+      "sightseeing": { "icon": "#63C25E", "tint": "#F0FADC" },
+      "shopping": { "icon": "#D56BF5", "tint": "#FDF4FD" },
+      "food": { "icon": "#FF8A34", "tint": "#FFF2E8" },
+      "transit": { "icon": "#9BA1AA", "tint": "#F2F3F8" }
+    },
+    "overlays": {
+      "shadow": "rgba(0,0,0,0.08)",
+      "scrim": "rgba(0,0,0,0.4)"
+    }
+  },
+  "typography": {
+    "familyPrimary": "SF Pro Rounded / SF Pro Display",
+    "familyFallback": "Inter, -apple-system, Roboto, sans-serif",
+    "weights": {
+      "bold": 700,
+      "semibold": 600,
+      "medium": 500,
+      "regular": 400
+    },
+    "sizes": {
+      "h1": 20,
+      "h2": 18,
+      "h3": 16,
+      "body": 14,
+      "label": 12,
+      "caption": 10
+    },
+    "lineHeights": {
+      "tight": 1.1,
+      "default": 1.3,
+      "relaxed": 1.45
+    },
+    "usage": {
+      "screenTitle": { "size": 20, "weight": "bold", "color": "textPrimary" },
+      "sectionTitle": { "size": 16, "weight": "semibold", "color": "textPrimary" },
+      "meta": { "size": 12, "weight": "medium", "transform": "uppercase", "tracking": 0.5 }
+    }
+  },
+  "spacing": {
+    "grid": 4,
+    "stack": { "xs": 4, "sm": 8, "md": 12, "lg": 16, "xl": 24 },
+    "padding": {
+      "card": 12,
+      "section": 16,
+      "screen": 16,
+      "chip": { "vertical": 6, "horizontal": 10 }
+    },
+    "gaps": {
+      "listItem": 12,
+      "iconText": 8,
+      "carousel": 12
+    }
+  },
+  "radii": {
+    "pill": 16,
+    "card": 12,
+    "sheet": 18,
+    "avatar": "full",
+    "iconContainer": 10
+  },
+  "shadows": {
+    "low": "0 1px 6px rgba(0,0,0,0.06)",
+    "medium": "0 4px 18px rgba(0,0,0,0.08)",
+    "focus": "0 0 0 3px rgba(81,130,255,0.24)"
+  },
+  "iconography": {
+    "style": "Rounded strokes, minimal detail, 1.5px weight, filled circle or square container for emphasis.",
+    "sizes": { "sm": 16, "md": 20, "lg": 24 },
+    "useFilledContainers": "Use pastel tinted square (r=10) or circle backgrounds for category icons in lists and cards."
+  },
+  "components": {
+    "badge": {
+      "shape": "circle or pill",
+      "sizes": { "dot": 8, "sm": 18, "md": 24 },
+      "background": "primary.brand",
+      "content": { "type": ["icon", "number"], "color": "#FFFFFF", "size": "10-12", "weight": "semibold" },
+      "usage": "Inline status/notification chips; position near the element it annotates.",
+      "spacing": { "paddingHorizontal": 8, "paddingVertical": 4 }
+    },
+    "banner": {
+      "layout": "Card-like, full width; icon/illustration optional on the right.",
+      "background": "#E6EEFF",
+      "radius": 14,
+      "padding": 16,
+      "title": { "size": 14, "weight": "semibold" },
+      "description": { "size": 12, "color": "textSecondary" },
+      "actions": { "primary": "primary brand button", "secondary": "text link or outline" },
+      "optionalMedia": { "size": 32, "radius": 8, "tint": "#C3DCFF" }
+    },
+    "button": {
+      "sizes": { "sm": { "height": 36, "paddingH": 14 }, "md": { "height": 44, "paddingH": 18 } },
+      "radius": 10,
+      "font": { "size": 14, "weight": "semibold", "color": "#FFFFFF" },
+      "variants": {
+        "primary": { "bg": "primary.brand", "text": "#FFFFFF" },
+        "secondary": { "bg": "transparent", "stroke": "primary.brand", "text": "primary.brand" },
+        "tertiary": { "bg": "transparent", "text": "primary.brandDark" }
+      },
+      "iconPlacement": ["left", "right", "none"],
+      "state": { "pressedOverlay": "rgba(0,0,0,0.06)" }
+    },
+    "calendar": {
+      "pills": { "radius": 10, "height": 44, "activeBg": "primary.brand", "inactiveBg": "#F5F6FA", "textSize": 14, "textWeight": "medium" },
+      "monthGrid": {
+        "header": { "size": 12, "weight": "medium", "color": "textSecondary" },
+        "daySize": 32,
+        "spacing": 8,
+        "active": { "bg": "primary.brand", "text": "#FFFFFF" },
+        "inactive": { "text": "textSecondary" },
+        "selectedRange": { "bg": "primary.brandTint", "text": "textPrimary" },
+        "navigation": { "icon": "chevrons", "color": "textSecondary" }
+      }
+    },
+    "card": {
+      "radius": 14,
+      "padding": 14,
+      "background": "#FFFFFF",
+      "shadow": "low",
+      "header": { "metaBadge": "pill with tinted background", "icon": { "container": { "size": 28, "radius": 8, "tint": "#F0F3FA" } } },
+      "title": { "size": 14, "weight": "semibold" },
+      "description": { "size": 12, "color": "textSecondary" },
+      "actions": { "primary": "button or text link aligned right/bottom" },
+      "listVariants": {
+        "stacked": { "gap": 8, "dividers": "none; rely on spacing" },
+        "media": { "image": { "ratio": "1:1", "radius": 10, "size": "48-64" } }
+      },
+      "accent": { "background": "#F7F9FF", "border": "dashed optional" }
+    },
+    "checkbox": {
+      "shape": "square with subtle corner rounding (r=6)",
+      "sizes": { "sm": 16, "md": 20, "lg": 24 },
+      "stroke": { "width": 1.5, "color": "#C4CAD5" },
+      "fill": { "checked": "primary.brand", "unchecked": "transparent" },
+      "icon": { "check": { "color": "#FFFFFF", "size": "60% of box" } },
+      "spacing": { "labelGap": 8 },
+      "states": { "default": {}, "hover": { "shadow": "low" }, "pressed": { "overlay": "rgba(0,0,0,0.05)" }, "disabled": { "opacity": 0.4 } }
+    },
+    "contentSwitcher": {
+      "layout": "horizontal segmented control with rounded pills",
+      "background": "#F5F6FA",
+      "radius": 14,
+      "height": 36,
+      "padding": 4,
+      "option": {
+        "active": { "background": "#FFFFFF", "text": "textPrimary", "weight": "semibold" },
+        "inactive": { "background": "transparent", "text": "textSecondary", "weight": "medium" }
+      },
+      "spacing": { "betweenOptions": 4 },
+      "meta": { "count": { "size": 10, "color": "textTertiary" } }
+    },
+    "dialog": {
+      "width": "adaptive, ~88% mobile",
+      "background": "#FFFFFF",
+      "radius": 18,
+      "padding": 20,
+      "title": { "size": 16, "weight": "semibold", "color": "textPrimary" },
+      "description": { "size": 12, "color": "textSecondary", "lineHeight": 1.5 },
+      "actions": {
+        "layout": "horizontal; equal width buttons",
+        "twoButton": ["secondary", "primary"],
+        "threeButton": ["secondary", "secondary", "primary"]
+      },
+      "buttons": {
+        "height": 36,
+        "radius": 10,
+        "paddingH": 14,
+        "primary": { "bg": "primary.brand", "text": "#FFFFFF" },
+        "secondary": { "bg": "transparent", "stroke": "primary.brand", "text": "primary.brand" }
+      }
+    },
+    "divider": {
+      "color": "#ECEEF3",
+      "thickness": 1,
+      "inset": 0,
+      "style": "solid",
+      "usage": "Separate vertical stacks subtly; prefer generous whitespace over heavy lines."
+    },
+    "dropdown": {
+      "field": {
+        "height": 44,
+        "radius": 10,
+        "paddingH": 12,
+        "border": { "default": "#D5DBE6", "focus": "primary.brand", "error": "#F86C6B", "disabled": "#E6E9F0" },
+        "background": "#FFFFFF",
+        "placeholder": { "color": "#9DA3AE" },
+        "label": { "size": 12, "weight": "medium", "color": "textSecondary", "spacingBelow": 6 },
+        "text": { "size": 14, "weight": "medium", "color": "textPrimary" },
+        "indicator": { "icon": "chevron", "color": "textSecondary" }
+      },
+      "menu": {
+        "background": "#FFFFFF",
+        "radius": 10,
+        "paddingV": 8,
+        "option": { "height": 36, "paddingH": 12, "textSize": 14, "textColor": "textPrimary", "hover": { "bg": "#F7F8FD" }, "selected": { "stroke": "primary.brand" } }
+      }
+    },
+    "loader": {
+      "type": "circular",
+      "sizes": { "sm": 16, "md": 24, "lg": 32 },
+      "track": "#E6E8EF",
+      "indicator": "primary.brand",
+      "strokeWidth": 3,
+      "animation": "continuous rotation"
+    },
+    "navBar": {
+      "height": 56,
+      "background": "#FFFFFF",
+      "title": { "size": 16, "weight": "semibold", "color": "textPrimary", "align": "center" },
+      "left": { "types": ["back chevron", "cancel text"], "color": "primary.brand" },
+      "right": { "types": ["link", "icon", "avatar"], "color": "primary.brand" },
+      "spacing": { "horizontalPadding": 16 },
+      "affordanceLayout": "single items on each side; avoid crowding."
+    },
+    "numberInput": {
+      "layout": "label + value with inline decrement/increment buttons",
+      "height": 36,
+      "radius": 10,
+      "paddingH": 10,
+      "background": "#FFFFFF",
+      "value": { "size": 14, "weight": "medium", "color": "textPrimary" },
+      "label": { "size": 12, "color": "textSecondary" },
+      "supportText": { "size": 11, "color": "danger" },
+      "controls": { "size": 24, "radius": 12, "tint": "#F0F5FF", "iconColor": "primary.brand" },
+      "states": { "default": {}, "error": { "stroke": "danger" } }
+    },
+    "overlay": {
+      "color": "rgba(0,0,0,0.62)",
+      "blur": 0,
+      "usage": "Dim background behind modals/sheets."
+    },
+    "paginationDots": {
+      "dotSize": 8,
+      "gap": 8,
+      "inactive": { "color": "#D5DBE6" },
+      "active": { "color": "primary.brand" },
+      "radius": "full",
+      "usage": "Small sets of pages (carousels); avoid large counts."
+    },
+    "progressBar": {
+      "height": 6,
+      "radius": 6,
+      "track": "#E6E8EF",
+      "indicator": "primary.brand",
+      "stepped": { "segmentWidth": 48, "gap": 6, "active": "primary.brand", "inactive": "#E6E8EF" }
+    },
+    "searchBar": {
+      "height": 44,
+      "radius": 12,
+      "paddingH": 12,
+      "background": "#F5F6FA",
+      "icon": { "color": "#9DA3AE", "size": 16 },
+      "text": { "size": 14, "weight": "medium", "color": "textPrimary" },
+      "placeholder": { "color": "#9DA3AE" }
+    },
+    "slider": {
+      "track": { "height": 6, "radius": 6, "bg": "#E6E8EF" },
+      "fill": { "color": "primary.brand" },
+      "thumb": { "size": 16, "color": "primary.brand", "shadow": "low" },
+      "valueLabel": { "size": 12, "color": "textSecondary" },
+      "titles": { "size": 12, "color": "textPrimary" }
+    },
+    "imagePlaceholder": {
+      "background": "#E6EEFF",
+      "radius": 12,
+      "icon": { "color": "#74B6FF", "size": 32 },
+      "usage": "Use as a stand-in for images; scale to context (cards, banners, list items)."
+    },
+    "listItem": {
+      "height": "auto with min 60",
+      "padding": { "vertical": 10, "horizontal": 12 },
+      "layout": "Left icon/avatar, center text block, right affordance (chevron, toggle, radio, checkbox).",
+      "background": "#FFFFFF",
+      "hover": { "bg": "#F7F9FF" },
+      "title": { "size": 14, "weight": "semibold", "color": "textPrimary" },
+      "description": { "size": 12, "color": "textSecondary", "lineHeight": 1.35 },
+      "iconContainer": { "size": 28, "radius": 8, "tint": "#F0F3FA" },
+      "controls": { "spacing": 12, "types": ["chevron", "toggle", "radio", "checkbox"] },
+      "divider": "use spacing rather than lines; group lists in dashed-outline blocks for documentation"
+    },
+    "listTitle": {
+      "padding": { "vertical": 12, "horizontal": 0 },
+      "typography": { "size": 14, "weight": "semibold", "color": "textPrimary" },
+      "affordance": { "placement": "right", "types": ["link", "icon search"], "color": "primary.brand" },
+      "spacingBelow": 8
+    },
+    "appBar": {
+      "height": 64,
+      "background": "transparent over background",
+      "elements": ["left icon (menu)", "title block (title + date subtext)", "right cluster (participants avatars)", "overflow icon"],
+      "title": { "size": 18, "weight": "bold" },
+      "subtitle": { "size": 12, "color": "textSecondary" }
+    },
+    "sectionHeader": {
+      "layout": "Title on left, small action link on right in brand color.",
+      "action": { "text": "See all", "color": "primary.brand", "size": 12, "weight": "medium" }
+    },
+    "tabSwitch": {
+      "types": ["text tabs", "date pills"],
+      "textTabs": { "activeColor": "primary.brand", "inactiveColor": "textSecondary", "underline": false, "padding": { "vertical": 10, "horizontal": 8 } },
+      "datePills": {
+        "size": { "width": 48, "height": 60 },
+        "radius": 10,
+        "active": { "background": "#5182FF", "textColor": "#FFFFFF" },
+        "inactive": { "background": "#F0F1F1", "textColor": "textSecondary" },
+        "spacing": 8
+      }
+    },
+    "fab": {
+      "size": 52,
+      "shape": "circle",
+      "background": "primary.brand",
+      "icon": { "color": "#FFFFFF", "size": 24, "weight": "bold" },
+      "shadow": "medium"
+    },
+    "bottomNav": {
+      "background": "#FFFFFF",
+      "height": 76,
+      "items": 5,
+      "inactive": { "icon": "textSecondary", "label": "none" },
+      "active": { "icon": "primary.brand" },
+      "centerAction": "use FAB spec, elevated"
+    },
+    "carouselCard": {
+      "usage": "Featured places slider",
+      "size": { "width": 220, "height": 170 },
+      "image": { "ratio": "4:3", "cornerRadius": 12 },
+      "badge": { "text": "Day 01", "background": "rgba(0,0,0,0.6)", "color": "#FFFFFF", "radius": 8, "position": "top-right" },
+      "body": { "padding": 10, "title": { "size": 16, "weight": "semibold" }, "price": { "size": 12, "color": "textSecondary" }, "meta": { "icon": "rating star in gold", "size": 12 } },
+      "shadow": "low"
+    },
+    "listCard": {
+      "usage": "Flights and hotels summary rows",
+      "background": "#FFFFFF",
+      "radius": 12,
+      "padding": 12,
+      "border": "none; rely on subtle shadow",
+      "layout": "Left icon badge + right stacked info, with dotted timeline for flights.",
+      "typography": { "title": { "size": 16, "weight": "semibold" }, "meta": { "size": 12, "color": "textSecondary" }, "time": { "size": 16, "weight": "bold" } }
+    },
+    "itineraryCard": {
+      "background": "category tint",
+      "radius": 10,
+      "padding": 12,
+      "iconContainer": { "size": 32, "radius": 10, "background": "category tint deeper", "iconColor": "category icon" },
+      "title": { "size": 14, "weight": "semibold" },
+      "time": { "size": 12, "color": "textSecondary" },
+      "spacing": { "betweenIconAndText": 10, "betweenTitleAndTime": 4 },
+      "divider": "None; rely on vertical spacing between cards."
+    },
+    "chips": {
+      "pill": { "radius": 16, "padding": { "vertical": 6, "horizontal": 10 }, "background": "#EFF1F7", "textColor": "textPrimary", "weight": "semibold" },
+      "label": { "size": 12, "transform": "uppercase", "letterSpacing": 0.5 }
+    },
+    "accordion": {
+      "header": { "padding": 12, "title": { "size": 14, "weight": "medium", "color": "textPrimary" }, "icon": { "color": "textSecondary" } },
+      "border": "dashed #D6D6D6, radius 10",
+      "background": "#FFFFFF",
+      "states": { "collapsed": "chevron down", "expanded": "chevron up with content" }
+    },
+    "actionSheet": {
+      "background": "#FFFFFF",
+      "padding": 16,
+      "radius": 18,
+      "option": { "indicator": { "shape": "dot", "color": "#BFC1C7", "size": 12 }, "text": { "size": 14, "weight": "medium" }, "spacing": 12 },
+      "placement": "anchored to bottom, full width with safe insets"
+    },
+    "avatar": {
+      "shape": "circle",
+      "sizes": { "sm": 24, "md": 32, "lg": 48 },
+      "background": "#9BD2FF",
+      "foreground": "#FFFFFF",
+      "usage": "participant bubbles and placeholder people; keep simple geometric silhouettes"
+    },
+    "mapTab": {
+      "style": "Icon + label, muted grey when inactive; same sizing as text tabs.",
+      "background": "transparent; no indicator."
+    }
+  },
+  "interactionStates": {
+    "default": { "shadow": "low", "border": "none" },
+    "pressed": { "shadow": "none", "overlay": "rgba(0,0,0,0.05)" },
+    "focused": { "outline": "focus" },
+    "disabled": { "opacity": 0.4 }
+  },
+  "layout": {
+    "cardStacking": "Group related content into vertically separated sections with 8-12px gap between cards.",
+    "carousels": "Horizontal scroll with snap, 12px gap, first item aligned to screen padding.",
+    "timeline": "Use dotted or dashed separators for progress indicators (e.g., flight duration) and small pagination dots for carousels."
+  }
+}

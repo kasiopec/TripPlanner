@@ -18,7 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -175,7 +174,7 @@ private fun ErrorStateImage() {
 private fun FullScreenErrorPreviewLight() {
     val resources = LocalResources.current
     TripPlannerTheme(darkTheme = false) {
-        Surface(color = MaterialTheme.colorScheme.background) {
+        Surface(color = TripPlannerTheme.colors.background) {
             FullScreenError(
                 titleText = resources.getString(R.string.error_unknown_title),
                 messageText = resources.getString(R.string.error_unknown_message),
@@ -192,7 +191,7 @@ private fun FullScreenErrorPreviewLight() {
 private fun FullScreenErrorPreviewDark() {
     val resources = LocalResources.current
     TripPlannerTheme(darkTheme = true) {
-        Surface(color = MaterialTheme.colorScheme.background) {
+        Surface(color = TripPlannerTheme.colors.background) {
             FullScreenError(
                 titleText = resources.getString(R.string.error_unknown_title),
                 messageText = resources.getString(R.string.error_unknown_message),

@@ -15,7 +15,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
@@ -46,6 +45,7 @@ import com.project.tripplanner.ui.components.LargeRoundedButton
 import com.project.tripplanner.ui.components.PasswordTextField
 import com.project.tripplanner.ui.components.TextWithLeftIcon
 import com.project.tripplanner.ui.components.text.BodyMedium
+import com.project.tripplanner.ui.theme.TripPlannerTheme
 
 @Composable
 fun RegisterScreen(
@@ -93,13 +93,14 @@ fun RegisterContent(
 ) {
     val context = LocalContext.current
     val resources = LocalResources.current
+    val colors = TripPlannerTheme.colors
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {},
                 navigationIcon = {
                     IconButton(onClick = { onNavigateBack() }) {
-                        Icons.IcBackArrow24(tint = MaterialTheme.colorScheme.onBackground)
+                        Icons.IcBackArrow24(tint = colors.onBackground)
                     }
                 }
             )
@@ -114,7 +115,7 @@ fun RegisterContent(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(color = MaterialTheme.colorScheme.background)
+                .background(color = colors.background)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -168,9 +169,9 @@ fun RegisterContent(
                         if (isEmailError) {
                             TextWithLeftIcon(
                                 modifier = Modifier.fillMaxWidth(),
-                                icon = { Icons.IcError24(tint = MaterialTheme.colorScheme.error) },
+                                icon = { Icons.IcError24(tint = colors.error) },
                                 text = context.getString(R.string.error_email_wrong),
-                                textColor = MaterialTheme.colorScheme.error
+                                textColor = colors.error
                             )
                         }
                     }
@@ -185,9 +186,9 @@ fun RegisterContent(
                         }
                         TextWithLeftIcon(
                             modifier = Modifier.fillMaxWidth(),
-                            icon = { Icons.IcError24(tint = MaterialTheme.colorScheme.error) },
+                            icon = { Icons.IcError24(tint = colors.error) },
                             text = errorMessage,
-                            textColor = MaterialTheme.colorScheme.error
+                            textColor = colors.error
                         )
                     }
                 }

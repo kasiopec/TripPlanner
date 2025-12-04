@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -22,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.project.tripplanner.R
 import com.project.tripplanner.ui.components.text.TitleSmallBold
+import com.project.tripplanner.ui.theme.TripPlannerTheme
 
 @Composable
 fun LargeRoundedButton(
@@ -31,10 +31,11 @@ fun LargeRoundedButton(
     isEnabled: Boolean = true,
     icon: @Composable() (BoxScope.() -> Unit)? = null
 ) {
+    val colors = TripPlannerTheme.colors
     val textColor = if (isEnabled) {
-        MaterialTheme.colorScheme.onPrimary
+        colors.onPrimary
     } else {
-        MaterialTheme.colorScheme.onTertiaryContainer
+        colors.onTertiaryContainer
     }
     Button(
         modifier = modifier
@@ -44,10 +45,10 @@ fun LargeRoundedButton(
         shape = RoundedCornerShape(5.dp),
         enabled = isEnabled,
         colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            disabledContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-            disabledContentColor = MaterialTheme.colorScheme.onTertiaryContainer
+            containerColor = colors.primary,
+            contentColor = colors.onPrimary,
+            disabledContainerColor = colors.tertiaryContainer,
+            disabledContentColor = colors.onTertiaryContainer
         )
     ) {
         Row(

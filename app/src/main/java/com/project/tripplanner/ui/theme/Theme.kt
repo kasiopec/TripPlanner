@@ -2,39 +2,61 @@ package com.project.tripplanner.ui.theme
 
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Typography
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
+private val LocalTripTypography = staticCompositionLocalOf { MaterialTypography }
+
+object TripPlannerTheme {
+    val colors: TripPlannerColorScheme
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalTripPlannerColorScheme.current
+
+    val additionalColors: AdditionalColorPalette
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalAdditionalColorPalette.current
+
+    val typography: Typography
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalTripTypography.current
+}
+
 @Composable
 fun TripPlannerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) {
-        DarkColors
-    } else {
-        LightColors
-    }
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
     val additionalColorPalette = if (darkTheme) AdditionalColorPaletteDark else AdditionalColorPaletteLight
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
+            window.statusBarColor = colorScheme.background.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
-    CompositionLocalProvider(LocalAdditionalColorPalette provides additionalColorPalette) {
-        MaterialTheme(
-            colorScheme = colorScheme,
-            typography = MaterialTypography,
-            content = content
-        )
-    }
+
+    CompositionLocalProvider(
+        LocalTripPlannerColorScheme provides if (darkTheme) DarkColorScheme else LightColorScheme,
+        LocalAdditionalColorPalette provides additionalColorPalette,
+        LocalTripTypography provides MaterialTypography,
+        content = content
+    )
 }

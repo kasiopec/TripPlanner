@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -59,16 +58,17 @@ fun TripPlannerBottomBar(
     var selectedItem by remember { mutableStateOf(items.firstOrNull { it.isSelectable && it.route == currentScreen?.route }) }
     val paddingValues = WindowInsets.navigationBars.asPaddingValues()
     val bottomBarHeight = paddingValues.calculateBottomPadding()
+    val colors = TripPlannerTheme.colors
 
     Column(
         modifier = modifier
-            .background(color = MaterialTheme.colorScheme.surface)
+            .background(color = colors.surface)
             .fillMaxWidth(),
         verticalArrangement = Arrangement.Top
     ) {
         Row(
             modifier = Modifier
-                .background(color = MaterialTheme.colorScheme.surface)
+                .background(color = colors.surface)
                 .fillMaxWidth()
                 .heightIn(min = 49.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -78,8 +78,8 @@ fun TripPlannerBottomBar(
                 val isSelected = item == selectedItem
                 val contentColor = when {
                     !item.isSelectable -> Color.Unspecified
-                    isSelected -> MaterialTheme.colorScheme.primary
-                    else -> MaterialTheme.colorScheme.onSurface
+                    isSelected -> colors.primary
+                    else -> colors.onSurface
                 }
 
                 Column(
@@ -89,7 +89,7 @@ fun TripPlannerBottomBar(
                         .clip(CircleShape)
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
-                            indication = ripple(bounded = true, color = MaterialTheme.colorScheme.primary),
+                            indication = ripple(bounded = true, color = colors.primary),
                             onClick = {
                                 if (item.isSelectable) {
                                     selectedItem = item

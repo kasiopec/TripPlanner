@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,7 +30,7 @@ import com.project.tripplanner.ui.components.LargeRoundedButton
 import com.project.tripplanner.ui.components.LoginSeparator
 import com.project.tripplanner.ui.components.PasswordTextField
 import com.project.tripplanner.ui.components.text.BodyMedium
-import com.project.tripplanner.ui.theme.additionalColorPalette
+import com.project.tripplanner.ui.theme.TripPlannerTheme
 
 
 @Composable
@@ -47,10 +46,11 @@ fun LoginScreenContent(
     var currentPassword by remember { mutableStateOf(password) }
 
     val resources = LocalResources.current
+    val colors = TripPlannerTheme.colors
     Surface(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.background)
+            .background(color = colors.background)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -96,7 +96,7 @@ fun LoginScreenContent(
                 BodyMedium(
                     modifier = Modifier.clickable { onForgotPasswordClicked() },
                     text = resources.getString(R.string.forgot_password_label),
-                    color = MaterialTheme.additionalColorPalette.link
+                    color = TripPlannerTheme.additionalColors.link
                 )
             }
             LoginSeparator(
