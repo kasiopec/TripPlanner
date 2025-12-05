@@ -11,7 +11,6 @@ object Dimensions {
     val spacingXXL = 32.dp
 
     val cardPadding = 14.dp
-    val listItemPadding = 12.dp
 
     val radiusXS = 4.dp
     val radiusS = 8.dp
