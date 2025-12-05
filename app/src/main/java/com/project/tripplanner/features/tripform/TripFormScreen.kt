@@ -62,7 +62,6 @@ fun TripFormScreen(
     val colors = TripPlannerTheme.colors
     val scrollState = rememberScrollState()
 
-    // Form state
     var destination by remember { mutableStateOf("") }
     var startDate by remember { mutableStateOf<LocalDate?>(null) }
     var endDate by remember { mutableStateOf<LocalDate?>(null) }
@@ -70,21 +69,17 @@ fun TripFormScreen(
     var notes by remember { mutableStateOf("") }
     var coverImageUri by remember { mutableStateOf<Uri?>(null) }
 
-    // Date picker dialog states
     var showStartDatePicker by remember { mutableStateOf(false) }
     var showEndDatePicker by remember { mutableStateOf(false) }
 
-    // Date formatter
     val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
 
-    // Sync end date when single-day mode is enabled
     val effectiveEndDate by remember {
         derivedStateOf {
             if (isSingleDay) startDate else endDate
         }
     }
 
-    // Screen title
     val screenTitle = if (isEditMode) {
         stringResource(R.string.trip_form_title_edit)
     } else {
@@ -127,7 +122,6 @@ fun TripFormScreen(
         ) {
             Spacer(modifier = Modifier.height(Dimensions.spacingS))
 
-            // Destination field
             PlannerOutlinedTextField(
                 value = destination,
                 onValueChange = { destination = it },
@@ -138,7 +132,6 @@ fun TripFormScreen(
 
             Spacer(modifier = Modifier.height(Dimensions.spacingL))
 
-            // Start date field
             TripDateField(
                 value = startDate?.format(dateFormatter) ?: "",
                 onClick = { showStartDatePicker = true },
@@ -149,7 +142,6 @@ fun TripFormScreen(
 
             Spacer(modifier = Modifier.height(Dimensions.spacingL))
 
-            // End date field
             TripDateField(
                 value = effectiveEndDate?.format(dateFormatter) ?: "",
                 onClick = { showEndDatePicker = true },
@@ -161,7 +153,6 @@ fun TripFormScreen(
 
             Spacer(modifier = Modifier.height(Dimensions.spacingL))
 
-            // Single-day toggle row
             SingleDayToggleRow(
                 isSingleDay = isSingleDay,
                 onToggleChange = { newValue ->
@@ -174,7 +165,6 @@ fun TripFormScreen(
 
             Spacer(modifier = Modifier.height(Dimensions.spacingL))
 
-            // Notes field (multiline)
             PlannerOutlinedTextField(
                 value = notes,
                 onValueChange = { notes = it },
@@ -188,18 +178,14 @@ fun TripFormScreen(
 
             Spacer(modifier = Modifier.height(Dimensions.spacingL))
 
-            // Cover image picker
             TripCoverPicker(
                 selectedImageUri = coverImageUri,
-                onClick = {
-                    // TODO: Implement image picker logic (gallery/camera selection)
-                },
+                onClick = { },
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(Dimensions.spacingXL))
 
-            // Save button
             LargeRoundedButton(
                 text = stringResource(R.string.trip_form_save_button),
                 onClick = {
@@ -219,7 +205,6 @@ fun TripFormScreen(
         }
     }
 
-    // Start date picker dialog
     if (showStartDatePicker) {
         TripDatePickerDialog(
             initialDate = startDate,
@@ -234,7 +219,6 @@ fun TripFormScreen(
         )
     }
 
-    // End date picker dialog
     if (showEndDatePicker) {
         TripDatePickerDialog(
             initialDate = endDate,
@@ -290,7 +274,6 @@ private fun TripDatePickerDialog(
 ) {
     val colors = TripPlannerTheme.colors
     
-    // Convert LocalDate to millis for DatePickerState
     val initialMillis = initialDate?.let {
         it.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
     }
