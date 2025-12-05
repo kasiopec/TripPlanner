@@ -46,4 +46,13 @@
     <string name="trip_form_cover_label">Cover Image</string>
     <string name="trip_form_save_button">Save Trip</string>
     <string name="trip_form_date_range_error">End date must be after start date</string>
+
+    <!-- Common accessibility and dialog strings -->
+    <string name="action_back">Back</string>
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Cancel</string>
+
+    <!-- Cover Picker -->
+    <string name="cover_picker_tap_to_add">Tap to add picture</string>
+    <string name="cover_picker_change">Change</string>
 </resources>

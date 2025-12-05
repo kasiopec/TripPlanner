@@ -30,4 +30,5 @@ object Dimensions {
     val strokeThick = 2.dp
 
     val coverPickerHeight = 180.dp
+    val notesFieldHeight = 120.dp
 }

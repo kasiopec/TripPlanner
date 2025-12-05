@@ -105,7 +105,7 @@ fun TripFormScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             painter = painterResource(R.drawable.ic_arrow_back_24),
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.action_back),
                             modifier = Modifier.size(Dimensions.iconSize),
                             tint = colors.onBackground
                         )
@@ -183,7 +183,7 @@ fun TripFormScreen(
                 singleLine = false,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
+                    .height(Dimensions.notesFieldHeight)
             )
 
             Spacer(modifier = Modifier.height(Dimensions.spacingL))
@@ -313,7 +313,7 @@ private fun TripDatePickerDialog(
                 }
             ) {
                 Text(
-                    text = "OK",
+                    text = stringResource(R.string.action_ok),
                     color = colors.primary
                 )
             }
@@ -321,7 +321,7 @@ private fun TripDatePickerDialog(
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(
-                    text = "Cancel",
+                    text = stringResource(R.string.action_cancel),
                     color = colors.secondary
                 )
             }

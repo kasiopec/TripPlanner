@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -102,7 +103,7 @@ private fun EmptyStateContent(onBrowseClick: () -> Unit) {
         Spacer(modifier = Modifier.height(Dimensions.spacingS))
 
         BodyMedium(
-            text = "Tap to add picture",
+            text = stringResource(R.string.cover_picker_tap_to_add),
             color = colors.primary.copy(alpha = 0.8f)
         )
     }
@@ -139,7 +140,7 @@ private fun SelectedImageContent(
                 shape = RoundedCornerShape(Dimensions.radiusS)
             ) {
                 BodyMedium(
-                    text = "Change",
+                    text = stringResource(R.string.cover_picker_change),
                     color = colors.onSurface
                 )
             }
@@ -175,7 +176,7 @@ private fun TripCoverPickerEmptyPreview() {
     TripPlannerTheme {
         Column(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(Dimensions.spacingL)
                 .background(TripPlannerTheme.colors.background)
         ) {
             TripCoverPicker(
