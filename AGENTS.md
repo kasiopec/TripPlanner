@@ -36,8 +36,9 @@ Use Kotlin, Jetpack Compose, AndroidX, Material 3.
   - Do not use `collect` on repository Flows when you only need a single value.
   - Prefer dedicated suspend APIs (for example, `getTrip(id)`) or `first()/firstOrNull()` on Flows.
 - Keep validation logic in a single place:
-  - Avoid duplicating validation in both `UiState` and `ViewModel`.
-  - Prefer a shared validator (or helper) that ViewModels call and that drives `isSaveEnabled` and error fields.
+  - **Do not** put validation logic in `UiState`. UiState should be a pure data class.
+  - Create a separate `Validator` class or `UseCase` in the domain layer for business rules.
+  - Inject this validator into the ViewModel and use it to update `isSaveEnabled` and error fields in the state.
 - Error messages:
   - Do not hard-code user-facing strings in ViewModels.
   - All validation and error messages must come from `strings.xml` and be surfaced via IDs or typed error models in `UiState`.
@@ -48,6 +49,9 @@ Use Kotlin, Jetpack Compose, AndroidX, Material 3.
 - Keep Android types out of domain and data layers:
   - It is acceptable for feature-level events and UI state to reference Android classes (for example, `Uri`).
   - Any data passed into repositories or domain models must be converted to platform-neutral types (for example, `String`).
+- UiState purity:
+  - `UiState` classes must be pure data holders. 
+  - Do not include helper functions or formatting logic (e.g. `formatDate()`) inside `UiState`. Move these to standard Utility classes or Extension functions in the UI layer.
 
 ## UI Requirements
 
