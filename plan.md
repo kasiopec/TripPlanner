@@ -3,6 +3,7 @@ TripPlanner MVP Plan
 Scope and assumptions
 - Multi-day trips; device timezone only.
 - Local-only Room for MVP; keep repos interface-ready for future remote sync.
+- Always follow the app's defined design-system theme (colors, typography, spacing) as the single source of truth; never derive colors from arbitrary example images, marketing mocks, or unrelated web screenshots attached for reference.
 - End date mandatory; when user marks a trip as single-day, auto-fill end = start and keep it in sync, otherwise user must explicitly choose both start and end dates.
 - Include cover images from a small local set and activity type icons; drag-and-drop ordering required.
 - Countdown for upcoming trips only with two modes (>24h days, <24h ticking); hide countdown once a trip is in progress or ended.
