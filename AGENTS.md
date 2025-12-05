@@ -21,15 +21,33 @@ Secrets are pulled from `local.properties` into `BuildConfig` (`SUPABASE_*`). Ne
 
 Use Kotlin, Jetpack Compose, AndroidX, Material 3.
 
-Follow MVVM or MVI pattern.
+- Follow MVVM or MVI pattern.
+- Use StateFlow / MutableStateFlow for state management.
+- Use Hilt.
+- Use Repository pattern for data abstraction.
+- Use Coroutines + suspend functions for async work.
 
-Use StateFlow / MutableStateFlow for state management.
+### MVI / ViewModel Rules (from TripForm review)
 
-Use Hilt
-
-Use Repository pattern for data abstraction.
-
-Use Coroutines + suspend functions for async work.
+- Implement full create and edit flows before considering a feature “done”:
+  - Edit flows must load existing entities from the repository and pre-populate all relevant fields.
+  - Derive any computed flags (for example, single-day toggles) from domain data, not ad-hoc UI logic.
+- Never block on an infinite Flow inside event handlers:
+  - Do not use `collect` on repository Flows when you only need a single value.
+  - Prefer dedicated suspend APIs (for example, `getTrip(id)`) or `first()/firstOrNull()` on Flows.
+- Keep validation logic in a single place:
+  - Avoid duplicating validation in both `UiState` and `ViewModel`.
+  - Prefer a shared validator (or helper) that ViewModels call and that drives `isSaveEnabled` and error fields.
+- Error messages:
+  - Do not hard-code user-facing strings in ViewModels.
+  - All validation and error messages must come from `strings.xml` and be surfaced via IDs or typed error models in `UiState`.
+- Saving flows:
+  - Always toggle `isSaving` using a `try/finally` pattern so it’s reset on success and failure.
+  - On failure, emit a snackbar `Effect` with a user-friendly message and keep form data intact.
+  - Navigation `Effect`s on success should carry the identifiers needed by the navigation layer (for example, trip id for create/update), not just a blind “back”.
+- Keep Android types out of domain and data layers:
+  - It is acceptable for feature-level events and UI state to reference Android classes (for example, `Uri`).
+  - Any data passed into repositories or domain models must be converted to platform-neutral types (for example, `String`).
 
 ## UI Requirements
 
@@ -60,6 +78,14 @@ Keep feature files small, relying on DI via Hilt constructor injection with prov
 Use PascalCase nouns (`HomeScreen`). UI states, events, and effects follow `FeatureUiState`, `FeatureEvent`, etc
 
 When creating UI composables dp variables needs to be taken from `Dimensions` object.
+
+### Cover Image & Media Rules
+
+- For trip cover images, the canonical behavior is:
+  - User selects an image via the system picker (for example, `ActivityResultContracts.GetContent`).
+  - `TripCoverPicker` in `ui/components` acts as the reusable entry point that renders the current cover and exposes an `onClick` for the picker.
+  - `coverImageUri` stored in models is a String representation of the selected image URI.
+- When product requirements change (for example, from a fixed local set to a system picker), update `plan.md` and `tasks.md` alongside code changes so future work stays aligned.
 
 
 ## Your Responsibilities
