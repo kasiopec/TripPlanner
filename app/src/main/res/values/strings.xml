@@ -27,4 +27,21 @@
     <string name="error_password_repeat">Password do not match</string>
     <string name="error_session_expired_title">Looks like your session expired</string>
     <string name="error_session_expired_message">Please log in again to continue using the app.</string>
+
+    <!-- Generic -->
+    <string name="back">Back</string>
+
+    <!-- Trip Form -->
+    <string name="trip_form_title_new">New Trip</string>
+    <string name="trip_form_title_edit">Edit Trip</string>
+    <string name="trip_form_destination_label">Destination</string>
+    <string name="trip_form_destination_placeholder">Where to?</string>
+    <string name="trip_form_start_date_label">Start Date</string>
+    <string name="trip_form_end_date_label">End Date</string>
+    <string name="trip_form_date_placeholder">Select</string>
+    <string name="trip_form_single_day_label">Single Day Trip</string>
+    <string name="trip_form_notes_label">Notes (Optional)</string>
+    <string name="trip_form_notes_placeholder">Add details regarding your trip...</string>
+    <string name="trip_form_cover_image_label">Cover Image</string>
+    <string name="trip_form_save_button">Save Trip</string>
 </resources>
