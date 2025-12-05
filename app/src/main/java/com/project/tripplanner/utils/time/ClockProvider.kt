@@ -15,7 +15,7 @@ interface ClockProvider {
 
 @Singleton
 class DefaultClockProvider @Inject constructor(
-    private val clock: Clock = Clock.systemDefaultZone()
+    private val clock: Clock
 ) : ClockProvider {
     override val zoneId: ZoneId get() = clock.zone
 

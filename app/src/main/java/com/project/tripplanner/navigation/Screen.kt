@@ -9,13 +9,19 @@ sealed class Screen(
     object Home : Screen(route = "home_screen", title = "Home", isBottomBarVisible = true)
     object RegisterForm : Screen(route = "register_screen", title = "Registration")
     object ResetPassword : Screen(route = "reset_password_screen", title = "Reset password")
+    object TripForm : Screen(route = "trip_form_screen/{tripId}", title = "Trip Form") {
+        const val ARG_TRIP_ID = "tripId"
+        fun createRoute(tripId: Long? = null): String =
+            if (tripId != null) "trip_form_screen/$tripId" else "trip_form_screen/-1"
+    }
 
     companion object {
-        fun fromRoute(route: String?): Screen? = when (route?.substringBefore("?")) {
-            Login.route -> Login
-            Home.route -> Home
-            RegisterForm.route -> RegisterForm
-            ResetPassword.route -> ResetPassword
+        fun fromRoute(route: String?): Screen? = when (route?.substringBefore("/")?.substringBefore("?")) {
+            Login.route.substringBefore("/") -> Login
+            Home.route.substringBefore("/") -> Home
+            RegisterForm.route.substringBefore("/") -> RegisterForm
+            ResetPassword.route.substringBefore("/") -> ResetPassword
+            "trip_form_screen" -> TripForm
             else -> null
         }
     }

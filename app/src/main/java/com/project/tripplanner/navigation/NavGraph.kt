@@ -2,14 +2,18 @@ package com.project.tripplanner.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.project.tripplanner.Effect
 import com.project.tripplanner.features.home.HomeScreen
 import com.project.tripplanner.features.login.LoginEffect
@@ -21,6 +25,11 @@ import com.project.tripplanner.features.register.RegisterScreen
 import com.project.tripplanner.features.register.RegisterViewModel
 import com.project.tripplanner.features.resetpassword.ResetPasswordScreen
 import com.project.tripplanner.features.resetpassword.ResetPasswordViewModel
+import com.project.tripplanner.features.tripform.TripFormEffect
+import com.project.tripplanner.features.tripform.TripFormEvent
+import com.project.tripplanner.features.tripform.TripFormScreen
+import com.project.tripplanner.features.tripform.TripFormUiState
+import com.project.tripplanner.features.tripform.TripFormViewModel
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.Dispatchers
@@ -121,11 +130,65 @@ fun NavGraph(
                     NavigationEvent.Back -> navController.navigateUp()
 
                     else -> {
-                        // don't navigate
                     }
                 }
             }
             ResetPasswordScreen(viewModel = resetPasswordViewModel)
+        }
+        composable(
+            route = Screen.TripForm.route,
+            arguments = listOf(
+                navArgument(Screen.TripForm.ARG_TRIP_ID) {
+                    type = NavType.LongType
+                    defaultValue = -1L
+                }
+            )
+        ) { backStackEntry ->
+            val tripFormViewModel = hiltViewModel<TripFormViewModel>()
+            val uiState by tripFormViewModel.state.collectAsState()
+            val tripId = backStackEntry.arguments?.getLong(Screen.TripForm.ARG_TRIP_ID)
+                ?.takeIf { it > 0 }
+
+            LaunchedEffect(tripId) {
+                tripFormViewModel.emitEvent(TripFormEvent.ScreenLoaded(tripId))
+            }
+
+            when (val state = uiState) {
+                is TripFormUiState.Loading -> {
+                }
+
+                is TripFormUiState.Form -> {
+                    TripFormScreen(
+                        uiState = state,
+                        onDestinationChange = { tripFormViewModel.emitEvent(TripFormEvent.DestinationChanged(it)) },
+                        onStartDateClick = { tripFormViewModel.emitEvent(TripFormEvent.StartDateClicked) },
+                        onEndDateClick = { tripFormViewModel.emitEvent(TripFormEvent.EndDateClicked) },
+                        onStartDateSelected = { tripFormViewModel.emitEvent(TripFormEvent.StartDateSelected(it)) },
+                        onEndDateSelected = { tripFormViewModel.emitEvent(TripFormEvent.EndDateSelected(it)) },
+                        onDatePickerDismissed = { tripFormViewModel.emitEvent(TripFormEvent.DatePickerDismissed) },
+                        onSingleDayChange = { tripFormViewModel.emitEvent(TripFormEvent.SingleDayToggled(it)) },
+                        onCoverImageSelected = { tripFormViewModel.emitEvent(TripFormEvent.CoverImageSelected(it)) },
+                        onNotesChange = { tripFormViewModel.emitEvent(TripFormEvent.NotesChanged(it)) },
+                        onSaveClick = { tripFormViewModel.emitEvent(TripFormEvent.SaveClicked) },
+                        onBackClick = { tripFormViewModel.emitEvent(TripFormEvent.BackClicked) }
+                    )
+                }
+
+                is TripFormUiState.GlobalError -> {
+                }
+            }
+
+            ObserveNavigationEffect(flow = tripFormViewModel.effect) { effect ->
+                when (effect) {
+                    TripFormEffect.NavigateBack -> navController.navigateUp()
+                    is TripFormEffect.NavigateToTripDetail -> {
+                        navController.navigateUp()
+                    }
+
+                    is TripFormEffect.ShowSnackbar -> {
+                    }
+                }
+            }
         }
     }
 }

@@ -101,7 +101,7 @@ fun TripPlannerBottomBar(
                                         }
                                     }
                                 } else {
-                                    // handle add item logic
+                                    navController.navigate(Screen.TripForm.createRoute())
                                 }
 
                             }

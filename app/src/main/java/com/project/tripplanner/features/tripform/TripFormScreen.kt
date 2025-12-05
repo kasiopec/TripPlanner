@@ -1,7 +1,8 @@
 package com.project.tripplanner.features.tripform
 
 import android.net.Uri
-import androidx.compose.foundation.background
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,293 +11,264 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.project.tripplanner.R
 import com.project.tripplanner.ui.components.LargeRoundedButton
 import com.project.tripplanner.ui.components.PlannerOutlinedTextField
 import com.project.tripplanner.ui.components.TripCoverPicker
 import com.project.tripplanner.ui.components.TripDateField
 import com.project.tripplanner.ui.components.text.BodyMedium
+import com.project.tripplanner.ui.components.text.Headline2
 import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TripFormScreen(
-    isEditMode: Boolean = false,
-    onBackClick: () -> Unit = {},
-    onSaveClick: (destination: String, startDate: LocalDate?, endDate: LocalDate?, isSingleDay: Boolean, notes: String, coverImageUri: Uri?) -> Unit = { _, _, _, _, _, _ -> }
+    uiState: TripFormUiState.Form,
+    onDestinationChange: (String) -> Unit,
+    onStartDateClick: () -> Unit,
+    onEndDateClick: () -> Unit,
+    onStartDateSelected: (Long) -> Unit,
+    onEndDateSelected: (Long) -> Unit,
+    onDatePickerDismissed: () -> Unit,
+    onSingleDayChange: (Boolean) -> Unit,
+    onCoverImageSelected: (Uri) -> Unit,
+    onNotesChange: (String) -> Unit,
+    onSaveClick: () -> Unit,
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val colors = TripPlannerTheme.colors
-    val scrollState = rememberScrollState()
 
-    var destination by remember { mutableStateOf("") }
-    var startDate by remember { mutableStateOf<LocalDate?>(null) }
-    var endDate by remember { mutableStateOf<LocalDate?>(null) }
-    var isSingleDay by remember { mutableStateOf(false) }
-    var notes by remember { mutableStateOf("") }
-    var coverImageUri by remember { mutableStateOf<Uri?>(null) }
-
-    var showStartDatePicker by remember { mutableStateOf(false) }
-    var showEndDatePicker by remember { mutableStateOf(false) }
-
-    val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
-
-    val effectiveEndDate by remember {
-        derivedStateOf {
-            if (isSingleDay) startDate else endDate
-        }
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { onCoverImageSelected(it) }
     }
 
-    val screenTitle = if (isEditMode) {
-        stringResource(R.string.trip_form_title_edit)
-    } else {
-        stringResource(R.string.trip_form_title_new)
+    val todayMillis = LocalDate.now()
+        .atTime(LocalTime.MIDNIGHT)
+        .atZone(ZoneId.systemDefault())
+        .toInstant()
+        .toEpochMilli()
+
+    if (uiState.showStartDatePicker) {
+        TripDatePickerDialog(
+            initialSelectedDateMillis = uiState.startDateMillis,
+            initialDisplayedMonthMillis = uiState.startDateMillis,
+            minDateMillis = todayMillis,
+            onDateSelected = onStartDateSelected,
+            onDismiss = onDatePickerDismissed
+        )
+    }
+
+    if (uiState.showEndDatePicker) {
+        TripDatePickerDialog(
+            initialSelectedDateMillis = uiState.endDateMillis,
+            initialDisplayedMonthMillis = uiState.startDateMillis ?: todayMillis,
+            minDateMillis = uiState.startDateMillis ?: todayMillis,
+            onDateSelected = onEndDateSelected,
+            onDismiss = onDatePickerDismissed
+        )
     }
 
     Scaffold(
+        modifier = modifier,
+        containerColor = colors.background,
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
-                    Text(
-                        text = screenTitle,
-                        style = TripPlannerTheme.typography.h2,
+                    Headline2(
+                        text = stringResource(
+                            id = if (uiState.isEditMode) R.string.trip_form_title_edit
+                            else R.string.trip_form_title_new
+                        ),
                         color = colors.onBackground
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_arrow_back_24),
-                            contentDescription = stringResource(R.string.action_back),
-                            modifier = Modifier.size(Dimensions.iconSize),
-                            tint = colors.onBackground
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(id = R.string.action_back),
+                            tint = colors.primary
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = colors.background
                 )
             )
-        },
-        containerColor = colors.background
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(scrollState)
                 .padding(horizontal = Dimensions.spacingL)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(Dimensions.spacingL)
         ) {
-            Spacer(modifier = Modifier.height(Dimensions.spacingS))
+            Spacer(modifier = Modifier.height(Dimensions.spacingXS))
 
             PlannerOutlinedTextField(
-                value = destination,
-                onValueChange = { destination = it },
-                label = stringResource(R.string.trip_form_destination_label),
-                placeholder = stringResource(R.string.trip_form_destination_placeholder),
+                label = stringResource(id = R.string.trip_form_destination_label),
+                value = uiState.destination,
+                onValueChange = onDestinationChange,
+                placeholder = stringResource(id = R.string.trip_form_destination_placeholder),
+                isError = uiState.destinationError != null,
+                errorMessage = uiState.destinationError,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(Dimensions.spacingL))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingM)
+            ) {
+                TripDateField(
+                    label = stringResource(id = R.string.trip_form_start_date_label),
+                    value = uiState.startDate,
+                    onClick = onStartDateClick,
+                    placeholder = stringResource(id = R.string.trip_form_start_date_placeholder),
+                    isError = uiState.startDateError != null,
+                    errorMessage = uiState.startDateError,
+                    modifier = Modifier.weight(1f)
+                )
 
-            TripDateField(
-                value = startDate?.format(dateFormatter) ?: "",
-                onClick = { showStartDatePicker = true },
-                label = stringResource(R.string.trip_form_start_date_label),
-                placeholder = stringResource(R.string.trip_form_start_date_placeholder),
-                modifier = Modifier.fillMaxWidth()
-            )
+                TripDateField(
+                    label = stringResource(id = R.string.trip_form_end_date_label),
+                    value = uiState.endDate,
+                    onClick = onEndDateClick,
+                    placeholder = stringResource(id = R.string.trip_form_end_date_placeholder),
+                    isError = uiState.endDateError != null,
+                    errorMessage = uiState.endDateError,
+                    enabled = !uiState.isSingleDay,
+                    modifier = Modifier.weight(1f)
+                )
+            }
 
-            Spacer(modifier = Modifier.height(Dimensions.spacingL))
-
-            TripDateField(
-                value = effectiveEndDate?.format(dateFormatter) ?: "",
-                onClick = { showEndDatePicker = true },
-                label = stringResource(R.string.trip_form_end_date_label),
-                placeholder = stringResource(R.string.trip_form_end_date_placeholder),
-                enabled = !isSingleDay,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(Dimensions.spacingL))
-
-            SingleDayToggleRow(
-                isSingleDay = isSingleDay,
-                onToggleChange = { newValue ->
-                    isSingleDay = newValue
-                    if (newValue && startDate != null) {
-                        endDate = startDate
-                    }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    BodyMedium(
+                        text = stringResource(id = R.string.trip_form_single_day_label),
+                        color = colors.onBackground,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
-            )
-
-            Spacer(modifier = Modifier.height(Dimensions.spacingL))
+                Switch(
+                    checked = uiState.isSingleDay,
+                    onCheckedChange = onSingleDayChange,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = colors.primary,
+                        uncheckedThumbColor = colors.onSurfaceVariant,
+                        uncheckedTrackColor = colors.surfaceVariant
+                    )
+                )
+            }
 
             PlannerOutlinedTextField(
-                value = notes,
-                onValueChange = { notes = it },
-                label = stringResource(R.string.trip_form_notes_label),
-                placeholder = stringResource(R.string.trip_form_notes_placeholder),
+                label = stringResource(id = R.string.trip_form_notes_label),
+                value = uiState.notes,
+                onValueChange = onNotesChange,
+                placeholder = stringResource(id = R.string.trip_form_notes_placeholder),
                 singleLine = false,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(Dimensions.notesFieldHeight)
             )
 
-            Spacer(modifier = Modifier.height(Dimensions.spacingL))
+            Column(verticalArrangement = Arrangement.spacedBy(Dimensions.spacingXS)) {
+                BodyMedium(
+                    text = stringResource(id = R.string.trip_form_cover_label),
+                    color = colors.onBackground,
+                    fontWeight = FontWeight.Bold
+                )
+                TripCoverPicker(
+                    selectedImageUri = uiState.coverImageUri,
+                    onClick = { imagePickerLauncher.launch("image/*") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
-            TripCoverPicker(
-                selectedImageUri = coverImageUri,
-                onClick = { },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(Dimensions.spacingXL))
+            Spacer(modifier = Modifier.height(Dimensions.spacingM))
 
             LargeRoundedButton(
-                text = stringResource(R.string.trip_form_save_button),
-                onClick = {
-                    onSaveClick(
-                        destination,
-                        startDate,
-                        effectiveEndDate,
-                        isSingleDay,
-                        notes,
-                        coverImageUri
-                    )
-                },
-                modifier = Modifier.fillMaxWidth()
+                text = stringResource(id = R.string.trip_form_save_button),
+                onClick = onSaveClick,
+                isEnabled = uiState.isSaveEnabled && !uiState.isSaving,
+                modifier = Modifier.padding(bottom = Dimensions.spacingL)
             )
-
-            Spacer(modifier = Modifier.height(Dimensions.spacingXL))
         }
-    }
-
-    if (showStartDatePicker) {
-        TripDatePickerDialog(
-            initialDate = startDate,
-            onDismiss = { showStartDatePicker = false },
-            onDateSelected = { selectedDate ->
-                startDate = selectedDate
-                if (isSingleDay) {
-                    endDate = selectedDate
-                }
-                showStartDatePicker = false
-            }
-        )
-    }
-
-    if (showEndDatePicker) {
-        TripDatePickerDialog(
-            initialDate = endDate,
-            onDismiss = { showEndDatePicker = false },
-            onDateSelected = { selectedDate ->
-                endDate = selectedDate
-                showEndDatePicker = false
-            }
-        )
-    }
-}
-
-@Composable
-private fun SingleDayToggleRow(
-    isSingleDay: Boolean,
-    onToggleChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val colors = TripPlannerTheme.colors
-
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(colors.surface, shape = androidx.compose.foundation.shape.RoundedCornerShape(Dimensions.radiusM))
-            .padding(horizontal = Dimensions.spacingL, vertical = Dimensions.spacingM),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        BodyMedium(
-            text = stringResource(R.string.trip_form_single_day_label),
-            color = colors.onSurface
-        )
-
-        Switch(
-            checked = isSingleDay,
-            onCheckedChange = onToggleChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = colors.surface,
-                checkedTrackColor = colors.primary,
-                uncheckedThumbColor = colors.surface,
-                uncheckedTrackColor = colors.tertiaryContainer
-            )
-        )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TripDatePickerDialog(
-    initialDate: LocalDate?,
-    onDismiss: () -> Unit,
-    onDateSelected: (LocalDate) -> Unit
+    initialSelectedDateMillis: Long?,
+    initialDisplayedMonthMillis: Long?,
+    minDateMillis: Long,
+    onDateSelected: (Long) -> Unit,
+    onDismiss: () -> Unit
 ) {
-    val colors = TripPlannerTheme.colors
-    
-    val initialMillis = initialDate?.let {
-        it.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-    }
-    
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = initialMillis
+        initialSelectedDateMillis = initialSelectedDateMillis,
+        initialDisplayedMonthMillis = initialDisplayedMonthMillis,
+        selectableDates = object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                return utcTimeMillis >= minDateMillis
+            }
+
+            override fun isSelectableYear(year: Int): Boolean {
+                return year >= LocalDate.now().year
+            }
+        }
     )
+    val colors = TripPlannerTheme.colors
 
     DatePickerDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(
                 onClick = {
-                    datePickerState.selectedDateMillis?.let { millis ->
-                        val date = Instant.ofEpochMilli(millis)
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate()
-                        onDateSelected(date)
-                    }
+                    datePickerState.selectedDateMillis?.let { onDateSelected(it) }
                 }
             ) {
                 Text(
-                    text = stringResource(R.string.action_ok),
+                    text = stringResource(id = R.string.action_ok),
                     color = colors.primary
                 )
             }
@@ -304,7 +276,7 @@ private fun TripDatePickerDialog(
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(
-                    text = stringResource(R.string.action_cancel),
+                    text = stringResource(id = R.string.action_cancel),
                     color = colors.secondary
                 )
             }
@@ -319,21 +291,23 @@ private fun TripDatePickerDialog(
 private fun TripFormScreenPreview() {
     TripPlannerTheme {
         TripFormScreen(
-            isEditMode = false,
-            onBackClick = {},
-            onSaveClick = { _, _, _, _, _, _ -> }
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun TripFormScreenEditModePreview() {
-    TripPlannerTheme {
-        TripFormScreen(
-            isEditMode = true,
-            onBackClick = {},
-            onSaveClick = { _, _, _, _, _, _ -> }
+            uiState = TripFormUiState.Form(
+                destination = "Paris",
+                startDateMillis = 1734652800000,
+                endDateMillis = 1735084800000,
+                isSingleDay = false
+            ),
+            onDestinationChange = {},
+            onStartDateClick = {},
+            onEndDateClick = {},
+            onStartDateSelected = {},
+            onEndDateSelected = {},
+            onDatePickerDismissed = {},
+            onSingleDayChange = {},
+            onCoverImageSelected = {},
+            onNotesChange = {},
+            onSaveClick = {},
+            onBackClick = {}
         )
     }
 }
