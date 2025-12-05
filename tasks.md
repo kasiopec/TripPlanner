@@ -16,7 +16,7 @@ TripPlanner MVP Tasks
   - Countdown and status handling for upcoming, in-progress, and ended trips.
   - State for loading, error, and empty list.
 - Build Compose UI:
-  - Trip cards with cover placeholders from a small local image set.
+  - Trip cards with cover placeholders (and user-selected cover images when available).
   - Countdown chip shown only for upcoming trips.
   - Clear labels for in-progress and ended trips (no countdown).
   - Empty state CTA encouraging creation of the first trip.
@@ -44,10 +44,10 @@ TripPlanner MVP Tasks
     - End date field connected to the same date picker logic, disabled when single-day is ON.
     - Single-day toggle (default OFF for new trips) displayed as a labeled row using Material 3 `Switch` or a small reusable row component.
     - Optional notes multi-line input using `PlannerOutlinedTextField` with `singleLine = false`.
-    - Cover image picker stub that shows a horizontal list/grid of local cover image options and exposes the selected `coverImageUri` back to the ViewModel.
+    - Cover image picker stub that integrates with the system image picker (for example, `ActivityResultContracts.GetContent`) via `TripCoverPicker` and exposes the selected `coverImageUri` back to the ViewModel.
 - Shared UI components and resources:
   - Add a small reusable `TripDateField` component in `ui/components` that renders a read-only `PlannerOutlinedTextField` with a date label, formatted value, and calendar icon, and invokes a callback when clicked (Trip form wires this to a date picker dialog).
-  - Add a `TripCoverPicker` component in `ui/components` that takes a list of local image descriptors and renders them as selectable chips/thumbnails, emitting the chosen `coverImageUri` for Trip form and Trips list reuse.
+  - Add a `TripCoverPicker` component in `ui/components` that renders the current cover image and wires an `onClick` callback to the system image picker, emitting the chosen `coverImageUri` for Trip form and Trips list reuse.
   - Introduce string resources in `res/values/strings.xml` for all Trip form labels, placeholders, and error messages (destination, start date, end date, single-day label, notes, cover image, validation messages).
 - Behavior and validation:
   - Enforce required destination, start date, and end date.
@@ -138,8 +138,8 @@ TripPlanner MVP Tasks
 ## 7. Polish + navigation
 
 - Visual polish:
-  - Cover image handling from a local image set:
-    - Placeholders.
+  - Cover image handling for user-selected photos:
+    - Placeholders when no image is selected.
     - Basic loading state.
   - Activity type icons aligned with the design system.
   - Apply visual tweaks in line with `design-system.json`.
