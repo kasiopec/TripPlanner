@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,16 +25,18 @@ import com.project.tripplanner.ui.Icons
 import com.project.tripplanner.ui.components.BaseOutlinedTextField
 import com.project.tripplanner.ui.components.LargeRoundedButton
 import com.project.tripplanner.ui.components.TextWithLeftIcon
+import com.project.tripplanner.ui.theme.TripPlannerTheme
 
 @Composable
 fun ResetPasswordContent(
     onResetPasswordClicked: (email: String) -> Unit,
     isEmailValid: Boolean,
 ) {
+    val colors = TripPlannerTheme.colors
     Surface(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.background)
+            .background(color = colors.background)
     ) {
         var enteredEmail by remember { mutableStateOf("") }
         val context = LocalContext.current
@@ -61,9 +62,9 @@ fun ResetPasswordContent(
             if (!isEmailValid) {
                 TextWithLeftIcon(
                     modifier = Modifier.fillMaxWidth(),
-                    icon = { Icons.IcError24(tint = MaterialTheme.colorScheme.error) },
+                    icon = { Icons.IcError24(tint = colors.error) },
                     text = context.getString(R.string.error_email_wrong),
-                    textColor = MaterialTheme.colorScheme.error
+                    textColor = colors.error
                 )
             }
             LargeRoundedButton(

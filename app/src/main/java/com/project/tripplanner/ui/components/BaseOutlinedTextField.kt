@@ -1,5 +1,7 @@
 package com.project.tripplanner.ui.components
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -14,7 +16,7 @@ fun BaseOutlinedTextField(
     text: () -> String,
     onTextChanged: (String) -> Unit,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
-    keyboardOptions: KeyboardOptions,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     isError: Boolean = false,
     labelText: String,
 ) {
@@ -32,4 +34,20 @@ fun BaseOutlinedTextField(
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions
     )
+}
+
+@Composable
+fun BaseOutlinedTextFieldPreview() {
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        BaseOutlinedTextField(
+            text = {
+                "test"
+            },
+            onTextChanged = {},
+            labelText = "Preview"
+        )
+    }
+
 }

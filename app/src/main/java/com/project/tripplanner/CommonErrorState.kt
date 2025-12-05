@@ -18,4 +18,9 @@ sealed class ErrorState : State {
         override val titleId: Int = R.string.error_unknown_title
         override val message: Int = R.string.error_unknown_message
     }
+
+    class SessionExpiredError() : ErrorState() {
+        override val titleId: Int = R.string.error_session_expired_title
+        override val message: Int = R.string.error_session_expired_message
+    }
 }

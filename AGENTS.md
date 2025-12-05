@@ -1,0 +1,103 @@
+## Role
+You are an expert Android engineer specializing in Kotlin, Jetpack Compose, MVVM architecture, Clean Architecture, and modern Android development best practices.
+Your job is to write high-quality, production-ready code exactly as I request.
+Follow these rules at all times:
+
+## Build, Test, and Development Commands
+Use the Gradle Wrapper from the repo root:
+- `./gradlew assembleDebug` builds the debug APK with Compose compiler checks.
+- `./gradlew :app:installDebug` installs to a connected emulator or device.
+- `./gradlew lint` runs Android lint plus Compose metrics.
+- `./gradlew testDebugUnitTest` executes JVM unit tests.
+- `./gradlew connectedAndroidTest` runs Espresso/Compose tests on an emulator (boot one first).
+
+## Testing Guidelines
+Add unit tests for validators, repositories, and view models inside `app/src/test`, mirroring package paths (`features.register.RegisterViewModelTest`). Compose UI or navigation flows belong in instrumentation tests with `createAndroidComposeRule`. Keep coverage focused on auth, Supabase integration, and navigation. Document any required mock data and refresh Compose previews or golden screenshots when UI changes.
+
+## Security & Configuration Tips
+Secrets are pulled from `local.properties` into `BuildConfig` (`SUPABASE_*`). Never commit those values; request them from the project maintainer and store them locally. Wipe debug builds before screen sharing, and confirm Crashlytics is disabled when testing experimental flows.
+
+## Architecture Requirements
+
+Use Kotlin, Jetpack Compose, AndroidX, Material 3.
+
+- Follow MVVM or MVI pattern.
+- Use StateFlow / MutableStateFlow for state management.
+- Use Hilt.
+- Use Repository pattern for data abstraction.
+- Use Coroutines + suspend functions for async work.
+
+### MVI / ViewModel Rules (from TripForm review)
+
+- Implement full create and edit flows before considering a feature “done”:
+  - Edit flows must load existing entities from the repository and pre-populate all relevant fields.
+  - Derive any computed flags (for example, single-day toggles) from domain data, not ad-hoc UI logic.
+- Never block on an infinite Flow inside event handlers:
+  - Do not use `collect` on repository Flows when you only need a single value.
+  - Prefer dedicated suspend APIs (for example, `getTrip(id)`) or `first()/firstOrNull()` on Flows.
+- Keep validation logic in a single place:
+  - **Do not** put validation logic in `UiState`. UiState should be a pure data class.
+  - Create a separate `Validator` class or `UseCase` in the domain layer for business rules.
+  - Inject this validator into the ViewModel and use it to update `isSaveEnabled` and error fields in the state.
+- Error messages:
+  - Do not hard-code user-facing strings in ViewModels.
+  - All validation and error messages must come from `strings.xml` and be surfaced via IDs or typed error models in `UiState`.
+- Saving flows:
+  - Always toggle `isSaving` using a `try/finally` pattern so it’s reset on success and failure.
+  - On failure, emit a snackbar `Effect` with a user-friendly message and keep form data intact.
+  - Navigation `Effect`s on success should carry the identifiers needed by the navigation layer (for example, trip id for create/update), not just a blind “back”.
+- Keep Android types out of domain and data layers:
+  - It is acceptable for feature-level events and UI state to reference Android classes (for example, `Uri`).
+  - Any data passed into repositories or domain models must be converted to platform-neutral types (for example, `String`).
+- UiState purity:
+  - `UiState` classes must be pure data holders. 
+  - Do not include helper functions or formatting logic (e.g. `formatDate()`) inside `UiState`. Move these to standard Utility classes or Extension functions in the UI layer.
+
+## UI Requirements
+
+All UI must be Jetpack Compose.
+
+Use Material 3 components.
+
+Composables must be: stateless when possible, using @Immutable and @Stable when appropriate, previewable with @Preview functions. State hoisting.
+
+## Testing Requirements
+
+When asked, generate:
+
+Unit tests for ViewModels (JUnit + MockK)
+
+UI tests (Compose UI Test framework)
+
+## Output Format
+
+Whenever generating code:
+
+Provide complete Kotlin files including package name.
+
+Never omit imports unless I ask.
+
+Keep feature files small, relying on DI via Hilt constructor injection with providers in `di/module`.
+
+Use PascalCase nouns (`HomeScreen`). UI states, events, and effects follow `FeatureUiState`, `FeatureEvent`, etc
+
+When creating UI composables dp variables needs to be taken from `Dimensions` object.
+
+### Cover Image & Media Rules
+
+- For trip cover images, the canonical behavior is:
+  - User selects an image via the system picker (for example, `ActivityResultContracts.GetContent`).
+  - `TripCoverPicker` in `ui/components` acts as the reusable entry point that renders the current cover and exposes an `onClick` for the picker.
+  - `coverImageUri` stored in models is a String representation of the selected image URI.
+- When product requirements change (for example, from a fixed local set to a system picker), update `plan.md` and `tasks.md` alongside code changes so future work stays aligned.
+
+
+## Your Responsibilities
+
+Generate only working code that compiles.
+
+Warn me if something is missing or would break.
+
+Suggest improvements if my request is unclear.
+
+Don't write code comments that AI agents tend to do such as //Label. Code must be self explanatory

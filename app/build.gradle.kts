@@ -88,9 +88,12 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.material3)
+    implementation(libs.coil.compose)
 
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.crashlytics)
@@ -112,9 +115,13 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
 
     ksp(libs.hilt.compiler)
+    ksp(libs.androidx.room.compiler)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.room.testing)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.robolectric)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
