@@ -27,4 +27,23 @@
     <string name="error_password_repeat">Password do not match</string>
     <string name="error_session_expired_title">Looks like your session expired</string>
     <string name="error_session_expired_message">Please log in again to continue using the app.</string>
+
+    <!-- Trip Form -->
+    <string name="trip_form_title_new">New Trip</string>
+    <string name="trip_form_title_edit">Edit Trip</string>
+    <string name="trip_form_destination_label">Destination</string>
+    <string name="trip_form_destination_placeholder">Where are you going?</string>
+    <string name="trip_form_destination_error">Destination is required</string>
+    <string name="trip_form_start_date_label">Start Date</string>
+    <string name="trip_form_start_date_placeholder">Select start date</string>
+    <string name="trip_form_start_date_error">Start date is required</string>
+    <string name="trip_form_end_date_label">End Date</string>
+    <string name="trip_form_end_date_placeholder">Select end date</string>
+    <string name="trip_form_end_date_error">End date is required</string>
+    <string name="trip_form_single_day_label">Single-day trip</string>
+    <string name="trip_form_notes_label">Notes</string>
+    <string name="trip_form_notes_placeholder">Add any notes or details…</string>
+    <string name="trip_form_cover_label">Cover Image</string>
+    <string name="trip_form_save_button">Save Trip</string>
+    <string name="trip_form_date_range_error">End date must be after start date</string>
 </resources>

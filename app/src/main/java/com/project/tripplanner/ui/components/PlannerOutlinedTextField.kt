@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -79,7 +80,13 @@ fun PlannerOutlinedTextField(
             onValueChange = onValueChange,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(Dimensions.textFieldHeight)
+                .then(
+                    if (singleLine) {
+                        Modifier.height(Dimensions.textFieldHeight)
+                    } else {
+                        Modifier.heightIn(min = Dimensions.textFieldHeight)
+                    }
+                )
                 .background(
                     color = TripPlannerTheme.colors.background,
                     shape = RoundedCornerShape(Dimensions.radiusM)
@@ -100,8 +107,11 @@ fun PlannerOutlinedTextField(
             cursorBrush = SolidColor(TripPlannerTheme.colors.primary),
             decorationBox = { innerTextField ->
                 Row(
-                    modifier = Modifier.padding(horizontal = Dimensions.spacingM), //
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.padding(
+                        horizontal = Dimensions.spacingM,
+                        vertical = if (singleLine) 0.dp else Dimensions.spacingM
+                    ),
+                    verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top
                 ) {
                     Box(modifier = Modifier.weight(1f)) {
                         if (value.isEmpty()) {
@@ -122,6 +132,7 @@ fun PlannerOutlinedTextField(
                 }
             }
         )
+
 
         val feedbackText = if (isError) errorMessage else supportingText
         if (feedbackText != null) {
