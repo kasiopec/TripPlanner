@@ -59,6 +59,8 @@ Keep feature files small, relying on DI via Hilt constructor injection with prov
 
 Use PascalCase nouns (`HomeScreen`). UI states, events, and effects follow `FeatureUiState`, `FeatureEvent`, etc
 
+When creating UI composables dp variables needs to be taken from `Dimensions` object.
+
 
 ## Your Responsibilities
 
