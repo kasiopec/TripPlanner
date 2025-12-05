@@ -46,6 +46,8 @@
     <string name="trip_form_cover_label">Cover Image</string>
     <string name="trip_form_save_button">Save Trip</string>
     <string name="trip_form_date_range_error">End date must be after start date</string>
+    <string name="trip_form_save_error">Failed to save trip. Please try again.</string>
+    <string name="trip_form_load_error">Unable to load this trip. Please try again.</string>
 
     <!-- Common accessibility and dialog strings -->
     <string name="action_back">Back</string>

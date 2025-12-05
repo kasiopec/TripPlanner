@@ -1,17 +1,19 @@
 package com.project.tripplanner.features.tripform
 
+import android.net.Uri
 import com.project.tripplanner.BaseViewModel
 import com.project.tripplanner.Emitter
 import com.project.tripplanner.MviDefaultErrorHandler
+import com.project.tripplanner.R
 import com.project.tripplanner.data.model.TripInput
 import com.project.tripplanner.repositories.TripRepository
 import com.project.tripplanner.utils.time.ClockProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.firstOrNull
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import javax.inject.Inject
 
 @HiltViewModel
 class TripFormViewModel @Inject constructor(
@@ -36,7 +38,7 @@ class TripFormViewModel @Inject constructor(
         addErrorHandler(MviDefaultErrorHandler(TripFormUiState::GlobalError))
     }
 
-    private fun onScreenLoaded(
+    private suspend fun onScreenLoaded(
         event: TripFormEvent.ScreenLoaded,
         emit: Emitter<TripFormUiState, TripFormEffect>
     ) {
@@ -47,11 +49,30 @@ class TripFormViewModel @Inject constructor(
         }
     }
 
-    private fun loadTripForEdit(
+    private suspend fun loadTripForEdit(
         tripId: Long,
         emit: Emitter<TripFormUiState, TripFormEffect>
     ) {
-        emit.state(TripFormUiState.Form(tripId = tripId))
+        emit.state(TripFormUiState.Loading)
+        val trip = tripRepository.observeTrip(tripId).firstOrNull()
+        if (trip != null) {
+            val startDateMillis = trip.startDate.atStartOfDay(trip.timezone).toInstant().toEpochMilli()
+            val endDateMillis = trip.endDate.atStartOfDay(trip.timezone).toInstant().toEpochMilli()
+            emit.state(
+                TripFormUiState.Form(
+                    tripId = trip.id,
+                    destination = trip.destination,
+                    startDateMillis = startDateMillis,
+                    endDateMillis = endDateMillis,
+                    isSingleDay = trip.startDate == trip.endDate,
+                    notes = trip.notes.orEmpty(),
+                    coverImageUri = trip.coverImageUri?.let(Uri::parse)
+                )
+            )
+        } else {
+            emit.state(TripFormUiState.Form())
+            emit.effect(TripFormEffect.ShowSnackbar(R.string.trip_form_load_error))
+        }
     }
 
     private fun onDestinationChanged(
@@ -61,7 +82,7 @@ class TripFormViewModel @Inject constructor(
         emit.updatedState<TripFormUiState.Form> { currentState ->
             currentState.copy(
                 destination = event.value,
-                destinationError = null
+                destinationErrorId = null
             )
         }
     }
@@ -87,8 +108,8 @@ class TripFormViewModel @Inject constructor(
             currentState.copy(
                 startDateMillis = event.millis,
                 endDateMillis = newEndDate,
-                startDateError = null,
-                endDateError = null,
+                startDateErrorId = null,
+                endDateErrorId = null,
                 showStartDatePicker = false
             )
         }
@@ -101,7 +122,7 @@ class TripFormViewModel @Inject constructor(
         emit.updatedState<TripFormUiState.Form> { currentState ->
             currentState.copy(
                 endDateMillis = event.millis,
-                endDateError = null,
+                endDateErrorId = null,
                 showEndDatePicker = false
             )
         }
@@ -129,7 +150,7 @@ class TripFormViewModel @Inject constructor(
             currentState.copy(
                 isSingleDay = event.enabled,
                 endDateMillis = newEndDate,
-                endDateError = null
+                endDateErrorId = null
             )
         }
     }
@@ -153,26 +174,25 @@ class TripFormViewModel @Inject constructor(
     }
 
     private suspend fun onSaveClicked(emit: Emitter<TripFormUiState, TripFormEffect>) {
-        val currentState = state.value
-        if (currentState !is TripFormUiState.Form) return
+        val currentState = state.value as? TripFormUiState.Form ?: return
 
-        val validationResult = validateForm(currentState)
+        val validationResult = TripFormValidator.validate(currentState)
         if (!validationResult.isValid) {
             emit.state(
                 currentState.copy(
-                    destinationError = validationResult.destinationError,
-                    startDateError = validationResult.startDateError,
-                    endDateError = validationResult.endDateError
+                    destinationErrorId = validationResult.destinationErrorId,
+                    startDateErrorId = validationResult.startDateErrorId,
+                    endDateErrorId = validationResult.endDateErrorId
                 )
             )
             return
         }
 
-        emit.state(currentState.copy(isSaving = true))
+        emit.updatedState<TripFormUiState.Form> { it.copy(isSaving = true) }
 
         try {
-            val startDate = millisToLocalDate(currentState.startDateMillis!!)
-            val endDate = millisToLocalDate(currentState.endDateMillis!!)
+            val startDate = millisToLocalDate(currentState.startDateMillis!!, clockProvider.zoneId)
+            val endDate = millisToLocalDate(currentState.endDateMillis!!, clockProvider.zoneId)
 
             val tripInput = TripInput(
                 destination = currentState.destination.trim(),
@@ -194,18 +214,18 @@ class TripFormViewModel @Inject constructor(
                         notes = tripInput.notes
                     )
                     tripRepository.updateTrip(updatedTrip)
-                    emit.effect(TripFormEffect.NavigateToTripDetail(currentState.tripId))
+                    emit.effect(TripFormEffect.NavigateToTripDetail(existingTrip.id))
                 } else {
-                    emit.state(currentState.copy(isSaving = false))
-                    emit.effect(TripFormEffect.ShowSnackbar("Trip not found"))
+                    emit.effect(TripFormEffect.ShowSnackbar(R.string.trip_form_load_error))
                 }
             } else {
                 val tripId = tripRepository.createTrip(tripInput)
                 emit.effect(TripFormEffect.NavigateToTripDetail(tripId))
             }
         } catch (e: Exception) {
-            emit.state(currentState.copy(isSaving = false))
-            emit.effect(TripFormEffect.ShowSnackbar("Failed to save trip. Please try again."))
+            emit.effect(TripFormEffect.ShowSnackbar(R.string.trip_form_save_error))
+        } finally {
+            emit.updatedState<TripFormUiState.Form> { it.copy(isSaving = false) }
         }
     }
 
@@ -213,34 +233,9 @@ class TripFormViewModel @Inject constructor(
         emit.effect(TripFormEffect.NavigateBack)
     }
 
-    private fun validateForm(state: TripFormUiState.Form): ValidationResult {
-        val destinationError = if (state.destination.isBlank()) "Destination is required" else null
-        val startDateError = if (state.startDateMillis == null) "Start date is required" else null
-        val endDateError = when {
-            state.endDateMillis == null -> "End date is required"
-            state.startDateMillis != null && state.endDateMillis < state.startDateMillis ->
-                "End date must be after start date"
-            else -> null
-        }
-
-        return ValidationResult(
-            isValid = destinationError == null && startDateError == null && endDateError == null,
-            destinationError = destinationError,
-            startDateError = startDateError,
-            endDateError = endDateError
-        )
-    }
-
-    private fun millisToLocalDate(millis: Long): LocalDate {
+    private fun millisToLocalDate(millis: Long, zoneId: ZoneId): LocalDate {
         return Instant.ofEpochMilli(millis)
-            .atZone(ZoneId.systemDefault())
+            .atZone(zoneId)
             .toLocalDate()
     }
-
-    private data class ValidationResult(
-        val isValid: Boolean,
-        val destinationError: String?,
-        val startDateError: String?,
-        val endDateError: String?
-    )
 }

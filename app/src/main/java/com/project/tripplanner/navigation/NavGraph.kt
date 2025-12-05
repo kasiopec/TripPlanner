@@ -1,9 +1,11 @@
 package com.project.tripplanner.navigation
 
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -178,6 +180,7 @@ fun NavGraph(
                 }
             }
 
+            val context = LocalContext.current
             ObserveNavigationEffect(flow = tripFormViewModel.effect) { effect ->
                 when (effect) {
                     TripFormEffect.NavigateBack -> navController.navigateUp()
@@ -186,6 +189,7 @@ fun NavGraph(
                     }
 
                     is TripFormEffect.ShowSnackbar -> {
+                        Toast.makeText(context, effect.messageResId, Toast.LENGTH_SHORT).show()
                     }
                 }
             }

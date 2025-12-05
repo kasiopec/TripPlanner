@@ -45,7 +45,6 @@ import com.project.tripplanner.ui.components.text.BodyMedium
 import com.project.tripplanner.ui.components.text.Headline2
 import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
-import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -145,8 +144,8 @@ fun TripFormScreen(
                 value = uiState.destination,
                 onValueChange = onDestinationChange,
                 placeholder = stringResource(id = R.string.trip_form_destination_placeholder),
-                isError = uiState.destinationError != null,
-                errorMessage = uiState.destinationError,
+                isError = uiState.destinationErrorId != null,
+                errorMessage = uiState.destinationErrorId?.let { stringResource(id = it) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -159,8 +158,8 @@ fun TripFormScreen(
                     value = uiState.startDate,
                     onClick = onStartDateClick,
                     placeholder = stringResource(id = R.string.trip_form_start_date_placeholder),
-                    isError = uiState.startDateError != null,
-                    errorMessage = uiState.startDateError,
+                    isError = uiState.startDateErrorId != null,
+                    errorMessage = uiState.startDateErrorId?.let { stringResource(id = it) },
                     modifier = Modifier.weight(1f)
                 )
 
@@ -169,8 +168,8 @@ fun TripFormScreen(
                     value = uiState.endDate,
                     onClick = onEndDateClick,
                     placeholder = stringResource(id = R.string.trip_form_end_date_placeholder),
-                    isError = uiState.endDateError != null,
-                    errorMessage = uiState.endDateError,
+                    isError = uiState.endDateErrorId != null,
+                    errorMessage = uiState.endDateErrorId?.let { stringResource(id = it) },
                     enabled = !uiState.isSingleDay,
                     modifier = Modifier.weight(1f)
                 )
@@ -228,7 +227,7 @@ fun TripFormScreen(
             LargeRoundedButton(
                 text = stringResource(id = R.string.trip_form_save_button),
                 onClick = onSaveClick,
-                isEnabled = uiState.isSaveEnabled && !uiState.isSaving,
+                isEnabled = uiState.isSaveEnabled,
                 modifier = Modifier.padding(bottom = Dimensions.spacingL)
             )
         }
