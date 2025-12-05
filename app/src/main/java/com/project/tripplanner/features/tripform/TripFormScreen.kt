@@ -45,6 +45,7 @@ import com.project.tripplanner.ui.components.text.BodyMedium
 import com.project.tripplanner.ui.components.text.Headline2
 import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
+import com.project.tripplanner.utils.time.DateFormatter
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -155,7 +156,7 @@ fun TripFormScreen(
             ) {
                 TripDateField(
                     label = stringResource(id = R.string.trip_form_start_date_label),
-                    value = uiState.startDate,
+                    value = DateFormatter.formatAsDisplayDate(uiState.startDateMillis),
                     onClick = onStartDateClick,
                     placeholder = stringResource(id = R.string.trip_form_start_date_placeholder),
                     isError = uiState.startDateErrorId != null,
@@ -165,7 +166,7 @@ fun TripFormScreen(
 
                 TripDateField(
                     label = stringResource(id = R.string.trip_form_end_date_label),
-                    value = uiState.endDate,
+                    value = DateFormatter.formatAsDisplayDate(uiState.endDateMillis),
                     onClick = onEndDateClick,
                     placeholder = stringResource(id = R.string.trip_form_end_date_placeholder),
                     isError = uiState.endDateErrorId != null,

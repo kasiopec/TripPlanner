@@ -6,6 +6,7 @@ import com.project.tripplanner.Emitter
 import com.project.tripplanner.MviDefaultErrorHandler
 import com.project.tripplanner.R
 import com.project.tripplanner.data.model.TripInput
+import com.project.tripplanner.features.tripform.domain.TripFormValidator
 import com.project.tripplanner.repositories.TripRepository
 import com.project.tripplanner.utils.time.ClockProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,7 +19,8 @@ import java.time.ZoneId
 @HiltViewModel
 class TripFormViewModel @Inject constructor(
     private val tripRepository: TripRepository,
-    private val clockProvider: ClockProvider
+    private val clockProvider: ClockProvider,
+    private val tripFormValidator: TripFormValidator
 ) : BaseViewModel<TripFormEvent, TripFormUiState, TripFormEffect>(
     initialState = TripFormUiState.Loading
 ) {
@@ -45,7 +47,7 @@ class TripFormViewModel @Inject constructor(
         if (event.tripId != null && event.tripId > 0) {
             loadTripForEdit(event.tripId, emit)
         } else {
-            emit.state(TripFormUiState.Form())
+            emit.state(TripFormUiState.Form().updateSaveEnabled())
         }
     }
 
@@ -67,10 +69,10 @@ class TripFormViewModel @Inject constructor(
                     isSingleDay = trip.startDate == trip.endDate,
                     notes = trip.notes.orEmpty(),
                     coverImageUri = trip.coverImageUri?.let(Uri::parse)
-                )
+                ).updateSaveEnabled()
             )
         } else {
-            emit.state(TripFormUiState.Form())
+            emit.state(TripFormUiState.Form().updateSaveEnabled())
             emit.effect(TripFormEffect.ShowSnackbar(R.string.trip_form_load_error))
         }
     }
@@ -79,7 +81,7 @@ class TripFormViewModel @Inject constructor(
         event: TripFormEvent.DestinationChanged,
         emit: Emitter<TripFormUiState, TripFormEffect>
     ) {
-        emit.updatedState<TripFormUiState.Form> { currentState ->
+        emit.updateForm { currentState ->
             currentState.copy(
                 destination = event.value,
                 destinationErrorId = null
@@ -88,13 +90,13 @@ class TripFormViewModel @Inject constructor(
     }
 
     private fun onStartDateClicked(emit: Emitter<TripFormUiState, TripFormEffect>) {
-        emit.updatedState<TripFormUiState.Form> { currentState ->
+        emit.updateForm { currentState ->
             currentState.copy(showStartDatePicker = true)
         }
     }
 
     private fun onEndDateClicked(emit: Emitter<TripFormUiState, TripFormEffect>) {
-        emit.updatedState<TripFormUiState.Form> { currentState ->
+        emit.updateForm { currentState ->
             currentState.copy(showEndDatePicker = true)
         }
     }
@@ -103,7 +105,7 @@ class TripFormViewModel @Inject constructor(
         event: TripFormEvent.StartDateSelected,
         emit: Emitter<TripFormUiState, TripFormEffect>
     ) {
-        emit.updatedState<TripFormUiState.Form> { currentState ->
+        emit.updateForm { currentState ->
             val newEndDate = if (currentState.isSingleDay) event.millis else currentState.endDateMillis
             currentState.copy(
                 startDateMillis = event.millis,
@@ -119,7 +121,7 @@ class TripFormViewModel @Inject constructor(
         event: TripFormEvent.EndDateSelected,
         emit: Emitter<TripFormUiState, TripFormEffect>
     ) {
-        emit.updatedState<TripFormUiState.Form> { currentState ->
+        emit.updateForm { currentState ->
             currentState.copy(
                 endDateMillis = event.millis,
                 endDateErrorId = null,
@@ -129,7 +131,7 @@ class TripFormViewModel @Inject constructor(
     }
 
     private fun onDatePickerDismissed(emit: Emitter<TripFormUiState, TripFormEffect>) {
-        emit.updatedState<TripFormUiState.Form> { currentState ->
+        emit.updateForm { currentState ->
             currentState.copy(
                 showStartDatePicker = false,
                 showEndDatePicker = false
@@ -141,7 +143,7 @@ class TripFormViewModel @Inject constructor(
         event: TripFormEvent.SingleDayToggled,
         emit: Emitter<TripFormUiState, TripFormEffect>
     ) {
-        emit.updatedState<TripFormUiState.Form> { currentState ->
+        emit.updateForm { currentState ->
             val newEndDate = if (event.enabled && currentState.startDateMillis != null) {
                 currentState.startDateMillis
             } else {
@@ -159,7 +161,7 @@ class TripFormViewModel @Inject constructor(
         event: TripFormEvent.NotesChanged,
         emit: Emitter<TripFormUiState, TripFormEffect>
     ) {
-        emit.updatedState<TripFormUiState.Form> { currentState ->
+        emit.updateForm { currentState ->
             currentState.copy(notes = event.value)
         }
     }
@@ -168,7 +170,7 @@ class TripFormViewModel @Inject constructor(
         event: TripFormEvent.CoverImageSelected,
         emit: Emitter<TripFormUiState, TripFormEffect>
     ) {
-        emit.updatedState<TripFormUiState.Form> { currentState ->
+        emit.updateForm { currentState ->
             currentState.copy(coverImageUri = event.uri)
         }
     }
@@ -176,19 +178,23 @@ class TripFormViewModel @Inject constructor(
     private suspend fun onSaveClicked(emit: Emitter<TripFormUiState, TripFormEffect>) {
         val currentState = state.value as? TripFormUiState.Form ?: return
 
-        val validationResult = TripFormValidator.validate(currentState)
+        val validationResult = tripFormValidator.validate(
+            currentState.destination,
+            currentState.startDateMillis,
+            currentState.endDateMillis
+        )
         if (!validationResult.isValid) {
             emit.state(
                 currentState.copy(
                     destinationErrorId = validationResult.destinationErrorId,
                     startDateErrorId = validationResult.startDateErrorId,
                     endDateErrorId = validationResult.endDateErrorId
-                )
+                ).updateSaveEnabled()
             )
             return
         }
 
-        emit.updatedState<TripFormUiState.Form> { it.copy(isSaving = true) }
+        emit.updateForm { it.copy(isSaving = true) }
 
         try {
             val startDate = millisToLocalDate(currentState.startDateMillis!!, clockProvider.zoneId)
@@ -225,7 +231,7 @@ class TripFormViewModel @Inject constructor(
         } catch (e: Exception) {
             emit.effect(TripFormEffect.ShowSnackbar(R.string.trip_form_save_error))
         } finally {
-            emit.updatedState<TripFormUiState.Form> { it.copy(isSaving = false) }
+            emit.updateForm { it.copy(isSaving = false) }
         }
     }
 
@@ -237,5 +243,18 @@ class TripFormViewModel @Inject constructor(
         return Instant.ofEpochMilli(millis)
             .atZone(zoneId)
             .toLocalDate()
+    }
+
+    private fun TripFormUiState.Form.updateSaveEnabled(): TripFormUiState.Form {
+        val result = tripFormValidator.validate(this.destination, this.startDateMillis, this.endDateMillis)
+        return this.copy(isSaveEnabled = result.isValid && !this.isSaving)
+    }
+
+    private fun Emitter<TripFormUiState, TripFormEffect>.updateForm(
+        block: (TripFormUiState.Form) -> TripFormUiState.Form
+    ) {
+        updatedState<TripFormUiState.Form> { currentState ->
+            block(currentState).updateSaveEnabled()
+        }
     }
 }
