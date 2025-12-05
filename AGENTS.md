@@ -69,3 +69,5 @@ Generate only working code that compiles.
 Warn me if something is missing or would break.
 
 Suggest improvements if my request is unclear.
+
+Don't write code comments that AI agents tend to do such as //Label. Code must be self explanatory
