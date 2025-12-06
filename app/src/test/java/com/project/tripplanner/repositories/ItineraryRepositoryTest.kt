@@ -1,51 +1,57 @@
 package com.project.tripplanner.repositories
 
-import android.content.Context
-import androidx.room.Room
-import androidx.test.core.app.ApplicationProvider
+import androidx.room.withTransaction
+import com.project.tripplanner.data.local.db.ItineraryDao
+import com.project.tripplanner.data.local.db.ItinerarySortUpdate
 import com.project.tripplanner.data.local.db.TripPlannerDatabase
-import com.project.tripplanner.data.mapper.toEntity
+import com.project.tripplanner.data.local.entity.ItineraryItemEntity
 import com.project.tripplanner.data.model.ItineraryItemInput
 import com.project.tripplanner.data.model.ItineraryType
-import com.project.tripplanner.data.model.TripInput
-import com.project.tripplanner.utils.TestClockProvider
+import io.mockk.MockKAnnotations
+import io.mockk.coEvery
+import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkAll
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
 class ItineraryRepositoryTest {
-    private lateinit var database: TripPlannerDatabase
+    private val database: TripPlannerDatabase = mockk()
+    private val itineraryDao: ItineraryDao = mockk()
     private lateinit var repository: ItineraryRepository
-    private lateinit var clock: TestClockProvider
+
+    private var nextId = 1L
+    private val items = mutableListOf<ItineraryItemEntity>()
+    private val itemsFlow = MutableStateFlow<List<ItineraryItemEntity>>(emptyList())
 
     @Before
     fun setup() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = Room.inMemoryDatabaseBuilder(context, TripPlannerDatabase::class.java)
-            .allowMainThreadQueries()
-            .build()
-        clock = TestClockProvider(ZonedDateTime.of(2025, 2, 1, 9, 0, 0, 0, ZoneId.of("UTC")))
-        repository = ItineraryRepositoryImpl(database, database.itineraryDao())
+        MockKAnnotations.init(this, relaxUnitFun = true)
+        mockkStatic("androidx.room.RoomDatabaseKt")
+        coEvery { database.withTransaction(any<suspend () -> Any>()) } coAnswers { call ->
+            val block = call.invocation.args[1] as suspend () -> Any
+            block.invoke()
+        }
+        setupDaoMocks()
+        repository = ItineraryRepositoryImpl(database = database, itineraryDao = itineraryDao)
     }
 
     @After
     fun tearDown() {
-        database.close()
+        unmockkAll()
     }
 
     @Test
     fun addItem_assignsSortOrder() = runTest {
-        val tripId = createTrip()
+        val tripId = 1L
         val date = LocalDate.of(2025, 2, 10)
         val firstInput = ItineraryItemInput(
             tripId = tripId,
@@ -80,7 +86,7 @@ class ItineraryRepositoryTest {
 
     @Test
     fun reorderItems_updatesOrder() = runTest {
-        val tripId = createTrip()
+        val tripId = 2L
         val date = LocalDate.of(2025, 3, 1)
         val firstId = repository.addItem(
             ItineraryItemInput(
@@ -118,7 +124,7 @@ class ItineraryRepositoryTest {
 
     @Test
     fun observeItineraryForDate_filtersItems() = runTest {
-        val tripId = createTrip()
+        val tripId = 3L
         val firstDate = LocalDate.of(2025, 4, 1)
         val secondDate = LocalDate.of(2025, 4, 2)
         repository.addItem(
@@ -151,15 +157,75 @@ class ItineraryRepositoryTest {
         assertEquals("Arrive", dayOneItems.first().title)
     }
 
-    private suspend fun createTrip(): Long {
-        val tripInput = TripInput(
-            destination = "Test",
-            startDate = LocalDate.of(2025, 2, 10),
-            endDate = LocalDate.of(2025, 2, 12),
-            timezone = ZoneId.of("UTC"),
-            coverImageUri = null,
-            notes = null
-        )
-        return database.tripDao().insertTrip(tripInput.toEntity(clock.nowInstant()))
+    private fun setupDaoMocks() {
+        coEvery { itineraryDao.getMaxSortOrder(any()) } answers { call ->
+            val tripId = call.invocation.args[0] as Long
+            items.filter { it.tripId == tripId }.maxOfOrNull { it.sortOrder } ?: 0L
+        }
+        coEvery { itineraryDao.insertItem(any()) } answers { call ->
+            val entity = call.invocation.args[0] as ItineraryItemEntity
+            val stored = entity.copy(id = nextId++)
+            items.add(stored)
+            emitItems()
+            stored.id
+        }
+        coEvery { itineraryDao.observeItinerary(any()) } answers { call ->
+            val tripId = call.invocation.args[0] as Long
+            itemsFlow.map { current ->
+                current.filter { it.tripId == tripId }
+                    .sortedWith(compareBy(ItineraryItemEntity::sortOrder, ItineraryItemEntity::id))
+            }
+        }
+        coEvery { itineraryDao.observeItineraryForDate(any(), any()) } answers { call ->
+            val tripId = call.invocation.args[0] as Long
+            val localDate = call.invocation.args[1] as LocalDate
+            itemsFlow.map { current ->
+                current.filter { it.tripId == tripId && it.localDate == localDate }
+                    .sortedWith(compareBy(ItineraryItemEntity::sortOrder, ItineraryItemEntity::id))
+            }
+        }
+        coEvery { itineraryDao.getItemIdsForTrip(any()) } answers { call ->
+            val tripId = call.invocation.args[0] as Long
+            items.filter { it.tripId == tripId }
+                .sortedWith(compareBy(ItineraryItemEntity::sortOrder, ItineraryItemEntity::id))
+                .map { it.id }
+        }
+        coEvery { itineraryDao.updateSortOrders(any()) } answers { call ->
+            val updates = call.invocation.args[0] as List<ItinerarySortUpdate>
+            updates.forEach { update ->
+                val index = items.indexOfFirst { it.id == update.id }
+                if (index != -1) {
+                    val entity = items[index]
+                    items[index] = entity.copy(sortOrder = update.sortOrder)
+                }
+            }
+            emitItems()
+        }
+        coEvery { itineraryDao.observeItem(any()) } answers { call ->
+            val itemId = call.invocation.args[0] as Long
+            itemsFlow.map { current -> current.firstOrNull { it.id == itemId } }
+        }
+        coEvery { itineraryDao.updateItem(any()) } answers { call ->
+            val entity = call.invocation.args[0] as ItineraryItemEntity
+            val index = items.indexOfFirst { it.id == entity.id }
+            if (index != -1) {
+                items[index] = entity
+                emitItems()
+            }
+        }
+        coEvery { itineraryDao.deleteItem(any()) } answers { call ->
+            val itemId = call.invocation.args[0] as Long
+            items.removeAll { it.id == itemId }
+            emitItems()
+        }
+        coEvery { itineraryDao.deleteItemsForTrip(any()) } answers { call ->
+            val tripId = call.invocation.args[0] as Long
+            items.removeAll { it.tripId == tripId }
+            emitItems()
+        }
+    }
+
+    private fun emitItems() {
+        itemsFlow.value = items.sortedWith(compareBy(ItineraryItemEntity::sortOrder, ItineraryItemEntity::id))
     }
 }

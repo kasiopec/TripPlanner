@@ -10,6 +10,7 @@ import com.project.tripplanner.features.tripform.domain.TripFormValidator
 import com.project.tripplanner.features.tripform.domain.UpdateTripUseCase
 import com.project.tripplanner.repositories.TripRepository
 import com.project.tripplanner.utils.TestClockProvider
+import io.mockk.mockk
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -26,17 +27,17 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@RunWith(RobolectricTestRunner::class)
 class TripFormViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
@@ -73,7 +74,7 @@ class TripFormViewModelTest {
         advanceUntilIdle()
 
         storage.nextStoredPath = "cover_images/new-image.jpg"
-        val pickerUri = Uri.parse("content://picker/new")
+        val pickerUri = mockk<Uri>()
 
         viewModel.emitEvent(TripFormEvent.CoverImageSelected(pickerUri))
         advanceUntilIdle()
@@ -85,8 +86,11 @@ class TripFormViewModelTest {
 
         val startDateMillis = LocalDate.of(2025, 2, 1).atStartOfDay(clockProvider.zoneId).toInstant().toEpochMilli()
         viewModel.emitEvent(TripFormEvent.DestinationChanged("Rome"))
+        advanceUntilIdle()
         viewModel.emitEvent(TripFormEvent.StartDateSelected(startDateMillis))
+        advanceUntilIdle()
         viewModel.emitEvent(TripFormEvent.EndDateSelected(startDateMillis))
+        advanceUntilIdle()
         viewModel.emitEvent(TripFormEvent.SaveClicked)
         advanceUntilIdle()
 
@@ -112,7 +116,7 @@ class TripFormViewModelTest {
         )
         repository = FakeTripRepository(listOf(existingTrip))
         storage = FakeTripCoverImageStorage().apply {
-            displayUriForPath[existingCoverPath] = Uri.parse("file:///cover_images/existing.jpg")
+            displayUriForPath[existingCoverPath] = mockk()
         }
         viewModel = createViewModel()
         collectEffects()
@@ -150,9 +154,9 @@ class TripFormViewModelTest {
         )
         repository = FakeTripRepository(listOf(existingTrip))
         storage = FakeTripCoverImageStorage().apply {
-            displayUriForPath[existingCoverPath] = Uri.parse("file:///cover_images/existing.jpg")
+            displayUriForPath[existingCoverPath] = mockk()
             nextStoredPath = newCoverPath
-            displayUriForPath[newCoverPath] = Uri.parse("file:///cover_images/new.jpg")
+            displayUriForPath[newCoverPath] = mockk()
         }
         viewModel = createViewModel()
         collectEffects()
@@ -160,7 +164,8 @@ class TripFormViewModelTest {
         viewModel.emitEvent(TripFormEvent.ScreenLoaded(existingTrip.id))
         advanceUntilIdle()
 
-        viewModel.emitEvent(TripFormEvent.CoverImageSelected(Uri.parse("content://picker/new")))
+        val newPickerUri = mockk<Uri>()
+        viewModel.emitEvent(TripFormEvent.CoverImageSelected(newPickerUri))
         advanceUntilIdle()
         viewModel.emitEvent(TripFormEvent.SaveClicked)
         advanceUntilIdle()
@@ -172,8 +177,8 @@ class TripFormViewModelTest {
         assertEquals(1, storage.importCallCount)
     }
 
-    private fun collectEffects() {
-        effectsJob = launch(testDispatcher) {
+    private fun TestScope.collectEffects() {
+        effectsJob = backgroundScope.launch(testDispatcher) {
             viewModel.effect.collect { /* Drain effects to avoid blocking */ }
         }
     }

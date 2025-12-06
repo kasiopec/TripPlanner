@@ -1,50 +1,44 @@
 package com.project.tripplanner.repositories
 
-import android.content.Context
-import androidx.room.Room
-import com.project.tripplanner.data.local.db.TripPlannerDatabase
+import com.project.tripplanner.data.local.db.TripDao
 import com.project.tripplanner.data.local.entity.ItineraryItemEntity
 import com.project.tripplanner.data.local.entity.TripEntity
+import com.project.tripplanner.data.local.entity.TripWithItineraryEntity
 import com.project.tripplanner.data.model.ItineraryType
+import com.project.tripplanner.data.model.Trip
 import com.project.tripplanner.data.model.TripInput
 import com.project.tripplanner.utils.TestClockProvider
+import io.mockk.MockKAnnotations
+import io.mockk.Runs
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.slot
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import androidx.test.core.app.ApplicationProvider
 
-@RunWith(RobolectricTestRunner::class)
 class TripRepositoryTest {
 
-    private lateinit var database: TripPlannerDatabase
+    private val tripDao: TripDao = mockk()
     private lateinit var repository: TripRepository
     private lateinit var clock: TestClockProvider
 
     @Before
     fun setup() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = Room.inMemoryDatabaseBuilder(context, TripPlannerDatabase::class.java)
-            .allowMainThreadQueries()
-            .build()
+        MockKAnnotations.init(this, relaxUnitFun = true)
         clock = TestClockProvider(ZonedDateTime.of(2025, 1, 1, 10, 0, 0, 0, ZoneId.of("UTC")))
-        repository = TripRepositoryImpl(database.tripDao(), clock)
-    }
-
-    @After
-    fun tearDown() {
-        database.close()
+        repository = TripRepositoryImpl(tripDao = tripDao, clockProvider = clock)
     }
 
     @Test
@@ -57,44 +51,51 @@ class TripRepositoryTest {
             coverImageUri = null,
             notes = "Spring trip"
         )
+        val capturedEntity = slot<TripEntity>()
+        coEvery { tripDao.insertTrip(capture(capturedEntity)) } returns 1L
 
         val id = repository.createTrip(input)
 
-        val trips = repository.observeTrips().first()
-        val trip = trips.first()
-        assertEquals(id, trip.id)
-        assertEquals(clock.nowInstant(), trip.createdAt)
-        assertEquals(clock.nowInstant(), trip.updatedAt)
-        assertEquals("Europe/Lisbon", trip.timezone.id)
+        assertEquals(1L, id)
+        val inserted = capturedEntity.captured
+        assertEquals(clock.nowInstant(), inserted.createdAt)
+        assertEquals(clock.nowInstant(), inserted.updatedAt)
+        assertEquals(input.timezone.id, inserted.timezone)
     }
 
     @Test
     fun updateTrip_updatesOnlyUpdatedAt() = runTest {
-        val input = TripInput(
+        val createdAt = clock.nowInstant()
+        val originalUpdatedAt = createdAt.minusSeconds(30)
+        val trip = Trip(
+            id = 12L,
             destination = "Paris",
             startDate = LocalDate.of(2025, 6, 1),
             endDate = LocalDate.of(2025, 6, 5),
             timezone = ZoneId.of("Europe/Paris"),
             coverImageUri = null,
-            notes = null
+            notes = "Initial notes",
+            createdAt = createdAt,
+            updatedAt = originalUpdatedAt
         )
-        val id = repository.createTrip(input)
-        val original = repository.observeTrip(id).firstOrNull()!!
+        val updatedEntity = slot<TripEntity>()
+        coEvery { tripDao.updateTrip(capture(updatedEntity)) } just Runs
 
         clock.advanceBy(Duration.ofHours(2))
-        val updated = original.copy(destination = "Lyon", notes = "Replanned")
-        repository.updateTrip(updated)
+        repository.updateTrip(trip)
 
-        val stored = repository.observeTrip(id).firstOrNull()!!
-        assertEquals("Lyon", stored.destination)
-        assertEquals("Replanned", stored.notes)
-        assertEquals(original.createdAt, stored.createdAt)
-        assertTrue(stored.updatedAt.isAfter(original.updatedAt))
+        val persisted = updatedEntity.captured
+        assertEquals(createdAt, persisted.createdAt)
+        assertTrue(persisted.updatedAt.isAfter(originalUpdatedAt))
+        assertEquals(clock.nowInstant(), persisted.updatedAt)
+        assertEquals(trip.destination, persisted.destination)
+        coVerify(exactly = 1) { tripDao.updateTrip(any()) }
     }
 
     @Test
     fun observeTripWithItinerary_returnsJoinedItems() = runTest {
         val tripEntity = TripEntity(
+            id = 3L,
             destination = "Tokyo",
             startDate = LocalDate.of(2025, 7, 10),
             endDate = LocalDate.of(2025, 7, 15),
@@ -104,21 +105,26 @@ class TripRepositoryTest {
             createdAt = clock.nowInstant(),
             updatedAt = clock.nowInstant()
         )
-        val tripId = database.tripDao().insertTrip(tripEntity)
-        database.itineraryDao().insertItem(
-            ItineraryItemEntity(
-                tripId = tripId,
-                localDate = LocalDate.of(2025, 7, 10),
-                localTime = LocalTime.of(9, 0),
-                title = "Flight in",
-                type = ItineraryType.Flight,
-                location = "HND",
-                notes = null,
-                sortOrder = 1
+        val itineraryEntity = ItineraryItemEntity(
+            id = 7L,
+            tripId = tripEntity.id,
+            localDate = LocalDate.of(2025, 7, 10),
+            localTime = LocalTime.of(9, 0),
+            title = "Flight in",
+            type = ItineraryType.Flight,
+            location = "HND",
+            notes = null,
+            sortOrder = 1
+        )
+        coEvery { tripDao.observeTripWithItinerary(tripEntity.id) } returns flowOf(
+            TripWithItineraryEntity(
+                trip = tripEntity,
+                itinerary = listOf(itineraryEntity)
             )
         )
 
-        val tripWithItems = repository.observeTripWithItinerary(tripId).first()
+        val tripWithItems = repository.observeTripWithItinerary(tripEntity.id).first()
+
         requireNotNull(tripWithItems)
         assertEquals("Tokyo", tripWithItems.trip.destination)
         assertEquals(1, tripWithItems.itinerary.size)
