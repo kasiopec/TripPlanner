@@ -59,6 +59,7 @@ Use Kotlin, Jetpack Compose, AndroidX, Material 3.
 All UI must be Jetpack Compose.
 
 Use Material 3 components.
+Use `TripPlannerTheme` as the single source of truth for colors and typography in app UI; do not reference `MaterialTheme.colorScheme` or `MaterialTheme.typography` directly inside feature or component code unless you are inside the theme setup itself.
 
 Composables must be: stateless when possible, using @Immutable and @Stable when appropriate, previewable with @Preview functions. State hoisting.
 
@@ -96,14 +97,9 @@ Use PascalCase nouns (`HomeScreen`). UI states, events, and effects follow `Feat
 When creating UI composables dp variables needs to be taken from `Dimensions` object. Don't create new dimensions unless really necessary and will most likely be reused. Instead use already created ones. 
 If dp values are one shot and only makes sense in the isolated component it can be left hardcoded.
 
-### Cover Image & Media Rules
+Inside composables parameter `Modifier` should be the first optional parameter
 
-- For trip cover images, the canonical behavior is:
-  - User selects an image via the system picker (for example, `ActivityResultContracts.GetContent`).
-  - `TripCoverPicker` in `ui/components` acts as the reusable entry point that renders the current cover and exposes an `onClick` for the picker.
-  - `coverImageUri` stored in models is a String representation of the selected image URI.
-- When product requirements change (for example, from a fixed local set to a system picker), update `plan.md` and `tasks.md` alongside code changes so future work stays aligned.
-
+Full import path of the obejcts, classes etc. should not be in the actual code. For example: `import androidx.compose.foundation.layout.Spacer` all imports must be in the dedicated section. 
 
 ## Your Responsibilities
 

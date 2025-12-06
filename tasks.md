@@ -31,7 +31,7 @@ TripPlanner MVP Tasks
     - Make the whole card tappable to navigate to trip details.
   - Apply spacing, typography, and color tokens from `design-system.json` and the existing theme instead of ad-hoc values.
 - Shared UI components:
-  - Extract a reusable `TripCard` composable in `ui/components` so Trip detail or future surfaces can reuse it.
+  - [x] Extract a reusable `TripCard` composable in `ui/components` so Trip detail or future surfaces can reuse it.
   - Consider a dedicated `CountdownCard` component that encapsulates countdown formatting and visibility rules.
   - Home screen is display-only and should rely on stored cover URIs.
 - Behavior and state:
