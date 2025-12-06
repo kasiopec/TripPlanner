@@ -15,6 +15,7 @@ object Dimensions {
     val radiusXS = 4.dp
     val radiusS = 8.dp
     val radiusM = 12.dp
+    val radiusCard = 14.dp
     val radiusL = 16.dp
 
     val touchTarget = 48.dp
