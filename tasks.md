@@ -36,7 +36,7 @@ TripPlanner MVP Tasks
   - Home screen is display-only and should rely on stored cover URIs.
 - Behavior and state:
   - Derive trip status from `Trip.startDate`/`Trip.endDate` vs `ClockProvider.now()` in the device timezone:
-    - Upcoming: `now < startDate`.
+    - None: `now < startDate`.
     - In progress: `startDate <= now <= endDate`.
     - Ended: `now > endDate`.
   - Implement countdown behavior inside `CountdownCard`
