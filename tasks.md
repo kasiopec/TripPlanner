@@ -32,16 +32,14 @@ TripPlanner MVP Tasks
   - Apply spacing, typography, and color tokens from `design-system.json` and the existing theme instead of ad-hoc values.
 - Shared UI components:
   - Extract a reusable `TripCard` composable in `ui/components` so Trip detail or future surfaces can reuse it.
-  - Consider a dedicated `CountdownChip` component that encapsulates countdown formatting and visibility rules.
-  - Reuse `TripCoverPicker` only where image picking is needed; the Home screen is display-only and should rely on stored cover URIs.
+  - Consider a dedicated `CountdownCard` component that encapsulates countdown formatting and visibility rules.
+  - Home screen is display-only and should rely on stored cover URIs.
 - Behavior and state:
   - Derive trip status from `Trip.startDate`/`Trip.endDate` vs `ClockProvider.now()` in the device timezone:
     - Upcoming: `now < startDate`.
     - In progress: `startDate <= now <= endDate`.
     - Ended: `now > endDate`.
-  - Implement countdown behavior:
-    - Days-only mode when `startDate - now >= 24h`.
-    - Ticking mode (for example, minute-level updates) when the next upcoming trip is within 24 hours.
+  - Implement countdown behavior inside `CountdownCard`
   - Keep Home state as a single source of truth in `HomeViewModel`; `HomeScreen` remains stateless aside from the `UiState` it receives.
 - Navigation and tests:
   - Wire bottom-bar "+" action to navigate to `Screen.TripForm` in create mode.
