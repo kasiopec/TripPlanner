@@ -10,7 +10,7 @@ import com.project.tripplanner.ui.theme.TripPlannerTheme
 import com.project.tripplanner.ui.theme.scaledSp
 
 @Composable
-fun TitleLargeBold(
+fun DisplayText(
     modifier: Modifier = Modifier,
     text: String,
     color: Color = TripPlannerTheme.colors.onBackground,
