@@ -65,4 +65,7 @@
     <string name="home_countdown_hours">HOURS</string>
     <string name="home_countdown_mins">MINS</string>
     <string name="home_countdown_months">MONTHS</string>
+    <!-- Trip Card -->
+    <string name="trip_status_in_progress">On Trip</string>
+    <string name="trip_status_ended">Ended</string>
 </resources>
