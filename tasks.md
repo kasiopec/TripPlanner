@@ -10,22 +10,58 @@ TripPlanner MVP Tasks
 - Implemented repositories: `TripRepositoryImpl`, `ItineraryRepositoryImpl` with transaction-safe add/reorder and timestamp updates.
 - Added unit tests for converters, countdown logic, trip repo CRUD/join, itinerary repo sort/reorder/date filtering (tests currently require JDK locally).
 
-## 2. Trips list
+## 2. Home screen
 
-- Implement `TripsViewModel` with:
-  - Countdown and status handling for upcoming, in-progress, and ended trips.
-  - State for loading, error, and empty list.
-- Build Compose UI:
-  - Trip cards with cover placeholders (and user-selected cover images when available).
-  - Countdown chip shown only for upcoming trips.
-  - Clear labels for in-progress and ended trips (no countdown).
-  - Empty state CTA encouraging creation of the first trip.
-- Navigation:
-  - Bottom-bar "+" action navigates to `TripForm` in create mode.
-  - Tapping a trip card navigates to `TripDetail` with the trip id.
-- Testing:
-  - UI tests for empty vs populated states.
-  - UI tests for countdown modes and status labels.
+- ViewModel and MVI:
+  - Create a feature package (for example, `features.home`) to co-locate Home screen logic.
+  - Add `HomeUiState`, `HomeEvent`, and `HomeEffect` following the existing MVI style (Loading / Content / GlobalError using `ErrorState`).
+  - Implement `HomeViewModel`, injecting `TripRepository` and `ClockProvider` via Hilt.
+  - Map `TripRepository.observeTrips()` into a list of presentation items with precomputed status (Upcoming, InProgress, Ended), countdown text (or null), and a deterministic sort order (for example, upcoming → in-progress → ended).
+  - Handle loading, error, and empty states, plus a refresh event (pull-to-refresh or explicit retry).
+- UI:
+  - Add `HomeScreen` composable that consumes `HomeUiState` and renders:
+    - Loading state (progress indicator or skeletons).
+    - Error state with a retry CTA when repository operations fail.
+    - Empty state encouraging creation of the first trip.
+    - Populated state using `LazyColumn` with trip cards and a bottom bar "+" action.
+  - Trip cards:
+    - Show destination, date range, and a countdown chip only for upcoming trips.
+    - Show clear labels for in-progress and ended trips instead of a countdown chip.
+    - Display cover images from `Trip.coverImageUri` when available, with a design-system placeholder when missing.
+    - Make the whole card tappable to navigate to trip details.
+  - Apply spacing, typography, and color tokens from `design-system.json` and the existing theme instead of ad-hoc values.
+- Shared UI components:
+  - Extract a reusable `TripCard` composable in `ui/components` so Trip detail or future surfaces can reuse it.
+  - Consider a dedicated `CountdownChip` component that encapsulates countdown formatting and visibility rules.
+  - Reuse `TripCoverPicker` only where image picking is needed; the Home screen is display-only and should rely on stored cover URIs.
+- Behavior and state:
+  - Derive trip status from `Trip.startDate`/`Trip.endDate` vs `ClockProvider.now()` in the device timezone:
+    - Upcoming: `now < startDate`.
+    - In progress: `startDate <= now <= endDate`.
+    - Ended: `now > endDate`.
+  - Implement countdown behavior:
+    - Days-only mode when `startDate - now >= 24h`.
+    - Ticking mode (for example, minute-level updates) when the next upcoming trip is within 24 hours.
+  - Keep Home state as a single source of truth in `HomeViewModel`; `HomeScreen` remains stateless aside from the `UiState` it receives.
+- Navigation and tests:
+  - Wire bottom-bar "+" action to navigate to `Screen.TripForm` in create mode.
+  - Make tapping a trip card navigate to `Screen.TripDetail` with the selected trip id.
+  - Add unit tests for `HomeViewModel` covering mapping from `Trip` to status/countdown, and loading/empty/error states.
+  - Add Compose UI tests for empty vs populated states, countdown vs status labels, and navigation intents for "+" and card tap.
+- Potential issues:
+  - Countdown ticking and UX:
+    - We only show a ticking countdown for the next upcoming trip, as a standalone component at the top of the Home screen, rather than per-card timers.
+    - We should iterate on spacing, typography, and interaction (for example, tap targets or “view details” affordances) once the first version is implemented.
+  - Timezone and date boundaries:
+    - For MVP we strictly use the device timezone when classifying trips as upcoming, in-progress, or ended (matching `plan.md`).
+    - This needs a follow-up note in post-MVP planning to revisit behavior for travelers crossing timezones and potentially move to per-trip `ZoneId` logic.
+  - Large lists and image performance:
+    - Use `LazyColumn` with stable keys plus Coil (already in the project) for loading cover images from local file URIs.
+    - Downscale or generate lightweight thumbnails at save time so the Home screen always loads small images, minimizing I/O and decode cost even for large trip lists.
+  - Missing or broken cover files:
+    - When `TripCoverImageStorage.resolveForDisplay` returns null, always fall back to a deterministic placeholder (for example, initials-based avatar or neutral gradient) so cards never show a broken image.
+  - Error handling UX:
+    - The original full-screen error design was a first draft; we should prefer non-blocking error banners or snackbars while keeping the last known-good list visible and offering a clear Retry action.
 
 ## 3. Trip form
 
