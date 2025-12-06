@@ -11,12 +11,10 @@ import com.project.tripplanner.features.tripform.domain.TripFormValidator
 import com.project.tripplanner.features.tripform.domain.UpdateTripUseCase
 import com.project.tripplanner.repositories.TripRepository
 import com.project.tripplanner.utils.time.ClockProvider
+import com.project.tripplanner.utils.time.millisToLocalDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.firstOrNull
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
 
 @HiltViewModel
 class TripFormViewModel @Inject constructor(
@@ -211,13 +209,12 @@ class TripFormViewModel @Inject constructor(
         emit.updateForm { it.copy(isSaving = true) }
 
         var storedCoverPath: String? = null
-        var importedFromPicker = false
+        val importedFromPicker = currentState.pendingCoverImageUri != null
 
         try {
             storedCoverPath = currentState.pendingCoverImageUri?.let { pickerUri ->
                 tripCoverImageStorage.importFromPicker(pickerUri)
             } ?: currentState.coverImagePath?.takeIf { it.isNotBlank() }
-            importedFromPicker = currentState.pendingCoverImageUri != null && storedCoverPath != null
 
             val resolvedCoverUri = storedCoverPath?.let { tripCoverImageStorage.resolveForDisplay(it) }
 
@@ -260,8 +257,8 @@ class TripFormViewModel @Inject constructor(
                 emit.effect(TripFormEffect.NavigateToTripDetail(tripId))
             }
         } catch (e: Exception) {
-            if (importedFromPicker && storedCoverPath != null) {
-                runCatching { tripCoverImageStorage.delete(storedCoverPath) }
+            if (importedFromPicker) {
+                storedCoverPath?.let { runCatching { tripCoverImageStorage.delete(it) } }
             }
             emit.effect(TripFormEffect.ShowSnackbar(R.string.trip_form_save_error))
         } finally {
@@ -271,12 +268,6 @@ class TripFormViewModel @Inject constructor(
 
     private fun onBackClicked(emit: Emitter<TripFormUiState, TripFormEffect>) {
         emit.effect(TripFormEffect.NavigateBack)
-    }
-
-    private fun millisToLocalDate(millis: Long, zoneId: ZoneId): LocalDate {
-        return Instant.ofEpochMilli(millis)
-            .atZone(zoneId)
-            .toLocalDate()
     }
 
     private fun TripFormUiState.Form.updateSaveEnabled(): TripFormUiState.Form {
