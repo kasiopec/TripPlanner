@@ -1,5 +1,6 @@
 package com.project.tripplanner.ui.components
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.SizeTransform
@@ -149,7 +150,7 @@ private fun calculateDisplayUnits(now: ZonedDateTime, until: ZonedDateTime): Dis
     return if (days > 30) {
         val months = ChronoUnit.MONTHS.between(now.toLocalDate(), until.toLocalDate())
         val displayMonths = months.toInt()
-        val remainingDays = (days % 30).toInt()
+        val remainingDays = ChronoUnit.DAYS.between(now.plusMonths(months).toLocalDate(), until.toLocalDate()).toInt()
         val hours = ((totalSeconds % (24 * 3600)) / 3600).toInt()
 
         DisplayUnits(
@@ -182,6 +183,7 @@ fun TimeUnitSeparator(color: Color) {
     )
 }
 
+@SuppressLint("DefaultLocale")
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun CountdownUnit(
@@ -214,7 +216,7 @@ fun CountdownUnit(
                     DisplayText(
                         text = String.format("%02d", targetValue),
                         color = textColor,
-                        scalable = false // Assuming we want fixed size or controlled scaling for these digits
+                        scalable = false
                     )
                 }
             }
