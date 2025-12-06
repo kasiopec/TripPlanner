@@ -25,14 +25,14 @@ TripPlanner MVP Tasks
     - Empty state encouraging creation of the first trip.
     - Populated state using `LazyColumn` with trip cards and a bottom bar "+" action.
   - Trip cards:
-    - Show destination, date range, and a countdown chip only for upcoming trips.
-    - Show clear labels for in-progress and ended trips instead of a countdown chip.
+    - Show destination and date range.
+    - Show clear labels for in-progress and ended trips.
     - Display cover images from `Trip.coverImageUri` when available, with a design-system placeholder when missing.
     - Make the whole card tappable to navigate to trip details.
   - Apply spacing, typography, and color tokens from `design-system.json` and the existing theme instead of ad-hoc values.
 - Shared UI components:
   - [x] Extract a reusable `TripCard` composable in `ui/components` so Trip detail or future surfaces can reuse it.
-  - Consider a dedicated `CountdownCard` component that encapsulates countdown formatting and visibility rules.
+  - Use a dedicated `CountdownCard` component that encapsulates countdown formatting and visibility rules as a standalone element on the Home screen (not inside individual trip cards).
   - Home screen is display-only and should rely on stored cover URIs.
 - Behavior and state:
   - Derive trip status from `Trip.startDate`/`Trip.endDate` vs `ClockProvider.now()` in the device timezone:
