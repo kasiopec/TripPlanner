@@ -1,12 +1,14 @@
 package com.project.tripplanner.features.tripform
 
-import android.net.Uri
 import com.project.tripplanner.BaseViewModel
 import com.project.tripplanner.Emitter
 import com.project.tripplanner.MviDefaultErrorHandler
 import com.project.tripplanner.R
+import com.project.tripplanner.cover.TripCoverImageStorage
 import com.project.tripplanner.data.model.TripInput
+import com.project.tripplanner.features.tripform.domain.CreateTripUseCase
 import com.project.tripplanner.features.tripform.domain.TripFormValidator
+import com.project.tripplanner.features.tripform.domain.UpdateTripUseCase
 import com.project.tripplanner.repositories.TripRepository
 import com.project.tripplanner.utils.time.ClockProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,6 +21,9 @@ import java.time.ZoneId
 @HiltViewModel
 class TripFormViewModel @Inject constructor(
     private val tripRepository: TripRepository,
+    private val createTripUseCase: CreateTripUseCase,
+    private val updateTripUseCase: UpdateTripUseCase,
+    private val tripCoverImageStorage: TripCoverImageStorage,
     private val clockProvider: ClockProvider,
     private val tripFormValidator: TripFormValidator
 ) : BaseViewModel<TripFormEvent, TripFormUiState, TripFormEffect>(
@@ -60,6 +65,7 @@ class TripFormViewModel @Inject constructor(
         if (trip != null) {
             val startDateMillis = trip.startDate.atStartOfDay(trip.timezone).toInstant().toEpochMilli()
             val endDateMillis = trip.endDate.atStartOfDay(trip.timezone).toInstant().toEpochMilli()
+            val displayCoverUri = trip.coverImageUri?.let { tripCoverImageStorage.resolveForDisplay(it) }
             emit.state(
                 TripFormUiState.Form(
                     tripId = trip.id,
@@ -68,9 +74,14 @@ class TripFormViewModel @Inject constructor(
                     endDateMillis = endDateMillis,
                     isSingleDay = trip.startDate == trip.endDate,
                     notes = trip.notes.orEmpty(),
-                    coverImageUri = trip.coverImageUri?.let(Uri::parse)
+                    coverImagePath = trip.coverImageUri.takeIf { displayCoverUri != null },
+                    coverImageUri = displayCoverUri,
+                    pendingCoverImageUri = null
                 ).updateSaveEnabled()
             )
+            if (trip.coverImageUri != null && displayCoverUri == null) {
+                emit.effect(TripFormEffect.ShowSnackbar(R.string.trip_form_cover_missing_error))
+            }
         } else {
             emit.state(TripFormUiState.Form().updateSaveEnabled())
             emit.effect(TripFormEffect.ShowSnackbar(R.string.trip_form_load_error))
@@ -171,7 +182,10 @@ class TripFormViewModel @Inject constructor(
         emit: Emitter<TripFormUiState, TripFormEffect>
     ) {
         emit.updateForm { currentState ->
-            currentState.copy(coverImageUri = event.uri)
+            currentState.copy(
+                pendingCoverImageUri = event.uri,
+                coverImageUri = event.uri
+            )
         }
     }
 
@@ -197,6 +211,22 @@ class TripFormViewModel @Inject constructor(
         emit.updateForm { it.copy(isSaving = true) }
 
         try {
+            val storedCoverPath = currentState.pendingCoverImageUri?.let { pickerUri ->
+                tripCoverImageStorage.importFromPicker(pickerUri)
+            } ?: currentState.coverImagePath?.takeIf { it.isNotBlank() }
+
+            val resolvedCoverUri = when {
+                storedCoverPath != null -> tripCoverImageStorage.resolveForDisplay(storedCoverPath) ?: currentState.coverImageUri
+                else -> currentState.coverImageUri
+            }
+            emit.updateForm {
+                it.copy(
+                    coverImagePath = storedCoverPath,
+                    pendingCoverImageUri = null,
+                    coverImageUri = resolvedCoverUri
+                )
+            }
+
             val startDate = millisToLocalDate(currentState.startDateMillis!!, clockProvider.zoneId)
             val endDate = millisToLocalDate(currentState.endDateMillis!!, clockProvider.zoneId)
 
@@ -205,27 +235,20 @@ class TripFormViewModel @Inject constructor(
                 startDate = startDate,
                 endDate = endDate,
                 timezone = clockProvider.zoneId,
-                coverImageUri = currentState.coverImageUri?.toString(),
+                coverImageUri = storedCoverPath,
                 notes = currentState.notes.takeIf { it.isNotBlank() }
             )
 
             if (currentState.isEditMode) {
                 val existingTrip = tripRepository.observeTrip(currentState.tripId!!).firstOrNull()
                 if (existingTrip != null) {
-                    val updatedTrip = existingTrip.copy(
-                        destination = tripInput.destination,
-                        startDate = tripInput.startDate,
-                        endDate = tripInput.endDate,
-                        coverImageUri = tripInput.coverImageUri,
-                        notes = tripInput.notes
-                    )
-                    tripRepository.updateTrip(updatedTrip)
+                    updateTripUseCase(existingTrip, tripInput)
                     emit.effect(TripFormEffect.NavigateToTripDetail(existingTrip.id))
                 } else {
                     emit.effect(TripFormEffect.ShowSnackbar(R.string.trip_form_load_error))
                 }
             } else {
-                val tripId = tripRepository.createTrip(tripInput)
+                val tripId = createTripUseCase(tripInput)
                 emit.effect(TripFormEffect.NavigateToTripDetail(tripId))
             }
         } catch (e: Exception) {
