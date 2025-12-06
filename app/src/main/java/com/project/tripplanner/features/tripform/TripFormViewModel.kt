@@ -210,22 +210,16 @@ class TripFormViewModel @Inject constructor(
 
         emit.updateForm { it.copy(isSaving = true) }
 
+        var storedCoverPath: String? = null
+        var importedFromPicker = false
+
         try {
-            val storedCoverPath = currentState.pendingCoverImageUri?.let { pickerUri ->
+            storedCoverPath = currentState.pendingCoverImageUri?.let { pickerUri ->
                 tripCoverImageStorage.importFromPicker(pickerUri)
             } ?: currentState.coverImagePath?.takeIf { it.isNotBlank() }
+            importedFromPicker = currentState.pendingCoverImageUri != null && storedCoverPath != null
 
-            val resolvedCoverUri = when {
-                storedCoverPath != null -> tripCoverImageStorage.resolveForDisplay(storedCoverPath) ?: currentState.coverImageUri
-                else -> currentState.coverImageUri
-            }
-            emit.updateForm {
-                it.copy(
-                    coverImagePath = storedCoverPath,
-                    pendingCoverImageUri = null,
-                    coverImageUri = resolvedCoverUri
-                )
-            }
+            val resolvedCoverUri = storedCoverPath?.let { tripCoverImageStorage.resolveForDisplay(it) }
 
             val startDate = millisToLocalDate(currentState.startDateMillis!!, clockProvider.zoneId)
             val endDate = millisToLocalDate(currentState.endDateMillis!!, clockProvider.zoneId)
@@ -243,15 +237,32 @@ class TripFormViewModel @Inject constructor(
                 val existingTrip = tripRepository.observeTrip(currentState.tripId!!).firstOrNull()
                 if (existingTrip != null) {
                     updateTripUseCase(existingTrip, tripInput)
+                    emit.updateForm {
+                        it.copy(
+                            coverImagePath = storedCoverPath,
+                            pendingCoverImageUri = null,
+                            coverImageUri = resolvedCoverUri ?: it.coverImageUri
+                        )
+                    }
                     emit.effect(TripFormEffect.NavigateToTripDetail(existingTrip.id))
                 } else {
                     emit.effect(TripFormEffect.ShowSnackbar(R.string.trip_form_load_error))
                 }
             } else {
                 val tripId = createTripUseCase(tripInput)
+                emit.updateForm {
+                    it.copy(
+                        coverImagePath = storedCoverPath,
+                        pendingCoverImageUri = null,
+                        coverImageUri = resolvedCoverUri ?: it.coverImageUri
+                    )
+                }
                 emit.effect(TripFormEffect.NavigateToTripDetail(tripId))
             }
         } catch (e: Exception) {
+            if (importedFromPicker && storedCoverPath != null) {
+                runCatching { tripCoverImageStorage.delete(storedCoverPath) }
+            }
             emit.effect(TripFormEffect.ShowSnackbar(R.string.trip_form_save_error))
         } finally {
             emit.updateForm { it.copy(isSaving = false) }

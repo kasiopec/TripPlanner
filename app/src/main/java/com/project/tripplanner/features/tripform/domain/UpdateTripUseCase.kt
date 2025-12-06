@@ -27,7 +27,7 @@ class UpdateTripUseCase @Inject constructor(
         val previousCoverPath = existingTrip.coverImageUri
         val newCoverPath = updatedInput.coverImageUri
         if (!previousCoverPath.isNullOrBlank() && previousCoverPath != newCoverPath) {
-            tripCoverImageStorage.delete(previousCoverPath)
+            runCatching { tripCoverImageStorage.delete(previousCoverPath) }
         }
     }
 }

@@ -66,7 +66,9 @@ class TripCoverImageStorageImpl @Inject constructor(
             .split("/")
             .filter { it.isNotEmpty() && it != ".." }
             .joinToString("/")
-        return File(context.filesDir, safePath)
+        val candidate = File(context.filesDir, safePath).canonicalFile
+        val root = context.filesDir.canonicalFile
+        return if (candidate.path.startsWith(root.path)) candidate else File(root, "")
     }
 
     private fun mimeTypeToExtension(mimeType: String): String? {
