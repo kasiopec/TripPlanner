@@ -10,6 +10,7 @@ Use the Gradle Wrapper from the repo root:
 - `./gradlew lint` runs Android lint plus Compose metrics.
 - `./gradlew testDebugUnitTest` executes JVM unit tests.
 - `./gradlew connectedAndroidTest` runs Espresso/Compose tests on an emulator (boot one first).
+- Do not try to use unix tools while running file related commands e.g. "sed" as currently main CLI is PowerShell on Windows. 
 
 ## Testing Guidelines
 Add unit tests for validators, repositories, and view models inside `app/src/test`, mirroring package paths (`features.register.RegisterViewModelTest`). Compose UI or navigation flows belong in instrumentation tests with `createAndroidComposeRule`. Keep coverage focused on auth, Supabase integration, and navigation. Document any required mock data and refresh Compose previews or golden screenshots when UI changes.
@@ -61,6 +62,17 @@ Use Material 3 components.
 
 Composables must be: stateless when possible, using @Immutable and @Stable when appropriate, previewable with @Preview functions. State hoisting.
 
+If Codebase has appropriate composables components created, use them. For example: 
+
+```
+Text(
+text = destination,
+style = typography.h1,
+
+```
+can be replaced by `Headline1` component in `ui/components/text/`
+
+
 ## Testing Requirements
 
 When asked, generate:
@@ -81,7 +93,8 @@ Keep feature files small, relying on DI via Hilt constructor injection with prov
 
 Use PascalCase nouns (`HomeScreen`). UI states, events, and effects follow `FeatureUiState`, `FeatureEvent`, etc
 
-When creating UI composables dp variables needs to be taken from `Dimensions` object.
+When creating UI composables dp variables needs to be taken from `Dimensions` object. Don't create new dimensions unless really necessary and will most likely be reused. Instead use already created ones. 
+If dp values are one shot and only makes sense in the isolated component it can be left hardcoded.
 
 ### Cover Image & Media Rules
 

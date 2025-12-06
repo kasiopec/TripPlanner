@@ -59,4 +59,10 @@
     <!-- Cover Picker -->
     <string name="cover_picker_tap_to_add">Tap to add picture</string>
     <string name="cover_picker_change">Change</string>
+    <!-- Home Countdown -->
+    <string name="home_countdown_title">NEXT ADVENTURE</string>
+    <string name="home_countdown_days">DAYS</string>
+    <string name="home_countdown_hours">HOURS</string>
+    <string name="home_countdown_mins">MINS</string>
+    <string name="home_countdown_months">MONTHS</string>
 </resources>

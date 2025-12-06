@@ -8,7 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.project.tripplanner.navigation.Screen
-import com.project.tripplanner.ui.components.text.TitleLargeBold
+import com.project.tripplanner.ui.components.text.DisplayText
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 
 @Composable
@@ -20,7 +20,7 @@ fun HomeScreen() {
             .background(color = colors.background),
         contentAlignment = Alignment.Center
     ) {
-        TitleLargeBold(
+        DisplayText(
             text = Screen.Home.title,
             color = colors.onBackground
         )
