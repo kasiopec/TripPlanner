@@ -6,11 +6,12 @@ Scope and assumptions
 - Always follow the app's defined design-system theme (colors, typography, spacing) as the single source of truth; never derive colors from arbitrary example images, marketing mocks, or unrelated web screenshots attached for reference.
 - End date mandatory; when user marks a trip as single-day, auto-fill end = start and keep it in sync, otherwise user must explicitly choose both start and end dates.
 - Include trip cover images chosen by the user via the system image picker and activity type icons; drag-and-drop ordering required.
+- Copy cover images into app-private storage only when the user taps Save (not at picker time) to avoid orphaned files from cancelled selections.
 - Countdown for upcoming trips only with two modes (>24h days, <24h ticking); hide countdown once a trip is in progress or ended.
 - Use existing bottom bar + for "add trip"; navigation already initialized for home.
 
 Data model
-- Trip: id, title/destination, startDate, endDate, timezone (device), coverImageUri?, notes, createdAt, updatedAt. For MVP, coverImageUri points to a user-selected local image (from the system picker) but remains flexible for future remote sources.
+- Trip: id, title/destination, startDate, endDate, timezone (device), coverImageUri?, notes, createdAt, updatedAt. For MVP, coverImageUri is an app-private reference (for example, a relative file path) to a copied image derived from the system picker, so it remains stable even if the original picker Uri changes or the source image is removed.
 - ItineraryItem: id, tripId, localDate, localTime?, title, type (Flight/Hotel/Activity/Food/Shopping), location, notes, sortOrder.
 - Derived: day offsets/display strings from stored dates/times; countdown uses now() vs startDate in device timezone.
 
@@ -37,7 +38,7 @@ UI behavior
 Near-term tasks
 - Confirm data layer foundation and time helpers (already implemented) match this plan and keep tests green.
 - Build Trips list UI with countdowns for upcoming trips, status labels, error handling, and bottom-bar + action.
-- Build TripForm; wire create/edit flows and single-day toggle behavior (end auto-filled = start only when single-day is enabled); include validation, error states, and tests.
+- Build TripForm; wire create/edit flows and single-day toggle behavior (end auto-filled = start only when single-day is enabled); include validation, error states, tests, and robust cover image handling via app-private copies and a stable `coverImageUri` reference, importing the image into private storage only when Save is tapped.
 - Build TripDetail with header, date strip, timeline shell, status handling, and basic error/loading states.
 - Build ActivityForm with type picker and date/time constraints; hook into repo with validation and error handling.
 - Add drag-and-drop to timeline using standard Compose APIs; persist new sortOrder.

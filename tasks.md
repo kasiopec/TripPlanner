@@ -44,10 +44,10 @@ TripPlanner MVP Tasks
     - End date field connected to the same date picker logic, disabled when single-day is ON.
     - Single-day toggle (default OFF for new trips) displayed as a labeled row using Material 3 `Switch` or a small reusable row component.
     - Optional notes multi-line input using `PlannerOutlinedTextField` with `singleLine = false`.
-    - Cover image picker stub that integrates with the system image picker (for example, `ActivityResultContracts.GetContent`) via `TripCoverPicker` and exposes the selected `coverImageUri` back to the ViewModel.
+    - Cover image picker that integrates with the system image picker (for example, `ActivityResultContracts.GetContent`) via `TripCoverPicker`, keeps the picker Uri for display, and only imports the selected image into app-private storage when the user taps Save.
 - Shared UI components and resources:
   - Add a small reusable `TripDateField` component in `ui/components` that renders a read-only `PlannerOutlinedTextField` with a date label, formatted value, and calendar icon, and invokes a callback when clicked (Trip form wires this to a date picker dialog).
-  - Add a `TripCoverPicker` component in `ui/components` that renders the current cover image and wires an `onClick` callback to the system image picker, emitting the chosen `coverImageUri` for Trip form and Trips list reuse.
+  - Add a `TripCoverPicker` component in `ui/components` that renders the current cover image and wires an `onClick` callback to the system image picker, emitting a displayable Uri while the ViewModel persists a neutral app-private reference suitable for `Trip.coverImageUri`.
   - Introduce string resources in `res/values/strings.xml` for all Trip form labels, placeholders, and error messages (destination, start date, end date, single-day label, notes, cover image, validation messages).
 - Behavior and validation:
   - Enforce required destination, start date, and end date.
@@ -61,7 +61,8 @@ TripPlanner MVP Tasks
   - Keep primary action disabled when the form is invalid or a save is in progress.
 - Saving and effects:
   - On save click, send an event to `TripFormViewModel` to create or update the trip via the repository.
-  - Map UI state into a domain model (`TripInput` for create, `Trip` copy for update) before calling `TripRepository` so domain models stay free of UI-only concerns.
+  - Map UI state into domain inputs (`TripInput` for create, `Trip` copy for update), including the stable cover image reference, before calling `TripRepository` so domain models stay free of UI-only concerns and Android types.
+  - Only copy the cover image into app-private storage during save; do not persist files when the picker dialog closes to avoid orphaned images from cancelled selections.
   - Set a loading state while saving.
   - On success:
     - Emit a navigation effect to close the form and return the trip id.
