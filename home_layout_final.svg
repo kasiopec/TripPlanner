@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="2400" viewBox="0 0 1080 2400">
+  <!-- Background -->
+  <rect x="0" y="0" width="1080" height="2400" fill="#F0F1F6"/>
+
+  <!-- Top edge-to-edge hero for CURRENT TRIP (default state when a trip is in progress) -->
+  <defs>
+    <linearGradient id="heroGradientFinal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1F5AE7"/>
+      <stop offset="100%" stop-color="#5182FF"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1080" height="360" fill="url(#heroGradientFinal)"/>
+
+  <!-- Left column: current trip summary -->
+  <text x="72" y="120" font-family="sans-serif" font-size="26" fill="#E6EEFF">CURRENT TRIP</text>
+  <text x="72" y="182" font-family="sans-serif" font-size="48" fill="#FFFFFF">Lisbon, Portugal</text>
+  <text x="72" y="228" font-family="sans-serif" font-size="22" fill="#E6EEFF">Feb 20 – Mar 02</text>
+
+  <!-- Progress / day indicator -->
+  <rect x="72" y="252" width="260" height="48" rx="24" fill="#FFFFFF" fill-opacity="0.14"/>
+  <circle cx="104" cy="276" r="10" fill="#ECFAF1"/>
+  <text x="132" y="282" font-family="sans-serif" font-size="20" fill="#FFFFFF">Day 3 of 11</text>
+
+  <!-- Right column: simple abstract illustration -->
+  <rect x="640" y="72" width="320" height="216" rx="32" fill="#F7F8FD" opacity="0.9"/>
+  <circle cx="776" cy="142" r="52" fill="#E6EEFF"/>
+  <circle cx="862" cy="196" r="28" fill="#5182FF" opacity="0.9"/>
+  <rect x="664" y="210" width="264" height="64" rx="22" fill="#FFFFFF"/>
+  <rect x="684" y="222" width="76" height="40" rx="16" fill="#E6EEFF"/>
+  <rect x="768" y="224" width="132" height="14" rx="7" fill="#E2E5ED"/>
+  <rect x="768" y="246" width="96" height="10" rx="5" fill="#E2E5ED"/>
+
+  <!-- Content area background -->
+  <rect x="0" y="360" width="1080" height="2040" fill="#F0F1F6"/>
+
+  <!-- Section header with explicit chips: All / Upcoming / Ended -->
+  <text x="72" y="438" font-family="sans-serif" font-size="32" fill="#1B1D25">My trips</text>
+
+  <!-- Chip row -->
+  <!-- All (selected) -->
+  <rect x="72" y="456" width="150" height="56" rx="28" fill="#5182FF"/>
+  <text x="147" y="491" font-family="sans-serif" font-size="24" fill="#FFFFFF" text-anchor="middle">All</text>
+
+  <!-- Upcoming -->
+  <rect x="238" y="456" width="220" height="56" rx="28" fill="#FFFFFF" stroke="#E2E5ED" stroke-width="2"/>
+  <text x="348" y="491" font-family="sans-serif" font-size="24" fill="#6F7785" text-anchor="middle">Upcoming</text>
+
+  <!-- Ended -->
+  <rect x="474" y="456" width="200" height="56" rx="28" fill="#FFFFFF" stroke="#E2E5ED" stroke-width="2"/>
+  <text x="574" y="491" font-family="sans-serif" font-size="24" fill="#6F7785" text-anchor="middle">Ended</text>
+
+  <!-- Vertical trip list (full-width TripCard style, no current trip in list) -->
+
+  <!-- Card 1: Upcoming -->
+  <rect x="72" y="536" width="936" height="240" rx="28" fill="#FFFFFF"/>
+  <!-- Image area -->
+  <rect x="72" y="536" width="936" height="132" rx="28" fill="#E6EEFF"/>
+  <!-- Status chip -->
+  <rect x="818" y="552" width="160" height="48" rx="24" fill="#E6E9F0"/>
+  <text x="898" y="582" font-family="sans-serif" font-size="22" fill="#6F7785" text-anchor="middle">Upcoming</text>
+  <!-- Text -->
+  <text x="120" y="696" font-family="sans-serif" font-size="32" fill="#1B1D25">Kyoto, Japan</text>
+  <text x="120" y="736" font-family="sans-serif" font-size="24" fill="#6F7785">Mar 02 – Mar 09</text>
+
+  <!-- Card 2: Upcoming -->
+  <rect x="72" y="804" width="936" height="240" rx="28" fill="#FFFFFF"/>
+  <rect x="72" y="804" width="936" height="132" rx="28" fill="#E6EEFF"/>
+  <rect x="818" y="820" width="160" height="48" rx="24" fill="#E6E9F0"/>
+  <text x="898" y="850" font-family="sans-serif" font-size="22" fill="#6F7785" text-anchor="middle">Upcoming</text>
+  <text x="120" y="964" font-family="sans-serif" font-size="32" fill="#1B1D25">Tokyo, Japan</text>
+  <text x="120" y="1004" font-family="sans-serif" font-size="24" fill="#6F7785">Apr 10 – Apr 15</text>
+
+  <!-- Card 3: Ended -->
+  <rect x="72" y="1072" width="936" height="240" rx="28" fill="#FFFFFF"/>
+  <rect x="72" y="1072" width="936" height="132" rx="28" fill="#E6EEFF"/>
+  <rect x="818" y="1088" width="160" height="48" rx="24" fill="#E6E9F0"/>
+  <text x="898" y="1118" font-family="sans-serif" font-size="22" fill="#6F7785" text-anchor="middle">Ended</text>
+  <text x="120" y="1232" font-family="sans-serif" font-size="32" fill="#1B1D25">Cusco, Peru</text>
+  <text x="120" y="1272" font-family="sans-serif" font-size="24" fill="#6F7785">Dec 01 – Dec 05</text>
+
+  <!-- Card 4: Ended -->
+  <rect x="72" y="1340" width="936" height="240" rx="28" fill="#FFFFFF"/>
+  <rect x="72" y="1340" width="936" height="132" rx="28" fill="#E6EEFF"/>
+  <rect x="818" y="1356" width="160" height="48" rx="24" fill="#E6E9F0"/>
+  <text x="898" y="1386" font-family="sans-serif" font-size="22" fill="#6F7785" text-anchor="middle">Ended</text>
+  <text x="120" y="1500" font-family="sans-serif" font-size="32" fill="#1B1D25">Paris, France</text>
+  <text x="120" y="1540" font-family="sans-serif" font-size="24" fill="#6F7785">Sep 10 – Sep 15</text>
+
+  <!-- Bottom app bar with centered "+" create action -->
+  <rect x="0" y="2160" width="1080" height="240" fill="#FFFFFF" stroke="#E2E5ED" stroke-width="2"/>
+  <!-- Center "+" button -->
+  <circle cx="540" cy="2088" r="48" fill="#5182FF" stroke="#FFFFFF" stroke-width="8"/>
+  <text x="540" y="2098" font-family="sans-serif" font-size="56" fill="#FFFFFF" text-anchor="middle">+</text>
+  <!-- Home icon -->
+  <circle cx="216" cy="2232" r="24" fill="#5182FF"/>
+  <!-- Profile icon -->
+  <circle cx="864" cy="2232" r="24" fill="#C7CED8"/>
+  <!-- Labels -->
+  <text x="216" y="2280" font-family="sans-serif" font-size="22" fill="#5182FF" text-anchor="middle">Home</text>
+  <text x="864" y="2280" font-family="sans-serif" font-size="22" fill="#6F7785" text-anchor="middle">Profile</text>
+</svg>
