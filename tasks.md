@@ -15,55 +15,80 @@ TripPlanner MVP Tasks
 - ViewModel and MVI:
   - Create a feature package (for example, `features.home`) to co-locate Home screen logic.
   - Add `HomeUiState`, `HomeEvent`, and `HomeEffect` following the existing MVI style, representing loading, content, error, and refresh states while keeping `HomeUiState` as a pure data holder that uses `ErrorState` for full-screen errors.
-  - Implement `HomeViewModel`, injecting `TripRepository`, `ClockProvider`, and related helpers (for example, countdown/date formatters, cover storage) via Hilt.
-  - Map `TripRepository.observeTrips()` into a list of presentation items with:
-    - Precomputed status (`None` = upcoming, `InProgress`, `Ended`).
-    - Optional countdown data for the next upcoming trip.
-    - A deterministic sort order (for example, in-progress -> upcoming (`None`) -> ended).
-  - Handle loading, error, and empty states, plus a refresh event (pull-to-refresh or explicit retry).
+  - Model Home state with:
+    - `isInitialLoading`, `isRefreshing`, `error`.
+    - `trips: List<TripUiModel>` with precomputed status (`None` = upcoming, `InProgress`, `Ended`).
+    - `currentTripId: Long?` for the single in-progress trip to feature in the hero (or null).
+    - `countdown: Countdown?` and `countdownTripId: Long?` for the next upcoming trip when there is no current trip.
+    - `activeFilter: HomeFilter` (for example, `All`, `Upcoming`, `Ended`) for the chip row.
+  - Implement `HomeViewModel`, injecting `TripRepository`, `ClockProvider`, `CountdownFormatter`, `TripCoverImageStorage`, and date formatting helpers via Hilt.
+  - Map `TripRepository.observeTrips()` into `TripUiModel` items and derived state:
+    - Derive status from `Trip.startDate`/`Trip.endDate` vs `ClockProvider.now()` in the device timezone.
+    - Sort in a deterministic order (for example, in-progress -> upcoming (`None`) -> ended).
+    - Set `currentTripId` to the single in-progress trip (if any).
+    - When `currentTripId` is null, compute countdown for the earliest upcoming trip and set `countdown` + `countdownTripId` (or null when expired or none).
+  - Handle initial loading, error, empty, and refresh events (`ScreenLoaded`, `RefreshRequested`, `RetryClicked`, `TripClicked`, `FilterSelected`). Keep Home logic localized to the feature.
 
 - UI:
-  - Add a `HomeScreen` composable that consumes `HomeUiState` and renders:
-    - Loading state (progress indicator or skeletons).
-    - Error state with a retry CTA when repository operations fail.
-    - Empty state encouraging creation of the first trip.
-    - Populated state using `LazyColumn` with trip cards and a bottom bar "+" action.
+  - Add a stateful `HomeRoute` that obtains `HomeViewModel` via Hilt, collects `HomeUiState`, emits initial events, and observes `HomeEffect` for navigation/snackbars.
+  - Add a stateless `HomeScreen` that consumes `HomeUiState` and renders:
+    - Loading state (`HomeLoading`).
+    - Error state with retry (`HomeError` using `FullScreenError`) when initial load fails.
+    - Empty state (`HomeEmptyState`) encouraging creation of the first trip when there is no data.
+    - Content state with:
+      - A top hero:
+        - If `currentTripId != null`: show a “CURRENT TRIP” hero for that trip (destination, date range, simple progress hint such as “Day 3 of 11”). This is the only place the in-progress trip appears.
+        - Else, if `countdown`/`countdownTripId` are set: show a single countdown hero for the next upcoming trip (in the style of `CountdownCard`).
+      - A chip row for `activeFilter` with `All`, `Upcoming`, and `Ended` as mutually exclusive options.
+      - A `LazyColumn` of full-width `TripCard` items (upcoming and ended only), keyed by trip id.
+      - A refresh indicator when `isRefreshing` is true.
   - Trip cards:
     - Show destination and date range.
-    - Show clear labels for in-progress and ended trips (no status label when status is `None` / upcoming).
+    - Show clear labels for upcoming and ended trips; “On trip” status is represented only by the current-trip hero, not by a card chip.
     - Display cover images from `Trip.coverImageUri` when available, with a design-system placeholder when missing.
     - Make the whole card tappable to navigate to trip details.
   - Apply spacing, typography, and color tokens from `design-system.json` and the existing theme instead of ad-hoc values.
 
 - Shared UI components:
-  - Extract and reuse a `TripCard` composable in `ui/components` so Trip detail or future surfaces can reuse it.
-  - Use a dedicated `CountdownCard` component that encapsulates countdown formatting and visibility rules as a standalone element at the top of the Home screen (not inside individual trip cards).
-  - Home screen is display-only and should rely on stored cover URIs.
+  - Reuse the shared `TripCard` composable in `ui/components` so Trip detail or future surfaces can reuse it.
+  - Reuse `CountdownCard` as the visual reference for the countdown hero in the “no current trip” case (countdown appears once, above the list).
+  - Reuse `FullScreenError` for initial hard errors and keep non-blocking errors as snackbars when data already exists.
+  - Home screen remains display-only and should rely on stored cover URIs.
 
 - Behavior and state:
   - Derive trip status from `Trip.startDate`/`Trip.endDate` vs `ClockProvider.now()` in the device timezone:
     - None: `now < startDate` (upcoming trip).
     - In progress: `startDate <= now <= endDate`.
     - Ended: `now > endDate`.
-  - Implement countdown behavior inside `CountdownCard` so that:
-    - When at least one trip is in progress, no countdown is shown.
-    - When there are no in-progress trips, the countdown is shown only for the single next upcoming (`None`-status) trip.
+  - Hero rules:
+    - When at least one trip is in progress, feature exactly one as the current-trip hero and do not show any countdown hero.
+    - When there are no in-progress trips and at least one upcoming trip, show a single countdown hero for the next upcoming trip (earliest `startDate`) using `CountdownFormatter`.
+    - Current trip should appear only in the hero, never duplicated in the list.
+  - Filtering rules:
+    - `All`: show all trips except the current trip (which lives only in the hero).
+    - `Upcoming`: show only upcoming trips in the list.
+    - `Ended`: show only ended trips in the list.
   - Keep Home state as a single source of truth in `HomeViewModel`; `HomeScreen` remains stateless aside from the `UiState` it receives.
 
 - Navigation and tests:
-  - Wire bottom-bar "+" action to navigate to `Screen.TripForm` in create mode.
+  - Keep the existing bottom bar pattern, where the primary create action is a centered “+” that navigates to `Screen.TripForm` in create mode.
+  - Keep other destinations (for example, Home/Profile) in the bottom bar consistent with the existing navigation model.
   - Make tapping a trip card navigate to `Screen.TripDetail` with the selected trip id.
-  - Add unit tests for `HomeViewModel` covering mapping from `Trip` to status/countdown, and loading/empty/error states.
+  - Add unit tests for `HomeViewModel` covering:
+    - Mapping from `Trip` to status/countdown.
+    - Selection of `currentTripId` vs `countdownTripId` based on in-progress/upcoming trips.
+    - Loading/empty/error/refresh states and filter behavior.
   - Add Compose UI tests for:
-    - Empty vs populated states.
-    - Countdown visibility vs status labels (no countdown while a trip is in progress, countdown only for the next upcoming trip otherwise).
-    - Navigation intents for "+" and card tap.
+    - Empty vs populated vs error states.
+    - Hero behavior: current-trip hero vs countdown hero vs no hero.
+    - Filter chip interactions and resulting list contents.
+    - Navigation intents for the bottom-bar “+” and card tap.
 
 - Potential issues:
   - Countdown ticking and UX:
-    - Show a ticking countdown only for the next upcoming trip, as a standalone component at the top of the Home screen, rather than per-card timers.
-    - Do not show a countdown while any trip is in progress; once there are no active trips and an upcoming trip exists, show the countdown for that upcoming trip.
-    - Iterate on spacing, typography, and interaction (for example, tap targets or "view details" affordances) once the first version is implemented.
+    - Show a ticking countdown only for the next upcoming trip, as a single hero, rather than per-card timers.
+    - Do not show a countdown hero while any trip is in progress.
+    - Iterate on spacing, typography, and interaction (for example, hero collapse behavior, “View trip” CTA) once the first version is implemented.
   - Timezone and date boundaries:
     - For MVP we strictly use the device timezone when classifying trips as upcoming, in-progress, or ended (matching `plan.md`).
     - This needs a follow-up note in post-MVP planning to revisit behavior for travelers crossing timezones and potentially move to per-trip `ZoneId` logic.
@@ -71,9 +96,12 @@ TripPlanner MVP Tasks
     - Use `LazyColumn` with stable keys plus Coil (already in the project) for loading cover images from local file URIs.
     - Downscale or generate lightweight thumbnails at save time so the Home screen always loads small images, minimizing I/O and decode cost even for large trip lists.
   - Missing or broken cover files:
-    - When `TripCoverImageStorage.resolveForDisplay` returns null, always fall back to a deterministic placeholder (for example, initials-based avatar or neutral gradient) so cards never show a broken image.
+    - When `TripCoverImageStorage.resolveForDisplay` returns null, always fall back to a deterministic placeholder so cards never show a broken image.
   - Error handling UX:
-    - The original full-screen error design was a first draft; we should prefer non-blocking error banners or snackbars on top of the last known-good list where possible, reserving full-screen error for first-load failures or hard faults.
+    - Prefer non-blocking error banners or snackbars on top of the last known-good list where possible, reserving full-screen error for first-load failures or hard faults.
+
+- Visual reference:
+  - Use `home_layout_final.svg` in the repo root as the canonical Home layout reference (current-trip hero or countdown hero, filter chips `All/Upcoming/Ended`, vertical trip list, and bottom bar with a centered “+” create action).
 
 ## 3. Trip form
 

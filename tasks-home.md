@@ -1,14 +1,17 @@
-# Home Screen Implementation – v2
+# Home Screen Implementation - v3
 
-This document refines Task 2 from `tasks.md` with a simpler, less opinionated implementation plan for the Home screen.
+This document refines Task 2 from `tasks.md` with a concrete implementation plan for the Home screen.
 
 ## 1. Goals
 
-- Show a list of trips with destination, date range, status label, and optional cover image.
-- Show a single countdown banner for the next upcoming trip.
+- Show either:
+  - A **current-trip hero** when there is a trip in progress, or
+  - A **countdown hero** for the next upcoming trip when there is no current trip.
+- Show a **filterable list of trips** (All / Upcoming / Ended) with destination, date range, status label, and optional cover image.
 - Handle initial loading, error, empty, and content states in a clear but minimal way.
-- Keep Home logic localized to the `features.home` package using the app’s existing MVI pattern.
+- Keep Home logic localized to the `features.home` package using the app's existing MVI pattern.
 - Respect global edge-to-edge and design-system rules defined in `AGENTS.md`.
+- Use the final visual reference in `home_layout_final.svg` as the baseline layout.
 
 ---
 
@@ -22,32 +25,35 @@ This document refines Task 2 from `tasks.md` with a simpler, less opinionated im
     - `val isRefreshing: Boolean`.
     - `val error: ErrorState?` (null when no error).
     - `val trips: List<TripUiModel>`.
+    - `val currentTripId: Long?` (id of the in-progress trip shown in the hero, or null).
     - `val countdown: Countdown?`.
-    - `val countdownTripId: Long?` (id of the trip shown in the countdown banner, or null).
+    - `val countdownTripId: Long?` (id of the trip shown in the countdown hero when there is no current trip, or null).
+    - `val activeFilter: HomeFilter` (for example, `All`, `Upcoming`, `Ended`).
   - `HomeUiState` must be a pure data holder with no helper methods or formatting logic.
   - UI states (loading, error, empty, content) are derived in the composables from these fields rather than via a sealed hierarchy.
 
 - Events (`HomeEvent : Event`):
-  - `data object ScreenLoaded : HomeEvent()` – initial load.
-  - `data object RefreshRequested : HomeEvent()` – pull-to-refresh or explicit reload.
-  - `data object RetryClicked : HomeEvent()` – from full-screen error retry.
-  - `data class TripClicked(val tripId: Long) : HomeEvent()` – tap on a trip card.
+  - `data object ScreenLoaded : HomeEvent` - initial load.
+  - `data object RefreshRequested : HomeEvent` - pull-to-refresh or explicit reload.
+  - `data object RetryClicked : HomeEvent` - from full-screen error retry.
+  - `data class TripClicked(val tripId: Long) : HomeEvent` - tap on a trip card or hero.
+  - `data class FilterSelected(val filter: HomeFilter) : HomeEvent` - user taps one of the filter chips.
 
 - Effects (`HomeEffect : Effect`):
-  - `data class NavigateToTripDetail(val tripId: Long) : HomeEffect()`.
-  - `data class ShowSnackbar(@StringRes val messageResId: Int) : HomeEffect()`.
+  - `data class NavigateToTripDetail(val tripId: Long) : HomeEffect`.
+  - `data class ShowSnackbar(@StringRes val messageResId: Int) : HomeEffect`.
 
 - Trip UI model:
   - `data class TripUiModel(...)` in `features.home` with at minimum:
     - `id: Long`.
     - `destination: String`.
     - `dateRangeText: String` - preformatted using UI-layer date formatting.
-    - `status: TripStatusUi` - enum for None / InProgress / Ended, where:
+    - `status: TripStatusUi` - enum for `None` / `InProgress` / `Ended`, where:
       - `None` means the trip has not started yet (upcoming).
       - `InProgress` means the trip is currently active.
       - `Ended` means the trip is finished.
-    - `@StringRes statusLabelResId: Int` – label for the status chip.
-    - `coverImageUri: Uri?` – resolved via `TripCoverImageStorage` (nullable).
+    - `@StringRes statusLabelResId: Int` - label for the status chip.
+    - `coverImageUri: Uri?` - resolved via `TripCoverImageStorage` (nullable).
   - `TripStatusUi` is an enum that maps status to a `@StringRes` label id.
   - Do not include countdown-specific flags in `TripUiModel` (countdown is driven by separate fields in `HomeUiState`).
 
@@ -57,27 +63,33 @@ This document refines Task 2 from `tasks.md` with a simpler, less opinionated im
 
 - `HomeViewModel`:
   - Implement `@HiltViewModel class HomeViewModel @Inject constructor(...) : BaseViewModel<HomeEvent, HomeUiState, HomeEffect>`.
-  - Inject `TripRepository`, `ClockProvider`, `CountdownFormatter`, and `TripCoverImageStorage` directly into the ViewModel.
+  - Inject `TripRepository`, `ClockProvider`, `CountdownFormatter`, `TripCoverImageStorage`, and `DateFormatter` (or equivalent) directly into the ViewModel.
 
 - Mapping from `Trip` to `HomeUiState`:
   - Subscribe to `TripRepository.observeTrips()` in `HomeViewModel` and, for each emission:
     - Map each `Trip` to a `TripUiModel`:
-      - Derive `TripStatusUi` from `Trip.startDate`/`endDate` vs `ClockProvider.now()` using device timezone (as described in `tasks.md` and `plan.md`):
+      - Derive `TripStatusUi` from `Trip.startDate`/`Trip.endDate` vs `ClockProvider.now()` using device timezone (as described in `tasks.md` and `plan.md`):
         - `None` (upcoming) when `now` is before `startDate`.
         - `InProgress` when `now` is between `startDate` and `endDate` (inclusive).
         - `Ended` when `now` is after `endDate`.
       - Build a display date range using a UI-layer formatter (for example, `DateFormatter`).
       - Resolve `coverImageUri` via `TripCoverImageStorage`; fall back to null when unavailable.
-    - Sort trips so `InProgress` appear first, then `None` (upcoming), then `Ended`, with deterministic ordering inside each group.
-    - Determine countdown and countdown trip as follows:
-      - If there is at least one `InProgress` trip, do not show countdown at all (`countdown = null`, `countdownTripId = null`).
-      - If there are no `InProgress` trips, find the next upcoming trip among `None`-status trips (earliest `startDate`) and compute `Countdown?` for it via `CountdownFormatter`.
+    - Sort trips in a deterministic order such as:
+      - `InProgress` first, then `None` (upcoming), then `Ended`, with stable ordering inside each group.
+    - Derive hero-related fields:
+      - Set `currentTripId` to the id of the in-progress trip chosen to be featured (for MVP, the earliest-starting in-progress trip, or null if none).
+      - When `currentTripId` is null:
+        - Find the next upcoming trip among `None`-status trips (earliest `startDate`).
+        - Compute `Countdown` for it via `CountdownFormatter`.
+        - Set `countdown` + `countdownTripId` only when there is a valid upcoming trip and the countdown is not expired.
+      - When `currentTripId` is not null:
+        - Do not compute or expose any countdown hero (`countdown = null`, `countdownTripId = null`).
     - Populate `HomeUiState` with:
       - `isInitialLoading = false`.
-      - `isRefreshing = false` (or preserved when handling a refresh).
+      - `isRefreshing` preserved when handling a refresh.
       - `error = null` when mapping succeeds.
       - `trips = mapped list`.
-      - `countdown` and `countdownTripId` set only when there is a valid upcoming trip and a non-expired countdown.
+      - `currentTripId`, `countdown`, `countdownTripId`, and the last selected `activeFilter` value.
   - Mapping logic can live as private functions inside `HomeViewModel`; a separate mapper class is not required for MVP. If reused later, it can be extracted.
 
 - Error and refresh behavior (keep simple):
@@ -90,9 +102,10 @@ This document refines Task 2 from `tasks.md` with a simpler, less opinionated im
     - On failure with existing trips, keep `trips` as-is and emit `ShowSnackbar` instead of replacing content with full-screen error.
   - On `HomeEvent.RetryClicked`:
     - Used when there is a full-screen error and no trips; re-trigger the same loading logic as `ScreenLoaded`.
-
-- Navigation:
-  - On `HomeEvent.TripClicked`, emit `HomeEffect.NavigateToTripDetail(tripId)`.
+  - On `HomeEvent.FilterSelected`:
+    - Update `activeFilter` in state and re-derive the filtered list for the UI (the underlying `trips` list remains the single source of truth).
+  - On `HomeEvent.TripClicked`:
+    - Emit `HomeEffect.NavigateToTripDetail(tripId)`.
 
 ---
 
@@ -111,52 +124,67 @@ This document refines Task 2 from `tasks.md` with a simpler, less opinionated im
   - Responsible only for:
     - Choosing between Loading / Error / Empty / Content states based on `HomeUiState`.
     - Delegating to dedicated composables for those states (no inline loading/error/empty implementations).
-    - Passing down callbacks: refresh, retry, trip click.
+    - Passing down callbacks: refresh, retry, trip click, filter selection.
 
 - Dedicated screen-state composables (kept simple and reusable):
-  - `HomeLoading(...)` – full-screen loading indicator.
-  - `HomeError(...)` – full-screen error using `ErrorState` and `FullScreenError` under the hood.
-  - `HomeEmptyState(...)` – empty state encouraging creation of the first trip and/or reflecting the bottom bar “+” affordance.
+  - `HomeLoading(...)` - full-screen loading indicator.
+  - `HomeError(...)` - full-screen error using `ErrorState` and `FullScreenError` under the hood.
+  - `HomeEmptyState(...)` - empty state encouraging creation of the first trip and visually aligned with the “+” create affordance in the bottom bar.
   - These composables must live in the `features.home` package (for example, `HomeScreenStates.kt` or a `ui` subpackage), not nested inside `HomeScreen`.
 
 - Content layout:
   - When there are trips:
-    - Optional `CountdownCard` at the top when `uiState.countdown != null` and `uiState.countdownTripId != null` matches an item.
-    - Below the countdown, `LazyColumn` of `TripCard` items keyed by trip id.
-    - `isRefreshing` can be surfaced as a thin progress bar at the top of the list or inline indicator.
+    - Hero:
+      - If `uiState.currentTripId != null`:
+        - Render a “CURRENT TRIP” hero using the matching `TripUiModel` (destination, date range, simple progress hint).
+        - This hero is the only place where an in-progress trip is shown; the list below must not duplicate it.
+      - Else, if `uiState.countdown != null` and `uiState.countdownTripId != null` matches an upcoming trip:
+        - Render a single countdown hero (visually derived from `CountdownCard`) for the next upcoming trip at the top of the content.
+    - Filter chips:
+      - Render a horizontal chip row just under the hero with `All`, `Upcoming`, and `Ended`.
+      - Chips are mutually exclusive and reflect `uiState.activeFilter`.
+    - List:
+      - Below the chip row, render a `LazyColumn` of full-width `TripCard` items keyed by trip id.
+      - The list respects the `activeFilter` (All / Upcoming / Ended) and excludes the current trip when `currentTripId` is not null.
+    - `isRefreshing` as a spinning circle typical for a refresh indicator.
   - When there are no trips and no error:
-    - Show `HomeEmptyState`.
+    - Show `HomeEmptyState`. A clean, centered component with an illustration and a catchy message to use the “+” for a new trip.
+
 
 ---
 
-## 5. Shared UI Components – Usage
+## 5. Shared UI Components - Usage
 
 - `TripCard`:
   - Reuse the shared `TripCard` composable from `ui/components`.
   - It must display:
     - Destination and date range using `TripPlannerTheme.typography` via existing text components.
-    - Status chip derived from `TripStatusUi` / `statusLabelResId` with colors from `TripPlannerTheme`.
+    - Status chip derived from `TripStatusUi` / `statusLabelResId` with colors from `TripPlannerTheme`. In the list this will be “Upcoming” or “Ended`; “On trip” status appears only in the hero.
     - Optional cover image using Coil with a deterministic placeholder for missing images.
     - A tappable surface invoking the `onClick` callback.
   - This document does not prescribe the exact parameter list as long as it uses `TripUiModel` data and fits the design system.
 
 - `CountdownCard`:
-  - Reuse the shared `CountdownCard` from `ui/components`.
+  - Reuse the shared `CountdownCard` from `ui/components` as the visual basis for the countdown hero when there is no current trip.
   - On Home:
-    - The card is shown at most once, using data from `HomeUiState.countdown` and the associated trip.
-    - The card is not per-list-item; it appears above the list as a standalone banner.
+    - The countdown appears at most once, derived from `HomeUiState.countdown` and `countdownTripId`.
+    - It is not per-list-item; it appears above the list as a standalone hero.
     - It should be tappable to navigate to the associated trip details.
+
+- `FullScreenError`:
+  - Use `FullScreenError` via `HomeError` for initial hard errors (for example, first load failure with no cached trips).
+  - For errors during refresh when trips are already present, prefer snackbars via `HomeEffect.ShowSnackbar`.
 
 - Missing composables:
   - If `TripCard`, `CountdownCard`, `FullScreenError`, or other referenced components are missing or their existing API diverges significantly from this plan:
     - Do not silently substitute or implement ad-hoc alternatives.
-    - Stop, notify the maintainer, and agree on whether to add or adjust shared components before continuing.
+    - Stop and align on whether to add or adjust shared components before continuing.
 
 ---
 
 ## 6. Edge-to-Edge & Insets
 
-- Home screen must follow the global edge-to-edge rules defined in `AGENTS.md` and the app’s host `Activity`:
+- Home screen must follow the global edge-to-edge rules defined in `AGENTS.md` and the app's host `Activity`:
   - Do not use deprecated APIs such as `android:fitsSystemWindows` or legacy insets libraries.
   - Use the standard app pattern (for example, `Scaffold` with `contentWindowInsets` and insets-aware modifiers) rather than custom, one-off insets logic.
 - This document does not define a separate edge-to-edge strategy for Home; it relies on the app-wide convention.
@@ -167,16 +195,17 @@ This document refines Task 2 from `tasks.md` with a simpler, less opinionated im
 
 - `Screen.Home`:
   - Remains the main destination with `isBottomBarVisible = true`.
-  - Bottom bar “+” continues to navigate to `Screen.TripForm` in create mode (no Home-specific event needed).
+  - The primary create action is a centered “+” in the bottom bar, which navigates to `Screen.TripForm` in create mode (no Home-specific event needed).
 
 - Nav graph:
   - In `NavGraph.kt`, the Home route:
     - Uses `HomeRoute` as the entry.
     - Reacts to `HomeEffect.NavigateToTripDetail` to navigate to a trip detail destination (or Trip form edit mode, depending on current MVP choices).
     - Reacts to `HomeEffect.ShowSnackbar` by showing a message (for example, using `Toast` or a shared `SnackbarHost`).
+
 ---
 
-## 9. Follow-Ups / Post-MVP
+## 8. Follow-Ups / Post-MVP
 
-- Move more advanced edge cases (midnight boundaries, large lists, image performance, broken cover URIs) and exhaustive timezone tests into the existing “Post-MVP test hardening” or a dedicated follow-up doc.
+- Move more advanced edge cases (midnight boundaries, large lists, image performance, broken cover URIs) and exhaustive timezone tests into the existing "Post-MVP test hardening" or a dedicated follow-up doc.
 - If multiple features need similar mapping logic, consider re-introducing a shared mapper/use-case layer with consistent patterns after the first version is stable.
