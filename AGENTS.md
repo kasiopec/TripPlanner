@@ -54,6 +54,18 @@ Use Kotlin, Jetpack Compose, AndroidX, Material 3.
   - `UiState` classes must be pure data holders. 
   - Do not include helper functions or formatting logic (e.g. `formatDate()`) inside `UiState`. Move these to standard Utility classes or Extension functions in the UI layer.
 
+## Screen State Composables
+
+- Do not inline global screen-state UI (loading, error, empty, etc.) inside the main screen composable.
+  - Examples: `HomeScreen`, `TripFormScreen`, `TripDetailScreen` should not contain full loading/error/empty implementations directly.
+- For each feature, define dedicated screen-state composables under that feature’s package (or a `ui` subpackage), for example:
+  - `HomeLoading`, `HomeError`, `HomeEmptyState`.
+  - `TripFormLoading`, `TripFormError`, and similar.
+- The main route/screen composable should:
+  - Read `UiState` from its ViewModel.
+  - Decide which state to show (loading, error, empty, content).
+  - Delegate to the appropriate screen-state composables and a separate content composable, instead of implementing these states inline.
+
 ## UI Requirements
 
 All UI must be Jetpack Compose.
@@ -73,6 +85,29 @@ style = typography.h1,
 ```
 can be replaced by `Headline1` component in `ui/components/text/`
 
+
+## Edge-to-Edge Layout
+
+- All screens must support edge-to-edge according to the latest official Android guidance.
+  - The host `Activity` is responsible for calling `WindowCompat.setDecorFitsSystemWindows(window, false)` once during setup.
+  - Compose screens must handle system bars using `WindowInsets` APIs (for example, `Scaffold` with `contentWindowInsets`, `windowInsetsPadding`, `navigationBarsPadding`, `statusBarsPadding`) instead of legacy attributes.
+- Do not use deprecated or legacy patterns such as:
+  - `android:fitsSystemWindows` in layouts.
+  - Custom manual padding for status/navigation bars when a shared inset pattern already exists.
+- When adding a new screen:
+  - Follow the same edge-to-edge pattern used by existing features (Scaffold plus insets-aware content).
+  - Ensure scrollable content and key controls are visible and tappable, not obscured by system bars, while still drawing behind them.
+
+## Missing or Planned Composables
+
+- Tasks (for example, `tasks-home.md`) may reference shared composables like `TripCard`, `CountdownCard`, `FullScreenError`, or feature-specific components.
+- If a referenced composable does not exist, is only partially implemented, or its existing API diverges significantly from the task:
+  - Do not silently substitute another component or add ad-hoc UI in its place.
+  - Stop and notify the maintainer that the composable is missing or mismatched.
+  - Agree on the component’s responsibilities, name, and location (shared vs feature-level) before proceeding.
+- When adding a new reusable composable:
+  - Prefer placing it in the shared `ui/components` package when it is clearly cross-feature.
+  - Otherwise keep it inside the feature package and align it with the screen-state/component patterns above.
 
 ## Testing Requirements
 
