@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="2400" viewBox="0 0 1080 2400">
+  <!-- Background -->
+  <rect x="0" y="0" width="1080" height="2400" fill="#F0F1F6"/>
+
+  <!-- Status bar area -->
+  <rect x="0" y="0" width="1080" height="96" fill="#F0F1F6"/>
+
+  <!-- Top app bar (subtle, blends with background) -->
+  <rect x="0" y="96" width="1080" height="144" fill="#F0F1F6"/>
+  <text x="72" y="182" font-family="sans-serif" font-size="40" fill="#1B1D25">Trips</text>
+
+  <!-- Action icons on app bar -->
+  <circle cx="924" cy="168" r="28" fill="#FFFFFF" stroke="#E2E5ED" stroke-width="3"/>
+  <circle cx="1008" cy="168" r="28" fill="#FFFFFF" stroke="#E2E5ED" stroke-width="3"/>
+
+  <!-- Countdown hero card -->
+  <defs>
+    <linearGradient id="countdownGradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5182FF"/>
+      <stop offset="100%" stop-color="#1F5AE7"/>
+    </linearGradient>
+  </defs>
+  <rect x="72" y="260" width="936" height="360" rx="32" fill="url(#countdownGradient)"/>
+  <text x="120" y="330" font-family="sans-serif" font-size="28" fill="#E6EEFF" letter-spacing="4">NEXT ADVENTURE</text>
+  <text x="120" y="400" font-family="sans-serif" font-size="52" fill="#FFFFFF">Kyoto, Japan</text>
+
+  <!-- Countdown units -->
+  <rect x="140" y="440" width="160" height="144" rx="24" fill="#FFFFFF" fill-opacity="0.95"/>
+  <rect x="360" y="440" width="160" height="144" rx="24" fill="#FFFFFF" fill-opacity="0.95"/>
+  <rect x="580" y="440" width="160" height="144" rx="24" fill="#FFFFFF" fill-opacity="0.95"/>
+  <text x="190" y="520" font-family="monospace" font-size="46" fill="#1F5AE7" text-anchor="middle">12</text>
+  <text x="410" y="520" font-family="monospace" font-size="46" fill="#1F5AE7" text-anchor="middle">04</text>
+  <text x="630" y="520" font-family="monospace" font-size="46" fill="#1F5AE7" text-anchor="middle">28</text>
+  <text x="190" y="560" font-family="sans-serif" font-size="24" fill="#E6EEFF" text-anchor="middle">DAYS</text>
+  <text x="410" y="560" font-family="sans-serif" font-size="24" fill="#E6EEFF" text-anchor="middle">HOURS</text>
+  <text x="630" y="560" font-family="sans-serif" font-size="24" fill="#E6EEFF" text-anchor="middle">MINS</text>
+
+  <!-- Pull-to-refresh indicator (thin line under hero when refreshing) -->
+  <rect x="72" y="640" width="936" height="6" rx="3" fill="#5182FF" opacity="0.3"/>
+
+  <!-- Section title -->
+  <text x="72" y="720" font-family="sans-serif" font-size="32" fill="#1B1D25">Your trips</text>
+
+  <!-- Filter chips row -->
+  <rect x="72" y="744" width="140" height="56" rx="28" fill="#E6EEFF"/>
+  <text x="142" y="780" font-family="sans-serif" font-size="24" fill="#1F5AE7" text-anchor="middle">All</text>
+  <rect x="232" y="744" width="220" height="56" rx="28" fill="#FFFFFF" stroke="#E2E5ED" stroke-width="2"/>
+  <text x="342" y="780" font-family="sans-serif" font-size="24" fill="#6F7785" text-anchor="middle">Upcoming</text>
+  <rect x="472" y="744" width="220" height="56" rx="28" fill="#FFFFFF" stroke="#E2E5ED" stroke-width="2"/>
+  <text x="582" y="780" font-family="sans-serif" font-size="24" fill="#6F7785" text-anchor="middle">On trip</text>
+  <rect x="712" y="744" width="220" height="56" rx="28" fill="#FFFFFF" stroke="#E2E5ED" stroke-width="2"/>
+  <text x="822" y="780" font-family="sans-serif" font-size="24" fill="#6F7785" text-anchor="middle">Ended</text>
+
+  <!-- Trip cards (list) -->
+  <!-- Card 1 -->
+  <rect x="72" y="832" width="936" height="260" rx="28" fill="#FFFFFF"/>
+  <rect x="72" y="832" width="936" height="148" rx="28" fill="#E6EEFF"/>
+  <rect x="818" y="852" width="160" height="52" rx="24" fill="#5182FF"/>
+  <text x="898" y="886" font-family="sans-serif" font-size="24" fill="#FFFFFF" text-anchor="middle">On Trip</text>
+  <text x="120" y="1020" font-family="sans-serif" font-size="34" fill="#1B1D25">Lisbon, Portugal</text>
+  <text x="120" y="1064" font-family="sans-serif" font-size="24" fill="#6F7785">Feb 10 – Feb 15</text>
+
+  <!-- Card 2 -->
+  <rect x="72" y="1120" width="936" height="260" rx="28" fill="#FFFFFF"/>
+  <rect x="72" y="1120" width="936" height="148" rx="28" fill="#E6EEFF"/>
+  <rect x="818" y="1140" width="180" height="52" rx="24" fill="#E6E9F0"/>
+  <text x="908" y="1174" font-family="sans-serif" font-size="24" fill="#6F7785" text-anchor="middle">Upcoming</text>
+  <text x="120" y="1308" font-family="sans-serif" font-size="34" fill="#1B1D25">Kyoto, Japan</text>
+  <text x="120" y="1352" font-family="sans-serif" font-size="24" fill="#6F7785">Mar 02 – Mar 09</text>
+
+  <!-- Card 3 -->
+  <rect x="72" y="1408" width="936" height="260" rx="28" fill="#FFFFFF"/>
+  <rect x="72" y="1408" width="936" height="148" rx="28" fill="#E6EEFF"/>
+  <rect x="818" y="1428" width="160" height="52" rx="24" fill="#E6E9F0"/>
+  <text x="898" y="1462" font-family="sans-serif" font-size="24" fill="#6F7785" text-anchor="middle">Ended</text>
+  <text x="120" y="1596" font-family="sans-serif" font-size="34" fill="#1B1D25">Cusco, Peru</text>
+  <text x="120" y="1640" font-family="sans-serif" font-size="24" fill="#6F7785">Dec 01 – Dec 05</text>
+
+  <!-- Bottom navigation with center FAB (+) for TripForm -->
+  <rect x="0" y="2160" width="1080" height="240" fill="#FFFFFF" stroke="#E2E5ED" stroke-width="2"/>
+  <circle cx="540" cy="2088" r="48" fill="#5182FF" stroke="#FFFFFF" stroke-width="8"/>
+  <text x="540" y="2098" font-family="sans-serif" font-size="56" fill="#FFFFFF" text-anchor="middle">+</text>
+  <circle cx="216" cy="2232" r="24" fill="#C7CED8"/>
+  <circle cx="540" cy="2232" r="24" fill="#5182FF"/>
+  <circle cx="864" cy="2232" r="24" fill="#C7CED8"/>
+  <text x="216" y="2280" font-family="sans-serif" font-size="22" fill="#6F7785" text-anchor="middle">Home</text>
+  <text x="540" y="2280" font-family="sans-serif" font-size="22" fill="#5182FF" text-anchor="middle">Trips</text>
+  <text x="864" y="2280" font-family="sans-serif" font-size="22" fill="#6F7785" text-anchor="middle">Profile</text>
+</svg>
+

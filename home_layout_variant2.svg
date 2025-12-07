@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="2400" viewBox="0 0 1080 2400">
+  <!-- Background -->
+  <rect x="0" y="0" width="1080" height="2400" fill="#F0F1F6"/>
+
+  <!-- Collapsible header with large title and subtitle -->
+  <rect x="0" y="0" width="1080" height="320" fill="#F0F1F6"/>
+  <text x="72" y="150" font-family="sans-serif" font-size="26" fill="#6F7785">Welcome back,</text>
+  <text x="72" y="210" font-family="sans-serif" font-size="46" fill="#1B1D25">Ready for your next trip?</text>
+
+  <!-- Small inline countdown pill in header -->
+  <rect x="72" y="238" width="420" height="64" rx="32" fill="#E6EEFF"/>
+  <circle cx="104" cy="270" r="16" fill="#5182FF"/>
+  <text x="136" y="278" font-family="sans-serif" font-size="24" fill="#1F5AE7">12 days to Kyoto</text>
+
+  <!-- Sticky filter bar -->
+  <rect x="0" y="320" width="1080" height="96" fill="#F7F8FD"/>
+  <rect x="72" y="340" width="200" height="56" rx="28" fill="#5182FF"/>
+  <text x="172" y="376" font-family="sans-serif" font-size="24" fill="#FFFFFF" text-anchor="middle">Upcoming</text>
+  <rect x="292" y="340" width="200" height="56" rx="28" fill="#FFFFFF" stroke="#E2E5ED" stroke-width="2"/>
+  <text x="392" y="376" font-family="sans-serif" font-size="24" fill="#6F7785" text-anchor="middle">On trip</text>
+  <rect x="512" y="340" width="200" height="56" rx="28" fill="#FFFFFF" stroke="#E2E5ED" stroke-width="2"/>
+  <text x="612" y="376" font-family="sans-serif" font-size="24" fill="#6F7785" text-anchor="middle">Ended</text>
+  <rect x="732" y="340" width="200" height="56" rx="28" fill="#FFFFFF" stroke="#E2E5ED" stroke-width="2"/>
+  <text x="832" y="376" font-family="sans-serif" font-size="24" fill="#6F7785" text-anchor="middle">All trips</text>
+
+  <!-- Horizontal carousel of upcoming trips with embedded countdown chips -->
+  <rect x="0" y="416" width="1080" height="340" fill="#F0F1F6"/>
+  <text x="72" y="460" font-family="sans-serif" font-size="30" fill="#1B1D25">Next up</text>
+
+  <!-- Carousel card 1 -->
+  <rect x="72" y="488" width="420" height="240" rx="28" fill="#FFFFFF"/>
+  <rect x="72" y="488" width="420" height="140" rx="28" fill="#E6EEFF"/>
+  <rect x="92" y="504" width="200" height="44" rx="22" fill="#5182FF"/>
+  <text x="192" y="534" font-family="sans-serif" font-size="22" fill="#FFFFFF" text-anchor="middle">Kyoto • 12 days</text>
+  <text x="104" y="654" font-family="sans-serif" font-size="30" fill="#1B1D25">Kyoto, Japan</text>
+  <text x="104" y="694" font-family="sans-serif" font-size="22" fill="#6F7785">Mar 02 – Mar 09</text>
+
+  <!-- Carousel card 2 -->
+  <rect x="520" y="488" width="420" height="240" rx="28" fill="#FFFFFF"/>
+  <rect x="520" y="488" width="420" height="140" rx="28" fill="#E6EEFF"/>
+  <rect x="540" y="504" width="260" height="44" rx="22" fill="#5182FF"/>
+  <text x="670" y="534" font-family="sans-serif" font-size="22" fill="#FFFFFF" text-anchor="middle">Lisbon • 25 days</text>
+  <text x="552" y="654" font-family="sans-serif" font-size="30" fill="#1B1D25">Lisbon, Portugal</text>
+  <text x="552" y="694" font-family="sans-serif" font-size="22" fill="#6F7785">Apr 10 – Apr 15</text>
+
+  <!-- Divider -->
+  <rect x="72" y="760" width="936" height="2" fill="#E2E5ED"/>
+
+  <!-- Active trip section with prominent card -->
+  <text x="72" y="828" font-family="sans-serif" font-size="30" fill="#1B1D25">Currently on trip</text>
+  <rect x="72" y="856" width="936" height="260" rx="28" fill="#FFFFFF"/>
+  <rect x="72" y="856" width="936" height="148" rx="28" fill="#E6EEFF"/>
+  <rect x="818" y="876" width="160" height="52" rx="24" fill="#5182FF"/>
+  <text x="898" y="910" font-family="sans-serif" font-size="24" fill="#FFFFFF" text-anchor="middle">On Trip</text>
+  <text x="120" y="1040" font-family="sans-serif" font-size="34" fill="#1B1D25">Iceland Roadtrip</text>
+  <text x="120" y="1084" font-family="sans-serif" font-size="24" fill="#6F7785">Feb 20 – Mar 02</text>
+
+  <!-- Past trips as compact list -->
+  <text x="72" y="1180" font-family="sans-serif" font-size="30" fill="#1B1D25">Past trips</text>
+  <!-- Row 1 -->
+  <rect x="72" y="1210" width="936" height="140" rx="24" fill="#FFFFFF"/>
+  <rect x="92" y="1230" width="180" height="100" rx="20" fill="#E6EEFF"/>
+  <text x="308" y="1280" font-family="sans-serif" font-size="28" fill="#1B1D25">Cusco, Peru</text>
+  <text x="308" y="1320" font-family="sans-serif" font-size="22" fill="#6F7785">Dec 01 – Dec 05</text>
+  <rect x="860" y="1240" width="120" height="44" rx="22" fill="#E6E9F0"/>
+  <text x="920" y="1270" font-family="sans-serif" font-size="22" fill="#6F7785" text-anchor="middle">Ended</text>
+
+  <!-- Row 2 -->
+  <rect x="72" y="1374" width="936" height="140" rx="24" fill="#FFFFFF"/>
+  <rect x="92" y="1394" width="180" height="100" rx="20" fill="#E6EEFF"/>
+  <text x="308" y="1444" font-family="sans-serif" font-size="28" fill="#1B1D25">Paris, France</text>
+  <text x="308" y="1484" font-family="sans-serif" font-size="22" fill="#6F7785">Sep 10 – Sep 15</text>
+  <rect x="860" y="1404" width="120" height="44" rx="22" fill="#E6E9F0"/>
+  <text x="920" y="1434" font-family="sans-serif" font-size="22" fill="#6F7785" text-anchor="middle">Ended</text>
+
+  <!-- Floating bottom app bar & FAB -->
+  <rect x="72" y="2050" width="936" height="136" rx="40" fill="#FFFFFF" stroke="#E2E5ED" stroke-width="2"/>
+  <circle cx="540" cy="2050" r="44" fill="#5182FF" stroke="#FFFFFF" stroke-width="8"/>
+  <text x="540" y="2060" font-family="sans-serif" font-size="52" fill="#FFFFFF" text-anchor="middle">+</text>
+  <circle cx="260" cy="2100" r="20" fill="#5182FF"/>
+  <circle cx="540" cy="2100" r="20" fill="#C7CED8"/>
+  <circle cx="820" cy="2100" r="20" fill="#C7CED8"/>
+  <text x="260" y="2140" font-family="sans-serif" font-size="22" fill="#5182FF" text-anchor="middle">Home</text>
+  <text x="540" y="2140" font-family="sans-serif" font-size="22" fill="#6F7785" text-anchor="middle">Trips</text>
+  <text x="820" y="2140" font-family="sans-serif" font-size="22" fill="#6F7785" text-anchor="middle">Profile</text>
+</svg>
+
