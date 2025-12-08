@@ -5,7 +5,7 @@ Follow these rules at all times:
 
 ## Build, Test, and Development Commands
 Use the Gradle Wrapper from the repo root:
-- `./gradlew assembleDebug` builds the debug APK with Compose compiler checks.
+- `./gradlew assembleDebug` builds the debug APK with Compose compiler checks, can be run without questioning the developer for green light. 
 - `./gradlew :app:installDebug` installs to a connected emulator or device.
 - `./gradlew lint` runs Android lint plus Compose metrics.
 - `./gradlew testDebugUnitTest` executes JVM unit tests.
@@ -141,7 +141,7 @@ Use PascalCase nouns (`HomeScreen`). UI states, events, and effects follow `Feat
 When creating UI composables dp variables needs to be taken from `Dimensions` object. Don't create new dimensions unless really necessary and will most likely be reused. Instead use already created ones. 
 If dp values are one shot and only makes sense in the isolated component it can be left hardcoded.
 
-Inside composables parameter `Modifier` should be the first optional parameter
+Inside composables parameter `modifier: Modifier` should be the first optional parameter
 
 Full import path of the obejcts, classes etc. should not be in the actual code. For example: `import androidx.compose.foundation.layout.Spacer` all imports must be in the dedicated section. 
 
