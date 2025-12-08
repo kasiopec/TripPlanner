@@ -6,7 +6,7 @@ This document refines Task 2 from `tasks.md` with a concrete implementation plan
 
 - Show either:
   - A **current-trip hero** when there is a trip in progress, or
-  - A **countdown hero** for the next upcoming trip when there is no current trip.
+  - A **countdown hero** (as a separate hero item based on `CountdownCard`) for the next upcoming trip when there is no current trip.
 - Show a **filterable list of trips** (All / Upcoming / Ended) with destination, date range, status label, and optional cover image.
 - Handle initial loading, error, empty, and content states in a clear but minimal way.
 - Keep Home logic localized to the `features.home` package using the app's existing MVI pattern.
@@ -25,9 +25,9 @@ This document refines Task 2 from `tasks.md` with a concrete implementation plan
     - `val isRefreshing: Boolean`.
     - `val error: ErrorState?` (null when no error).
     - `val trips: List<TripUiModel>`.
-    - `val currentTripId: Long?` (id of the in-progress trip shown in the hero, or null).
+    - `val currentTripId: Long?` (id of the in-progress trip shown in the current-trip hero, or null).
     - `val countdown: Countdown?`.
-    - `val countdownTripId: Long?` (id of the trip shown in the countdown hero when there is no current trip, or null).
+    - `val countdownTripId: Long?` (id of the trip shown in the separate countdown hero item when there is no current trip, or null).
     - `val activeFilter: HomeFilter` (for example, `All`, `Upcoming`, `Ended`).
   - `HomeUiState` must be a pure data holder with no helper methods or formatting logic.
   - UI states (loading, error, empty, content) are derived in the composables from these fields rather than via a sealed hierarchy.
@@ -36,7 +36,7 @@ This document refines Task 2 from `tasks.md` with a concrete implementation plan
   - `data object ScreenLoaded : HomeEvent` - initial load.
   - `data object RefreshRequested : HomeEvent` - pull-to-refresh or explicit reload.
   - `data object RetryClicked : HomeEvent` - from full-screen error retry.
-  - `data class TripClicked(val tripId: Long) : HomeEvent` - tap on a trip card or hero.
+  - `data class TripClicked(val tripId: Long) : HomeEvent` - tap on a trip card or hero (current-trip or countdown hero item).
   - `data class FilterSelected(val filter: HomeFilter) : HomeEvent` - user taps one of the filter chips.
 
 - Effects (`HomeEffect : Effect`):
@@ -76,14 +76,14 @@ This document refines Task 2 from `tasks.md` with a concrete implementation plan
       - Resolve `coverImageUri` via `TripCoverImageStorage`; fall back to null when unavailable.
     - Sort trips in a deterministic order such as:
       - `InProgress` first, then `None` (upcoming), then `Ended`, with stable ordering inside each group.
-    - Derive hero-related fields:
+    - Derive hero-related fields for the hero area:
       - Set `currentTripId` to the id of the in-progress trip chosen to be featured (for MVP, the earliest-starting in-progress trip, or null if none).
       - When `currentTripId` is null:
         - Find the next upcoming trip among `None`-status trips (earliest `startDate`).
         - Compute `Countdown` for it via `CountdownFormatter`.
-        - Set `countdown` + `countdownTripId` only when there is a valid upcoming trip and the countdown is not expired.
+        - Set `countdown` + `countdownTripId` only when there is a valid upcoming trip and the countdown is not expired so that a dedicated countdown hero item can be rendered.
       - When `currentTripId` is not null:
-        - Do not compute or expose any countdown hero (`countdown = null`, `countdownTripId = null`).
+        - Do not compute or expose any countdown hero item (`countdown = null`, `countdownTripId = null`).
     - Populate `HomeUiState` with:
       - `isInitialLoading = false`.
       - `isRefreshing` preserved when handling a refresh.
@@ -134,14 +134,14 @@ This document refines Task 2 from `tasks.md` with a concrete implementation plan
 
 - Content layout:
   - When there are trips:
-    - Hero:
+    - Hero area:
       - If `uiState.currentTripId != null`:
-        - Render a “CURRENT TRIP” hero using the matching `TripUiModel` (destination, date range, simple progress hint).
+        - Render a "CURRENT TRIP" hero using the matching `TripUiModel` (destination, date range, simple progress hint).
         - This hero is the only place where an in-progress trip is shown; the list below must not duplicate it.
       - Else, if `uiState.countdown != null` and `uiState.countdownTripId != null` matches an upcoming trip:
-        - Render a single countdown hero (visually derived from `CountdownCard`) for the next upcoming trip at the top of the content.
+        - Render a single countdown hero item (a dedicated hero composable visually derived from `CountdownCard`, not a variant of `HomeHero`) for the next upcoming trip at the top of the content.
     - Filter chips:
-      - Render a horizontal chip row just under the hero with `All`, `Upcoming`, and `Ended`.
+      - Render a horizontal chip row just under the hero area with `All`, `Upcoming`, and `Ended`.
       - Chips are mutually exclusive and reflect `uiState.activeFilter`.
     - List:
       - Below the chip row, render a `LazyColumn` of full-width `TripCard` items keyed by trip id.
@@ -165,10 +165,10 @@ This document refines Task 2 from `tasks.md` with a concrete implementation plan
   - This document does not prescribe the exact parameter list as long as it uses `TripUiModel` data and fits the design system.
 
 - `CountdownCard`:
-  - Reuse the shared `CountdownCard` from `ui/components` as the visual basis for the countdown hero when there is no current trip.
+  - Reuse the shared `CountdownCard` from `ui/components` as the visual basis for a separate countdown hero item when there is no current trip.
   - On Home:
     - The countdown appears at most once, derived from `HomeUiState.countdown` and `countdownTripId`.
-    - It is not per-list-item; it appears above the list as a standalone hero.
+    - It is not per-list-item; it appears above the list as a standalone hero item separate from `HomeHero`.
     - It should be tappable to navigate to the associated trip details.
 
 - `FullScreenError`:
