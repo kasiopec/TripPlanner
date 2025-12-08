@@ -1,6 +1,5 @@
 package com.project.tripplanner.features.home
 
-import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,6 +33,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import com.project.tripplanner.R
 import com.project.tripplanner.ui.components.text.BodyRegular
@@ -42,41 +41,14 @@ import com.project.tripplanner.ui.components.text.Headline2
 import com.project.tripplanner.ui.components.text.MetaText
 import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
-import androidx.core.net.toUri
-import coil.size.Dimension
-
-data class HeroTrip(
-    val id: Long,
-    val destination: String,
-    val dateRangeText: String,
-    val progressText: String? = null,
-    val coverImageUri: Uri? = null
-)
-
-data class CurrentTripHeroData(
-    val trip: HeroTrip
-)
+import java.time.LocalDate
+import java.time.ZoneId
 
 @Composable
-fun HomeHero(
+fun CurrentTripHero(
     modifier: Modifier = Modifier,
-    currentTrip: CurrentTripHeroData? = null,
-    onHeroClick: (Long) -> Unit = {}
-) {
-    if (currentTrip != null) {
-        CurrentTripHero(
-            data = currentTrip,
-            modifier = modifier,
-            onClick = { onHeroClick(currentTrip.trip.id) }
-        )
-    }
-}
-
-@Composable
-private fun CurrentTripHero(
-    data: CurrentTripHeroData,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit = {}
+    trip: TripUiModel,
+    onClick: () -> Unit
 ) {
     val colors = TripPlannerTheme.colors
     val backgroundBrush = Brush.linearGradient(
@@ -86,7 +58,6 @@ private fun CurrentTripHero(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .statusBarsPadding()
             .height(240.dp)
             .background(backgroundBrush)
             .clickable(onClick = onClick)
@@ -110,17 +81,17 @@ private fun CurrentTripHero(
                     color = colors.onPrimary.copy(alpha = 0.8f)
                 )
                 Headline2(
-                    text = data.trip.destination,
+                    text = trip.destination,
                     color = colors.onPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 BodyRegular(
-                    text = data.trip.dateRangeText,
+                    text = trip.dateRangeText,
                     color = colors.onPrimary.copy(alpha = 0.9f)
                 )
 
-                data.trip.progressText?.let { progress ->
+                trip.progress?.let { progress ->
                     Surface(
                         color = colors.onPrimary.copy(alpha = 0.12f),
                         shape = RoundedCornerShape(Dimensions.radiusM)
@@ -132,8 +103,7 @@ private fun CurrentTripHero(
                             ),
                             horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingS),
                             verticalAlignment = Alignment.CenterVertically
-                        )
-                        {
+                        ) {
                             Box(
                                 modifier = Modifier
                                     .size(Dimensions.spacingS)
@@ -141,7 +111,11 @@ private fun CurrentTripHero(
                                     .background(colors.onPrimary)
                             )
                             BodyRegular(
-                                text = progress,
+                                text = stringResource(
+                                    id = R.string.home_current_trip_progress,
+                                    progress.currentDay,
+                                    progress.totalDays
+                                ),
                                 color = colors.onPrimary
                             )
                         }
@@ -149,16 +123,15 @@ private fun CurrentTripHero(
                 }
             }
 
-            HeroArtwork(coverImageUri = data.trip.coverImageUri)
+            HeroArtwork(coverImageUri = trip.coverImageUri)
         }
-
     }
 }
 
 @Composable
 private fun HeroArtwork(
-    coverImageUri: Uri?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    coverImageUri: android.net.Uri?
 ) {
     val colors = TripPlannerTheme.colors
     val accent = colors.onPrimary.copy(alpha = 0.12f)
@@ -261,7 +234,7 @@ private fun BoxScope.ImageBottomOverlay(modifier: Modifier = Modifier) {
             horizontalArrangement = Arrangement.End
         ) {
             Surface(
-                color = colors.surface.copy(alpha = 0.7f),
+                color = colors.surface.copy(alpha = 0.92f),
                 shape = RoundedCornerShape(Dimensions.radiusM),
                 shadowElevation = 2.dp
             ) {
@@ -269,9 +242,8 @@ private fun BoxScope.ImageBottomOverlay(modifier: Modifier = Modifier) {
                     modifier = Modifier
                         .heightIn(min = Dimensions.chipHeight)
                         .padding(
-                            top = Dimensions.spacingXS,
-                            bottom = Dimensions.spacingXS,
-                            start = Dimensions.spacingS
+                            horizontal = Dimensions.spacingM,
+                            vertical = Dimensions.spacingXS
                         ),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingXS)
@@ -295,15 +267,20 @@ private fun BoxScope.ImageBottomOverlay(modifier: Modifier = Modifier) {
 @Composable
 private fun CurrentTripHeroPreview() {
     TripPlannerTheme {
-        HomeHero(
-            currentTrip = CurrentTripHeroData(
-                trip = HeroTrip(
-                    id = 1L,
-                    destination = "Lisbon, Portugal",
-                    dateRangeText = "Feb 20 - Mar 02",
-                    progressText = "Day 3 of 11"
-                )
-            )
+        CurrentTripHero(
+            trip = TripUiModel(
+                id = 1L,
+                destination = "Lisbon, Portugal",
+                startDate = LocalDate.of(2025, 2, 20),
+                endDate = LocalDate.of(2025, 3, 2),
+                timezone = ZoneId.systemDefault(),
+                dateRangeText = "Feb 20, 2025 - Mar 02, 2025",
+                status = TripStatusUi.InProgress,
+                statusLabelResId = R.string.trip_status_in_progress,
+                coverImageUri = null,
+                progress = TripProgress(currentDay = 3, totalDays = 11)
+            ),
+            onClick = {}
         )
     }
 }
@@ -312,34 +289,20 @@ private fun CurrentTripHeroPreview() {
 @Composable
 private fun CurrentTripHeroLightImagePreview() {
     TripPlannerTheme {
-        HomeHero(
-            currentTrip = CurrentTripHeroData(
-                trip = HeroTrip(
-                    id = 2L,
-                    destination = "Geneva, Switzerland",
-                    dateRangeText = "Mar 05 - Mar 12",
-                    progressText = "Day 2 of 7",
-                    coverImageUri = "android.resource://com.project.tripplanner/drawable/home_hero_light".toUri()
-                )
-            )
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun CurrentTripHeroDarkImagePreview() {
-    TripPlannerTheme {
-        HomeHero(
-            currentTrip = CurrentTripHeroData(
-                trip = HeroTrip(
-                    id = 3L,
-                    destination = "Yosemite, USA",
-                    dateRangeText = "Sep 10 - Sep 17",
-                    progressText = "Day 4 of 8",
-                    coverImageUri = "android.resource://com.project.tripplanner/drawable/home_hero_dark".toUri()
-                )
-            )
+        CurrentTripHero(
+            trip = TripUiModel(
+                id = 2L,
+                destination = "Geneva, Switzerland",
+                startDate = LocalDate.of(2025, 3, 5),
+                endDate = LocalDate.of(2025, 3, 12),
+                timezone = ZoneId.systemDefault(),
+                dateRangeText = "Mar 05, 2025 - Mar 12, 2025",
+                status = TripStatusUi.InProgress,
+                statusLabelResId = R.string.trip_status_in_progress,
+                coverImageUri = "android.resource://com.project.tripplanner/drawable/home_hero_light".toUri(),
+                progress = TripProgress(currentDay = 2, totalDays = 7)
+            ),
+            onClick = {}
         )
     }
 }

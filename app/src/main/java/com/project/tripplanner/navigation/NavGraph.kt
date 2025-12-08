@@ -17,7 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.project.tripplanner.Effect
-import com.project.tripplanner.features.home.HomeScreen
+import com.project.tripplanner.features.home.HomeRoute
 import com.project.tripplanner.features.login.LoginEffect
 import com.project.tripplanner.features.login.LoginEvent
 import com.project.tripplanner.features.login.LoginScreen
@@ -100,7 +100,13 @@ fun NavGraph(
                 }
             }
         }
-        composable(route = Screen.Home.route) { HomeScreen() }
+        composable(route = Screen.Home.route) {
+            HomeRoute(
+                onTripClick = { tripId ->
+                    navController.navigate(Screen.TripForm.createRoute(tripId))
+                }
+            )
+        }
         composable(route = Screen.RegisterForm.route) {
             val registerViewModel = hiltViewModel<RegisterViewModel>()
             RegisterScreen(viewModel = registerViewModel)
