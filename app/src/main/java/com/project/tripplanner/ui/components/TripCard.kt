@@ -1,5 +1,6 @@
 package com.project.tripplanner.ui.components
 
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
+import androidx.annotation.StringRes
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,7 +43,8 @@ fun TripCard(
     modifier: Modifier = Modifier,
     title: String,
     dateRange: String,
-    coverImageUri: String?,
+    coverImageUri: Uri?,
+    @StringRes statusLabelResId: Int? = null,
     status: TripCardStatus = TripCardStatus.None,
     onClick: () -> Unit = {}
 ) {
@@ -87,6 +90,7 @@ fun TripCard(
                 if (status != TripCardStatus.None) {
                     StatusBadge(
                         status = status,
+                        statusLabelResId = statusLabelResId,
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(top = Dimensions.spacingS, end = Dimensions.spacingS)
@@ -118,23 +122,24 @@ fun TripCard(
 @Composable
 private fun StatusBadge(
     status: TripCardStatus,
+    @StringRes statusLabelResId: Int?,
     modifier: Modifier = Modifier
 ) {
     val backgroundColor = when (status) {
         TripCardStatus.InProgress -> TripPlannerTheme.colors.primary
         TripCardStatus.Ended -> TripPlannerTheme.colors.tertiaryContainer
-        else -> TripPlannerTheme.colors.surface
+        else -> TripPlannerTheme.colors.primaryContainer
     }
 
     val textColor = when (status) {
         TripCardStatus.InProgress -> TripPlannerTheme.colors.onPrimary
         TripCardStatus.Ended -> TripPlannerTheme.colors.onTertiaryContainer
-        else -> TripPlannerTheme.colors.onSurface
+        else -> TripPlannerTheme.colors.onPrimaryContainer
     }
-    val text = when (status) {
+    val text = statusLabelResId?.let { stringResource(id = it) } ?: when (status) {
         TripCardStatus.InProgress -> stringResource(id = R.string.trip_status_in_progress)
         TripCardStatus.Ended -> stringResource(id = R.string.trip_status_ended)
-        else -> ""
+        else -> stringResource(id = R.string.trip_status_upcoming)
     }
 
     Box(
