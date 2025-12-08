@@ -11,6 +11,15 @@ Use the Gradle Wrapper from the repo root:
 - `./gradlew testDebugUnitTest` executes JVM unit tests.
 - `./gradlew connectedAndroidTest` runs Espresso/Compose tests on an emulator (boot one first).
 - Do not try to use unix tools while running file related commands e.g. "sed" as currently main CLI is PowerShell on Windows. 
+  - Prefer PowerShell equivalents: `Get-Content -Tail` / `Get-Content -Head`, `Select-String` for search, `Get-ChildItem` for ls, etc.
+
+## Scope & Change Control
+
+- Restate the requested scope before coding (e.g., “implement hero only”) and keep changes confined to that scope unless explicitly expanded. If request applies for multiple items, specify which exactly.
+- Touch only the files necessary for the requested surface; avoid adding new state/models/routes unless the task explicitly calls for them.
+- For previews/mocks, prefer inline preview data inside the composable’s preview; do not introduce shared UiState/models solely to feed previews unless requested.
+- Map each code change to a specific line/requirement in the request/spec; if a change cannot be tied to the spec, pause and ask before proceeding.
+- If you believe cross-cutting changes (nav wiring, new models) are needed, ask for confirmation first; otherwise, keep the component self-contained.
 
 ## Testing Guidelines
 Add unit tests for validators, repositories, and view models inside `app/src/test`, mirroring package paths (`features.register.RegisterViewModelTest`). Compose UI or navigation flows belong in instrumentation tests with `createAndroidComposeRule`. Keep coverage focused on auth, Supabase integration, and navigation. Document any required mock data and refresh Compose previews or golden screenshots when UI changes.

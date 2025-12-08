@@ -21,7 +21,7 @@ Architecture and data
 - Clock provider for countdown and time logic; Hilt modules for DB, DAOs, repos; interfaces stay stable for later remote swap.
 
 Features and navigation
-- Trips list (home): cards with cover image placeholder; countdown chip only for upcoming trips; ended/in-progress trips show status label instead; empty state CTA; bottom-bar + -> TripForm(new); tap card -> TripDetail.
+- Trips list (home): hero area plus cards with cover image placeholder; a current-trip hero is shown when there is an in-progress trip, otherwise a single countdown hero item (a dedicated hero composable based on `CountdownCard`) appears for the next upcoming trip; list cards show status labels (no per-card countdown chips); empty state CTA; bottom-bar + -> TripForm(new); tap card -> TripDetail.
 - TripForm: create/edit; required destination/start/end; optional notes/cover image; includes a single-day trip option that auto-fills end = start (and disables manual end selection) when enabled; otherwise user selects both start and end; save -> repo -> back; surface validation and save errors via MVI effects (e.g., snackbar).
 - TripDetail (itinerary screen): full-screen header with destination, date range, status; countdown visible only for upcoming trips; date strip from start->end to pick day; timeline for selected day.
 - Timeline: grouped by day, vertical connector, icons by type; drag-and-drop reorder persists sortOrder using standard Compose APIs (no external drag-and-drop libs).
@@ -37,7 +37,7 @@ UI behavior
 
 Near-term tasks
 - Confirm data layer foundation and time helpers (already implemented) match this plan and keep tests green.
-- Build Trips list UI with countdowns for upcoming trips, status labels, error handling, and bottom-bar + action.
+- Build Home screen UI with a hero area (current-trip hero or single countdown hero item based on `CountdownCard`), a filtered trips list with status labels (no per-card countdown timers), error handling, and bottom-bar + action.
 - Build TripForm; wire create/edit flows and single-day toggle behavior (end auto-filled = start only when single-day is enabled); include validation, error states, tests, and robust cover image handling via app-private copies and a stable `coverImageUri` reference, importing the image into private storage only when Save is tapped.
 - Build TripDetail with header, date strip, timeline shell, status handling, and basic error/loading states.
 - Build ActivityForm with type picker and date/time constraints; hook into repo with validation and error handling.
