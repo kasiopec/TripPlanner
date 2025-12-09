@@ -65,7 +65,6 @@ fun HomeRoute(
         modifier = modifier,
         uiState = uiState,
         snackbarHostState = snackbarHostState,
-        onRefresh = { viewModel.emitEvent(HomeEvent.RefreshRequested) },
         onRetry = { viewModel.emitEvent(HomeEvent.RetryClicked) },
         onTripClick = { viewModel.emitEvent(HomeEvent.TripClicked(it)) },
         onFilterSelected = { viewModel.emitEvent(HomeEvent.FilterSelected(it)) }
@@ -77,7 +76,6 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     uiState: HomeUiState,
     snackbarHostState: SnackbarHostState,
-    onRefresh: () -> Unit,
     onRetry: () -> Unit,
     onTripClick: (Long) -> Unit,
     onFilterSelected: (HomeFilter) -> Unit
@@ -95,11 +93,11 @@ fun HomeScreen(
                 errorState = uiState.error,
                 onRetry = onRetry
             )
+
             uiState.trips.isEmpty() -> HomeEmptyState(modifier = Modifier.padding(paddingValues))
             else -> HomeContent(
                 modifier = Modifier.padding(paddingValues),
                 uiState = uiState,
-                onRefresh = onRefresh,
                 onTripClick = onTripClick,
                 onFilterSelected = onFilterSelected
             )
@@ -111,7 +109,6 @@ fun HomeScreen(
 private fun HomeContent(
     modifier: Modifier = Modifier,
     uiState: HomeUiState,
-    onRefresh: () -> Unit,
     onTripClick: (Long) -> Unit,
     onFilterSelected: (HomeFilter) -> Unit
 ) {
@@ -135,15 +132,6 @@ private fun HomeContent(
             bottom = Dimensions.spacingXXL
         )
     ) {
-        if (uiState.isRefreshing) {
-            item {
-                LinearProgressIndicator(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = TripPlannerTheme.colors.primary
-                )
-            }
-        }
-
         val currentTrip = uiState.currentTripId?.let { id ->
             uiState.trips.firstOrNull { it.id == id }
         }
@@ -170,8 +158,7 @@ private fun HomeContent(
         item {
             FilterRow(
                 activeFilter = uiState.activeFilter,
-                onFilterSelected = onFilterSelected,
-                onRefresh = onRefresh
+                onFilterSelected = onFilterSelected
             )
         }
 
@@ -196,8 +183,7 @@ private fun HomeContent(
 private fun FilterRow(
     modifier: Modifier = Modifier,
     activeFilter: HomeFilter,
-    onFilterSelected: (HomeFilter) -> Unit,
-    onRefresh: () -> Unit
+    onFilterSelected: (HomeFilter) -> Unit
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -208,21 +194,13 @@ private fun FilterRow(
             modifier = Modifier.weight(1f),
             horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingS)
         ) {
-            HomeFilter.values().forEach { filter ->
+            HomeFilter.entries.forEach { filter ->
                 FilterChip(
                     label = stringResource(id = filter.labelResId),
                     selected = activeFilter == filter,
                     onClick = { onFilterSelected(filter) }
                 )
             }
-        }
-        TextButton(
-            onClick = onRefresh,
-            colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
-                contentColor = TripPlannerTheme.colors.primary
-            )
-        ) {
-            Text(text = stringResource(id = R.string.home_action_refresh))
         }
     }
 }
@@ -299,7 +277,6 @@ private fun HomeScreenPreview() {
                 activeFilter = HomeFilter.All
             ),
             snackbarHostState = SnackbarHostState(),
-            onRefresh = {},
             onRetry = {},
             onTripClick = {},
             onFilterSelected = {}

@@ -35,7 +35,6 @@ class HomeViewModel @Inject constructor(
 
     init {
         addEventHandler<HomeEvent.ScreenLoaded>(::onScreenLoaded)
-        addEventHandler<HomeEvent.RefreshRequested>(::onRefreshRequested)
         addEventHandler<HomeEvent.RetryClicked>(::onRetryClicked)
         addEventHandler<HomeEvent.TripClicked>(::onTripClicked)
         addEventHandler<HomeEvent.FilterSelected>(::onFilterSelected)
@@ -59,32 +58,6 @@ class HomeViewModel @Inject constructor(
         emit.effect(HomeEffect.NavigateToTripDetail(event.tripId))
     }
 
-    private suspend fun onRefreshRequested(event: HomeEvent.RefreshRequested, emit: Emitter<HomeUiState, HomeEffect>) {
-        emit.updatedState<HomeUiState> { current ->
-            current.copy(isRefreshing = true, error = null)
-        }
-
-        try {
-            val trips = tripRepository.observeTrips().first()
-            val mapped = mapTrips(trips)
-            emit.updatedState<HomeUiState> { current ->
-                current.copy(
-                    isInitialLoading = false,
-                    isRefreshing = false,
-                    error = null,
-                    trips = mapped.trips,
-                    currentTripId = mapped.currentTripId,
-                    countdown = mapped.countdown,
-                    countdownTripId = mapped.countdownTripId
-                )
-            }
-        } catch (e: Exception) {
-            handleError(emit, isRefresh = true)
-        } finally {
-            emit.updatedState<HomeUiState> { current -> current.copy(isRefreshing = false) }
-        }
-    }
-
     private fun startObservingTrips(emit: Emitter<HomeUiState, HomeEffect>, showLoading: Boolean) {
         tripsJob?.cancel()
         if (showLoading) {
@@ -95,12 +68,11 @@ class HomeViewModel @Inject constructor(
         tripsJob = viewModelScope.launch {
             tripRepository.observeTrips()
                 .mapLatest { mapTrips(it) }
-                .catch { handleError(emit, isRefresh = false) }
+                .catch { handleError(emit) }
                 .collect { mapped ->
                     emit.updatedState<HomeUiState> { current ->
                         current.copy(
                             isInitialLoading = false,
-                            isRefreshing = false,
                             error = null,
                             trips = mapped.trips,
                             currentTripId = mapped.currentTripId,
@@ -112,21 +84,16 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private suspend fun handleError(
+    private fun handleError(
         emit: Emitter<HomeUiState, HomeEffect>,
-        isRefresh: Boolean
     ) {
         val hasTrips = state.value.trips.isNotEmpty()
-        if (isRefresh && hasTrips) {
-            emit.effect(HomeEffect.ShowSnackbar(R.string.error_unknown_message))
-        }
         emit.updatedState<HomeUiState> { current ->
             if (hasTrips) {
-                current.copy(isRefreshing = false)
+                current
             } else {
                 current.copy(
                     isInitialLoading = false,
-                    isRefreshing = false,
                     error = ErrorState.UnknownError()
                 )
             }
