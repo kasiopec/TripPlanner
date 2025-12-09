@@ -67,13 +67,23 @@ Use Kotlin, Jetpack Compose, AndroidX, Material 3.
 
 - Do not inline global screen-state UI (loading, error, empty, etc.) inside the main screen composable.
   - Examples: `HomeScreen`, `TripFormScreen`, `TripDetailScreen` should not contain full loading/error/empty implementations directly.
-- For each feature, define dedicated screen-state composables under that feature’s package (or a `ui` subpackage), for example:
+- For each feature, define dedicated screen-state composables under that feature's package (or a `ui` subpackage), for example:
   - `HomeLoading`, `HomeError`, `HomeEmptyState`.
   - `TripFormLoading`, `TripFormError`, and similar.
 - The main route/screen composable should:
   - Read `UiState` from its ViewModel.
   - Decide which state to show (loading, error, empty, content).
   - Delegate to the appropriate screen-state composables and a separate content composable, instead of implementing these states inline.
+
+## Feature Contract Files
+
+- For each feature, the `*Contract.kt` file must only contain:
+  - The screen `UiState` data class.
+  - The feature `Event` sealed interface.
+  - The feature `Effect` sealed interface.
+- Do not place enums, additional data classes, or helper models in the contract file.
+  - Put filter enums, status enums, item UI models, and progress models into their own files with clear names (for example, `HomeFilter.kt`, `TripStatusUi.kt`, `TripUiModel.kt`) in the most appropriate package for that feature.
+  - Keep these files under the same feature package (for example, `features.home`) unless they are clearly shared across multiple features.
 
 ## UI Requirements
 
