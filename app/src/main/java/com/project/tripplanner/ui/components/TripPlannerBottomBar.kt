@@ -50,7 +50,7 @@ fun TripPlannerBottomBar(
 ) {
     val items = listOf(
         BottomBarItem(icon = R.drawable.home_alt_24, route = Screen.Home.route, contentDescription = "Home"),
-        BottomBarItem(icon = R.drawable.ic_calendar_24, route = Screen.Home.route, contentDescription = "Docs"),
+        BottomBarItem(icon = R.drawable.ic_list_24, route = Screen.TripDetails.route, contentDescription = "Trip details"),
         BottomBarItem(icon = R.drawable.plus_fab_38, contentDescription = "Add", isSelectable = false),
         BottomBarItem(icon = R.drawable.ic_error_24, route = Screen.Login.route, contentDescription = "Check"),
         BottomBarItem(icon = R.drawable.ic_user_24, route = Screen.Home.route, contentDescription = "Profile")
@@ -93,10 +93,18 @@ fun TripPlannerBottomBar(
                             onClick = {
                                 if (item.isSelectable) {
                                     selectedItem = item
-                                    item.route?.let {
-                                        navController.navigate(it) {
-                                            popUpTo(Screen.Home.route) {
-                                                inclusive = true
+                                    when (item.route) {
+                                        Screen.TripDetails.route -> {
+                                            navController.navigate(Screen.TripDetails.route)
+                                        }
+
+                                        else -> {
+                                            item.route?.let {
+                                                navController.navigate(it) {
+                                                    popUpTo(Screen.Home.route) {
+                                                        inclusive = true
+                                                    }
+                                                }
                                             }
                                         }
                                     }

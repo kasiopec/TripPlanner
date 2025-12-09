@@ -27,13 +27,13 @@ import com.project.tripplanner.features.register.RegisterScreen
 import com.project.tripplanner.features.register.RegisterViewModel
 import com.project.tripplanner.features.resetpassword.ResetPasswordScreen
 import com.project.tripplanner.features.resetpassword.ResetPasswordViewModel
+import com.project.tripplanner.features.tripdetails.TripDetailsScreen
 import com.project.tripplanner.features.tripform.TripFormEffect
 import com.project.tripplanner.features.tripform.TripFormEvent
 import com.project.tripplanner.features.tripform.TripFormScreen
 import com.project.tripplanner.features.tripform.TripFormUiState
 import com.project.tripplanner.features.tripform.TripFormViewModel
 import io.github.jan.supabase.auth.Auth
-import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -106,6 +106,9 @@ fun NavGraph(
                     navController.navigate(Screen.TripForm.createRoute(tripId))
                 }
             )
+        }
+        composable(route = Screen.TripDetails.route) {
+            TripDetailsScreen()
         }
         composable(route = Screen.RegisterForm.route) {
             val registerViewModel = hiltViewModel<RegisterViewModel>()

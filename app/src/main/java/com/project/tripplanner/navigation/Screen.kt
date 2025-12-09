@@ -9,6 +9,7 @@ sealed class Screen(
     object Home : Screen(route = "home_screen", title = "Home", isBottomBarVisible = true)
     object RegisterForm : Screen(route = "register_screen", title = "Registration")
     object ResetPassword : Screen(route = "reset_password_screen", title = "Reset password")
+    object TripDetails : Screen(route = "trip_details", title = "Trip details")
     object TripForm : Screen(route = "trip_form_screen/{tripId}", title = "Trip Form") {
         const val ARG_TRIP_ID = "tripId"
         fun createRoute(tripId: Long? = null): String =
