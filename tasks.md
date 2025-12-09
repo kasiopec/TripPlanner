@@ -61,8 +61,8 @@ TripPlanner MVP Tasks
     - Ended: `now > endDate`.
   - Hero rules:
     - When at least one trip is in progress, feature exactly one as the current-trip hero and do not show any countdown hero item.
-    - When there are no in-progress trips and at least one upcoming trip, show a single countdown hero item for the next upcoming trip (earliest `startDate`) using `CountdownFormatter`, implemented as the dedicated `CountdownCard`-based hero rather than a variant of `HomeHero`.
-    - Current trip should appear only in the hero, never duplicated in the list.
+    - When there are no in-progress trips and at least one upcoming trip, show a single countdown hero item for the next upcoming trip (earliest `startDate`) using `CountdownFormatter`, implemented as the dedicated `CountdownCard`-based hero rather than a variant of `HomeHero`. The countdown hero is informational only and does not handle navigation.
+    - Current trip should appear only in the hero, never duplicated in the list; upcoming trips that drive the countdown hero remain visible in the list.
   - Filtering rules:
     - `All`: show all trips except the current trip (which lives only in the hero).
     - `Upcoming`: show only upcoming trips in the list.

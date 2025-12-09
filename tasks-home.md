@@ -137,13 +137,13 @@ This document refines Task 2 from `tasks.md` with a concrete implementation plan
         - Render a "CURRENT TRIP" hero using the matching `TripUiModel` (destination, date range, simple progress hint).
         - This hero is the only place where an in-progress trip is shown; the list below must not duplicate it.
       - Else, if `uiState.countdown != null` and `uiState.countdownTripId != null` matches an upcoming trip:
-        - Render a single countdown hero item (a dedicated hero composable visually derived from `CountdownCard`, not a variant of `HomeHero`) for the next upcoming trip at the top of the content.
+        - Render a single countdown hero item (a dedicated hero composable visually derived from `CountdownCard`, not a variant of `HomeHero`) for the next upcoming trip at the top of the content. The countdown hero is informational only and is not tappable.
     - Filter chips:
       - Render a horizontal chip row just under the hero area with `All`, `Upcoming`, and `Ended`.
       - Chips are mutually exclusive and reflect `uiState.activeFilter`.
     - List:
       - Below the chip row, render a `LazyColumn` of full-width `TripCard` items keyed by trip id.
-      - The list respects the `activeFilter` (All / Upcoming / Ended) and excludes the current trip when `currentTripId` is not null.
+      - The list respects the `activeFilter` (All / Upcoming / Ended) and excludes the current trip when `currentTripId` is not null. Upcoming trips that drive the countdown hero remain visible in the list.
   - When there are no trips and no error:
     - Show `HomeEmptyState`. A clean, centered component with an illustration and a catchy message to use the “+” for a new trip.
 
@@ -166,7 +166,7 @@ This document refines Task 2 from `tasks.md` with a concrete implementation plan
   - On Home:
     - The countdown appears at most once, derived from `HomeUiState.countdown` and `countdownTripId`.
     - It is not per-list-item; it appears above the list as a standalone hero item separate from `HomeHero`.
-    - It should be tappable to navigate to the associated trip details.
+    - It is informational only and is not tappable; navigation continues to be driven by the trip list.
 
 - `FullScreenError`:
   - Use `FullScreenError` via `HomeError` for initial hard errors (for example, first load failure with no cached trips).

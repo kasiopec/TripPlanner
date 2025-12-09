@@ -54,7 +54,8 @@ import java.time.temporal.ChronoUnit
 fun CountdownCard(
     destination: String,
     until: ZonedDateTime,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    heroStyle: Boolean = false
 ) {
     val colors = TripPlannerTheme.colors
 
@@ -71,7 +72,6 @@ fun CountdownCard(
         calculateDisplayUnits(now, until)
     }
 
-
     val backgroundBrush = Brush.verticalGradient(
         colors = listOf(
             colors.primary,
@@ -79,15 +79,7 @@ fun CountdownCard(
         )
     )
 
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(Dimensions.radiusL)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
-        )
-    ) {
+    val content: @Composable () -> Unit = {
         Box(
             modifier = Modifier
                 .background(backgroundBrush)
@@ -116,13 +108,46 @@ fun CountdownCard(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    CountdownUnit(value = displayUnits.unit1Value, label = stringResource(displayUnits.unit1Label), textColor = colors.primaryStrong)
+                    CountdownUnit(
+                        value = displayUnits.unit1Value,
+                        label = stringResource(displayUnits.unit1Label),
+                        textColor = colors.primaryStrong
+                    )
                     TimeUnitSeparator(color = colors.onPrimary)
-                    CountdownUnit(value = displayUnits.unit2Value, label = stringResource(displayUnits.unit2Label), textColor = colors.primaryStrong)
+                    CountdownUnit(
+                        value = displayUnits.unit2Value,
+                        label = stringResource(displayUnits.unit2Label),
+                        textColor = colors.primaryStrong
+                    )
                     TimeUnitSeparator(color = colors.onPrimary)
-                    CountdownUnit(value = displayUnits.unit3Value, label = stringResource(displayUnits.unit3Label), textColor = colors.primaryStrong)
+                    CountdownUnit(
+                        value = displayUnits.unit3Value,
+                        label = stringResource(displayUnits.unit3Label),
+                        textColor = colors.primaryStrong
+                    )
                 }
             }
+        }
+    }
+
+    if (heroStyle) {
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+        ) {
+            content()
+        }
+    } else {
+        Card(
+            modifier = modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(Dimensions.radiusL)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.Transparent
+            )
+        ) {
+            content()
         }
     }
 }
