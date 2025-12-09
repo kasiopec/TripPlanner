@@ -66,8 +66,10 @@ fun CurrentTripHero(
             modifier = Modifier
                 .matchParentSize()
                 .padding(
-                    horizontal = Dimensions.spacingXL,
-                    vertical = Dimensions.spacingXL
+                    start = Dimensions.spacingXL,
+                    end = Dimensions.spacingXL,
+                    top = 20.dp,
+                    bottom = Dimensions.spacingXXL
                 ),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingXL)

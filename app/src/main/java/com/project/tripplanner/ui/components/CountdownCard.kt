@@ -84,7 +84,12 @@ fun CountdownCard(
             modifier = Modifier
                 .background(backgroundBrush)
                 .fillMaxWidth()
-                .padding(Dimensions.spacingL)
+                .padding(
+                    top = Dimensions.spacingL,
+                    bottom = Dimensions.spacingXL,
+                    start = Dimensions.spacingL,
+                    end = Dimensions.spacingXL
+                )
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,

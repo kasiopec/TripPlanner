@@ -1,52 +1,42 @@
 package com.project.tripplanner.features.home
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.project.tripplanner.R
-import com.project.tripplanner.ui.components.CompactHero
 import com.project.tripplanner.ui.components.CountdownCard
-import com.project.tripplanner.ui.components.FilterChip
+import com.project.tripplanner.ui.components.HomeHeader
 import com.project.tripplanner.ui.components.TripCard
 import com.project.tripplanner.ui.components.TripCardStatus
-import com.project.tripplanner.ui.components.text.Headline2
-import com.project.tripplanner.ui.components.text.Headline2
 import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 import java.time.ZoneId
@@ -120,7 +110,6 @@ fun HomeScreen(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun HomeContent(
     modifier: Modifier = Modifier,
@@ -128,6 +117,7 @@ private fun HomeContent(
     onTripClick: (Long) -> Unit,
     onFilterSelected: (HomeFilter) -> Unit
 ) {
+    val defaultHeroHeight = 240.dp
     val listState = rememberLazyListState()
     val baseTrips = uiState.trips
         .filterNot { it.id == uiState.currentTripId }
@@ -137,7 +127,6 @@ private fun HomeContent(
         HomeFilter.Upcoming -> baseTrips.filter { it.status == TripStatusUi.None }
         HomeFilter.Ended -> baseTrips.filter { it.status == TripStatusUi.Ended }
     }
-    val hasHero = uiState.currentTripId != null || (uiState.countdown != null && uiState.countdownTripId != null)
     val currentTrip = uiState.currentTripId?.let { id ->
         uiState.trips.firstOrNull { it.id == id }
     }
@@ -146,146 +135,96 @@ private fun HomeContent(
     } else {
         null
     }
-    val compactHeroTrip = currentTrip ?: countdownTrip
-    var heroHeightPx by remember { mutableIntStateOf(0) }
-    val showCompactHero by remember(hasHero, listState, heroHeightPx) {
-        derivedStateOf {
-            if (!hasHero) {
-                false
-            } else if (heroHeightPx > 0) {
-                listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset >= heroHeightPx
-            } else {
-                listState.firstVisibleItemIndex > 0
-            }
-        }
-    }
     val density = LocalDensity.current
-    var compactHeroHeightPx by remember { mutableIntStateOf(0) }
-    val compactHeroPadding = remember(showCompactHero, compactHeroHeightPx, density) {
-        if (showCompactHero && compactHeroHeightPx > 0) {
-            with(density) { compactHeroHeightPx.toDp() }
-        } else {
-            0.dp
+    val hasHero = currentTrip != null || countdownTrip != null
+    var heroHeight by remember(hasHero) { mutableStateOf(if (hasHero) defaultHeroHeight else 0.dp) }
+
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val heroHeightDp = if (hasHero && heroHeight > 0.dp) heroHeight else 0.dp
+        val overlap = if (heroHeightDp > 0.dp) Dimensions.spacingM else 0.dp
+        val surfaceHeight = (maxHeight - heroHeightDp + overlap).coerceAtLeast(0.dp)
+
+        if (currentTrip != null) {
+            CurrentTripHero(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onSizeChanged { size ->
+                        heroHeight = with(density) { size.height.toDp() }
+                    },
+                trip = currentTrip,
+                onClick = { onTripClick(currentTrip.id) }
+            )
+        } else if (countdownTrip != null) {
+            CountdownCard(
+                destination = countdownTrip.destination,
+                until = countdownTrip.startDate.atStartOfDay(countdownTrip.timezone),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onSizeChanged { size ->
+                        heroHeight = with(density) { size.height.toDp() }
+                    },
+                heroStyle = true
+            )
         }
-    }
 
-    Column(modifier = modifier.fillMaxSize()) {
-        HomeHeader(
+        Surface(
             modifier = Modifier
+                .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(horizontal = Dimensions.spacingL, vertical = Dimensions.spacingM),
-            activeFilter = uiState.activeFilter,
-            onFilterSelected = onFilterSelected
-        )
-
-        Box(modifier = Modifier.fillMaxSize()) {
-            LazyColumn(
+                .height(surfaceHeight),
+            shape = RoundedCornerShape(topStart = Dimensions.radiusL, topEnd = Dimensions.radiusL),
+            tonalElevation = 0.dp,
+            shadowElevation = 0.dp,
+            color = TripPlannerTheme.colors.background
+        ) {
+            Column(
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(Dimensions.spacingL),
-                contentPadding = PaddingValues(
-                    start = 0.dp,
-                    end = 0.dp,
-                    top = Dimensions.spacingL + compactHeroPadding,
-                    bottom = Dimensions.spacingXXL
-                ),
-                state = listState
+                verticalArrangement = Arrangement.Top
             ) {
-                if (currentTrip != null) {
-                    item {
-                        CurrentTripHero(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .onGloballyPositioned { heroHeightPx = it.size.height },
-                            trip = currentTrip,
-                            onClick = { onTripClick(currentTrip.id) }
-                        )
-                    }
-                } else if (countdownTrip != null) {
-                    item {
-                        CountdownCard(
-                            destination = countdownTrip.destination,
-                            until = countdownTrip.startDate.atStartOfDay(countdownTrip.timezone),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .onGloballyPositioned { heroHeightPx = it.size.height },
-                            heroStyle = true
-                        )
-                    }
-                }
-
-                items(filteredTrips, key = { it.id }) { trip ->
-                    TripCard(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = Dimensions.spacingL),
-                        title = trip.destination,
-                        dateRange = trip.dateRangeText,
-                        coverImageUri = trip.coverImageUri?.toString(),
-                        status = when (trip.status) {
-                            TripStatusUi.InProgress -> TripCardStatus.InProgress
-                            TripStatusUi.Ended -> TripCardStatus.Ended
-                            else -> TripCardStatus.Upcoming
-                        },
-                        onClick = { onTripClick(trip.id) }
-                    )
-                }
-            }
-
-            if (showCompactHero && compactHeroTrip != null) {
-                androidx.compose.animation.AnimatedVisibility(
+                HomeHeader(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .align(Alignment.TopCenter)
-                        .onGloballyPositioned { compactHeroHeightPx = it.size.height },
-                    visible = true,
-                    enter = fadeIn(animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing)) +
-                            slideInVertically(
-                                animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing),
-                                initialOffsetY = { -it }
-                            ),
-                    exit = fadeOut(animationSpec = tween(durationMillis = 180, easing = FastOutSlowInEasing)) +
-                            slideOutVertically(
-                                animationSpec = tween(durationMillis = 180, easing = FastOutSlowInEasing),
-                                targetOffsetY = { -it }
-                            )
-                ) {
-                    CompactHero(
-                        modifier = Modifier.fillMaxWidth(),
-                        labelRes = compactHeroTrip.statusLabelResId,
-                        title = compactHeroTrip.destination,
-                        subtitle = compactHeroTrip.dateRangeText
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun HomeHeader(
-    modifier: Modifier = Modifier,
-    activeFilter: HomeFilter,
-    onFilterSelected: (HomeFilter) -> Unit
-) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(Dimensions.spacingM)
-    ) {
-        Headline2(
-            text = stringResource(id = R.string.home_title),
-            color = TripPlannerTheme.colors.onBackground
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingS),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            HomeFilter.entries.forEach { filter ->
-                FilterChip(
-                    label = stringResource(id = filter.labelResId),
-                    selected = activeFilter == filter,
-                    onClick = { onFilterSelected(filter) }
+                        .padding(
+                            start = Dimensions.spacingL,
+                            end = Dimensions.spacingL,
+                            top = Dimensions.spacingL,
+                            bottom = Dimensions.spacingS
+                        ),
+                    activeFilter = uiState.activeFilter,
+                    onFilterSelected = onFilterSelected
                 )
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(Dimensions.spacingL),
+                        contentPadding = PaddingValues(
+                            start = Dimensions.spacingL,
+                            end = Dimensions.spacingL,
+                            top = Dimensions.spacingL,
+                            bottom = Dimensions.spacingL
+                        ),
+                        state = listState
+                    ) {
+                        items(filteredTrips, key = { it.id }) { trip ->
+                            TripCard(
+                                modifier = Modifier.fillMaxWidth(),
+                                title = trip.destination,
+                                dateRange = trip.dateRangeText,
+                                coverImageUri = trip.coverImageUri?.toString(),
+                                status = when (trip.status) {
+                                    TripStatusUi.InProgress -> TripCardStatus.InProgress
+                                    TripStatusUi.Ended -> TripCardStatus.Ended
+                                    else -> TripCardStatus.Upcoming
+                                },
+                                onClick = { onTripClick(trip.id) }
+                            )
+                        }
+                    }
+                }
             }
         }
     }
