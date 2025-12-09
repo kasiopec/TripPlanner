@@ -4,7 +4,6 @@ import androidx.lifecycle.viewModelScope
 import com.project.tripplanner.BaseViewModel
 import com.project.tripplanner.Emitter
 import com.project.tripplanner.ErrorState
-import com.project.tripplanner.R
 import com.project.tripplanner.cover.TripCoverImageStorage
 import com.project.tripplanner.data.model.Trip
 import com.project.tripplanner.repositories.TripRepository
@@ -13,14 +12,14 @@ import com.project.tripplanner.utils.time.Countdown
 import com.project.tripplanner.utils.time.CountdownFormatter
 import com.project.tripplanner.utils.time.DateFormatter
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -58,6 +57,7 @@ class HomeViewModel @Inject constructor(
         emit.effect(HomeEffect.NavigateToTripDetail(event.tripId))
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun startObservingTrips(emit: Emitter<HomeUiState, HomeEffect>, showLoading: Boolean) {
         tripsJob?.cancel()
         if (showLoading) {
