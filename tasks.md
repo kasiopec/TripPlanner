@@ -14,9 +14,9 @@ TripPlanner MVP Tasks
 
 - ViewModel and MVI:
   - Create a feature package (for example, `features.home`) to co-locate Home screen logic.
-  - Add `HomeUiState`, `HomeEvent`, and `HomeEffect` following the existing MVI style, representing loading, content, error, and refresh states while keeping `HomeUiState` as a pure data holder that uses `ErrorState` for full-screen errors.
+  - Add `HomeUiState`, `HomeEvent`, and `HomeEffect` following the existing MVI style, representing loading, content, and error states while keeping `HomeUiState` as a pure data holder that uses `ErrorState` for full-screen errors.
   - Model Home state with:
-    - `isInitialLoading`, `isRefreshing`, `error`.
+    - `isInitialLoading`, `error`.
     - `trips: List<TripUiModel>` with precomputed status (`None` = upcoming, `InProgress`, `Ended`).
     - `currentTripId: Long?` for the single in-progress trip to feature in the hero (or null).
     - `countdown: Countdown?` and `countdownTripId: Long?` for the next upcoming trip when there is no current trip.
@@ -27,7 +27,7 @@ TripPlanner MVP Tasks
     - Sort in a deterministic order (for example, in-progress -> upcoming (`None`) -> ended).
     - Set `currentTripId` to the single in-progress trip (if any).
     - When `currentTripId` is null, compute countdown for the earliest upcoming trip and set `countdown` + `countdownTripId` (or null when expired or none).
-  - Handle initial loading, error, empty, and refresh events (`ScreenLoaded`, `RefreshRequested`, `RetryClicked`, `TripClicked`, `FilterSelected`). Keep Home logic localized to the feature.
+  - Handle initial loading, error, empty, and navigation/filter events (`ScreenLoaded`, `RetryClicked`, `TripClicked`, `FilterSelected`). Keep Home logic localized to the feature.
 
 - UI:
   - Add a stateful `HomeRoute` that obtains `HomeViewModel` via Hilt, collects `HomeUiState`, emits initial events, and observes `HomeEffect` for navigation/snackbars.
@@ -41,7 +41,6 @@ TripPlanner MVP Tasks
         - Else, if `countdown`/`countdownTripId` are set: show a single countdown hero item for the next upcoming trip, implemented as a separate hero composable based on `CountdownCard` (not via `HomeHero`).
       - A chip row for `activeFilter` with `All`, `Upcoming`, and `Ended` as mutually exclusive options.
       - A `LazyColumn` of full-width `TripCard` items (upcoming and ended only), keyed by trip id.
-      - A refresh indicator when `isRefreshing` is true.
   - Trip cards:
     - Show destination and date range.
     - Show clear labels for upcoming and ended trips; “On trip” status is represented only by the current-trip hero, not by a card chip.
@@ -62,8 +61,8 @@ TripPlanner MVP Tasks
     - Ended: `now > endDate`.
   - Hero rules:
     - When at least one trip is in progress, feature exactly one as the current-trip hero and do not show any countdown hero item.
-    - When there are no in-progress trips and at least one upcoming trip, show a single countdown hero item for the next upcoming trip (earliest `startDate`) using `CountdownFormatter`, implemented as the dedicated `CountdownCard`-based hero rather than a variant of `HomeHero`.
-    - Current trip should appear only in the hero, never duplicated in the list.
+    - When there are no in-progress trips and at least one upcoming trip, show a single countdown hero item for the next upcoming trip (earliest `startDate`) using `CountdownFormatter`, implemented as the dedicated `CountdownCard`-based hero rather than a variant of `HomeHero`. The countdown hero is informational only and does not handle navigation.
+    - Current trip should appear only in the hero, never duplicated in the list; upcoming trips that drive the countdown hero remain visible in the list.
   - Filtering rules:
     - `All`: show all trips except the current trip (which lives only in the hero).
     - `Upcoming`: show only upcoming trips in the list.

@@ -1,0 +1,45 @@
+package com.project.tripplanner.ui.components
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.project.tripplanner.R
+import com.project.tripplanner.features.home.HomeFilter
+import com.project.tripplanner.ui.components.text.Headline2
+import com.project.tripplanner.ui.theme.Dimensions
+import com.project.tripplanner.ui.theme.TripPlannerTheme
+
+@Composable
+fun HomeHeader(
+    modifier: Modifier = Modifier,
+    activeFilter: HomeFilter,
+    onFilterSelected: (HomeFilter) -> Unit
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.Top
+    ) {
+        Headline2(
+            text = stringResource(id = R.string.home_title),
+            color = TripPlannerTheme.colors.onBackground
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingS),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HomeFilter.entries.forEach { filter ->
+                FilterChip(
+                    label = stringResource(id = filter.labelResId),
+                    selected = activeFilter == filter,
+                    onClick = { onFilterSelected(filter) }
+                )
+            }
+        }
+    }
+}

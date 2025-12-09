@@ -17,7 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.project.tripplanner.Effect
-import com.project.tripplanner.features.home.HomeScreen
+import com.project.tripplanner.features.home.HomeRoute
 import com.project.tripplanner.features.login.LoginEffect
 import com.project.tripplanner.features.login.LoginEvent
 import com.project.tripplanner.features.login.LoginScreen
@@ -45,35 +45,35 @@ fun NavGraph(
     navController: NavHostController,
     supabaseAuth: Auth
 ) {
-    LaunchedEffect(Unit) {
-        supabaseAuth.sessionStatus.collect { status ->
-            when (status) {
-                is SessionStatus.Authenticated -> {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
-                    }
-                }
-
-                is SessionStatus.NotAuthenticated -> {
-                    navController.navigate(route = Screen.Login.route) {
-                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
-                    }
-                }
-
-                is SessionStatus.RefreshFailure -> {
-                    supabaseAuth.signOut()
-                    navController.navigate("${Screen.Login.route}?reason=$REFRESH_FAILURE_REASON") {
-                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
-                    }
-                }
-
-                else -> Unit
-            }
-        }
-    }
+//    LaunchedEffect(Unit) {
+//        supabaseAuth.sessionStatus.collect { status ->
+//            when (status) {
+//                is SessionStatus.Authenticated -> {
+//                    navController.navigate(Screen.Home.route) {
+//                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+//                    }
+//                }
+//
+//                is SessionStatus.NotAuthenticated -> {
+//                    navController.navigate(route = Screen.Login.route) {
+//                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+//                    }
+//                }
+//
+//                is SessionStatus.RefreshFailure -> {
+//                    supabaseAuth.signOut()
+//                    navController.navigate("${Screen.Login.route}?reason=$REFRESH_FAILURE_REASON") {
+//                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+//                    }
+//                }
+//
+//                else -> Unit
+//            }
+//        }
+//    }
     NavHost(
         navController = navController,
-        startDestination = Screen.Login.route
+        startDestination = Screen.Home.route
     ) {
         composable(route = Screen.Login.route) { backStackEntry ->
             val loginViewModel = hiltViewModel<LoginViewModel>()
@@ -100,7 +100,13 @@ fun NavGraph(
                 }
             }
         }
-        composable(route = Screen.Home.route) { HomeScreen() }
+        composable(route = Screen.Home.route) {
+            HomeRoute(
+                onTripClick = { tripId ->
+                    navController.navigate(Screen.TripForm.createRoute(tripId))
+                }
+            )
+        }
         composable(route = Screen.RegisterForm.route) {
             val registerViewModel = hiltViewModel<RegisterViewModel>()
             RegisterScreen(viewModel = registerViewModel)

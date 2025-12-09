@@ -18,6 +18,7 @@ import com.project.tripplanner.navigation.NavGraph
 import com.project.tripplanner.navigation.Screen
 import com.project.tripplanner.ui.components.TripPlannerBottomBar
 import com.project.tripplanner.ui.theme.TripPlannerTheme
+import androidx.core.view.WindowCompat
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.jan.supabase.auth.Auth
 import javax.inject.Inject
@@ -30,6 +31,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             val navController = rememberNavController()
             val navBackStackEntry by navController.currentBackStackEntryAsState()
