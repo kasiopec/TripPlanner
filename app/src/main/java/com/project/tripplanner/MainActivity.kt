@@ -3,6 +3,7 @@ package com.project.tripplanner
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -31,41 +32,18 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentRoute = navBackStackEntry?.destination?.route
-            val currentScreen = Screen.fromRoute(currentRoute)
-            val isBottomBarVisible = currentScreen?.isBottomBarVisible == true
             TripPlannerTheme {
                 val colors = TripPlannerTheme.colors
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    containerColor = colors.background,
-                    contentColor = colors.onBackground,
-                    bottomBar = {
-                        AnimatedVisibility(
-                            visible = isBottomBarVisible,
-                            enter = slideInVertically { it },
-                            exit = slideOutVertically { it }
-                        ) {
-                            TripPlannerBottomBar(
-                                navController = navController,
-                                currentScreen = currentScreen
-                            )
-                        }
-
-                    }
-                ) { paddingValues ->
-                    Box(
-                        modifier = Modifier.padding(paddingValues)
-                    ) {
-                        NavGraph(
-                            navController = navController,
-                            supabaseAuth = supabaseAuth
-                        )
-                    }
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    NavGraph(
+                        navController = navController,
+                        supabaseAuth = supabaseAuth
+                    )
                 }
             }
         }

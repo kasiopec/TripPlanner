@@ -1,5 +1,10 @@
 package com.project.tripplanner.features.home
 
+import android.annotation.SuppressLint
+import android.app.Activity
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -29,28 +34,43 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.project.tripplanner.R
-import com.project.tripplanner.ui.components.CountdownCard
+import com.project.tripplanner.navigation.Screen
+import com.project.tripplanner.ui.components.CountdownCard2
 import com.project.tripplanner.ui.components.CurrentTripHero
+import com.project.tripplanner.ui.components.CurrentTripHero2
 import com.project.tripplanner.ui.components.HomeHeader
 import com.project.tripplanner.ui.components.TripCard
 import com.project.tripplanner.ui.components.TripCardStatus
+import com.project.tripplanner.ui.components.TripPlannerBottomBar
 import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
+import java.time.LocalDate
 import java.time.ZoneId
 
 @Composable
 fun HomeRoute(
-    modifier: Modifier = Modifier,
     onTripClick: (Long) -> Unit,
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel(),
+    navController: NavController
 ) {
     val uiState by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+    val currentScreen = Screen.fromRoute(currentRoute)
+    val isBottomBarVisible = currentScreen?.isBottomBarVisible == true
 
     LaunchedEffect(Unit) {
         viewModel.emitEvent(HomeEvent.ScreenLoaded)
@@ -68,44 +88,53 @@ fun HomeRoute(
     }
 
     HomeScreen(
-        modifier = modifier,
         uiState = uiState,
         snackbarHostState = snackbarHostState,
         onRetry = { viewModel.emitEvent(HomeEvent.RetryClicked) },
         onTripClick = { viewModel.emitEvent(HomeEvent.TripClicked(it)) },
-        onFilterSelected = { viewModel.emitEvent(HomeEvent.FilterSelected(it)) }
+        onFilterSelected = { viewModel.emitEvent(HomeEvent.FilterSelected(it)) },
+        currentScreen = currentScreen,
+        isBottomBarVisible = isBottomBarVisible,
+        navController = navController
     )
 }
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(
-    modifier: Modifier = Modifier,
     uiState: HomeUiState,
     snackbarHostState: SnackbarHostState,
     onRetry: () -> Unit,
     onTripClick: (Long) -> Unit,
-    onFilterSelected: (HomeFilterType) -> Unit
+    onFilterSelected: (HomeFilter) -> Unit,
+    isBottomBarVisible: Boolean,
+    currentScreen: Screen?,
+    navController: NavController
 ) {
     val colors = TripPlannerTheme.colors
+
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         containerColor = colors.background,
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { paddingValues ->
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)
+    ) { _ ->
         when {
-            uiState.isInitialLoading -> HomeLoading(modifier = Modifier.padding(paddingValues))
+            uiState.isInitialLoading -> HomeLoading(modifier = Modifier.fillMaxSize())
             uiState.error != null -> HomeError(
-                modifier = Modifier.padding(paddingValues),
+                modifier = Modifier.fillMaxSize(),
                 errorState = uiState.error,
                 onRetry = onRetry
             )
 
-            uiState.trips.isEmpty() -> HomeEmptyState(modifier = Modifier.padding(paddingValues))
+            uiState.trips.isEmpty() -> HomeEmptyState(modifier = Modifier.fillMaxSize())
             else -> HomeContent(
-                modifier = modifier,
                 uiState = uiState,
                 onTripClick = onTripClick,
-                onFilterSelected = onFilterSelected
+                onFilterSelected = onFilterSelected,
+                currentScreen = currentScreen,
+                isBottomBarVisible = isBottomBarVisible,
+                navController = navController,
             )
         }
     }
@@ -116,7 +145,10 @@ private fun HomeContent(
     modifier: Modifier = Modifier,
     uiState: HomeUiState,
     onTripClick: (Long) -> Unit,
-    onFilterSelected: (HomeFilterType) -> Unit
+    onFilterSelected: (HomeFilter) -> Unit,
+    isBottomBarVisible: Boolean,
+    currentScreen: Screen?,
+    navController: NavController
 ) {
     val defaultHeroHeight = 240.dp
     val listState = rememberLazyListState()
@@ -124,9 +156,9 @@ private fun HomeContent(
         .filterNot { it.id == uiState.currentTripId }
         .filter { it.status != TripStatusUi.InProgress }
     val filteredTrips = when (uiState.activeFilter) {
-        HomeFilterType.All -> baseTrips
-        HomeFilterType.Upcoming -> baseTrips.filter { it.status == TripStatusUi.None }
-        HomeFilterType.Ended -> baseTrips.filter { it.status == TripStatusUi.Ended }
+        HomeFilter.All -> baseTrips
+        HomeFilter.Upcoming -> baseTrips.filter { it.status == TripStatusUi.None }
+        HomeFilter.Ended -> baseTrips.filter { it.status == TripStatusUi.Ended }
     }
     val currentTrip = uiState.currentTripId?.let { id ->
         uiState.trips.firstOrNull { it.id == id }
@@ -146,7 +178,7 @@ private fun HomeContent(
         val surfaceHeight = (maxHeight - heroHeightDp + overlap).coerceAtLeast(0.dp)
 
         if (currentTrip != null) {
-            CurrentTripHero(
+            CurrentTripHero2(
                 modifier = Modifier
                     .fillMaxWidth()
                     .onSizeChanged { size ->
@@ -156,7 +188,7 @@ private fun HomeContent(
                 onClick = { onTripClick(currentTrip.id) }
             )
         } else if (countdownTrip != null) {
-            CountdownCard(
+            CountdownCard2(
                 destination = countdownTrip.destination,
                 until = countdownTrip.startDate.atStartOfDay(countdownTrip.timezone),
                 modifier = Modifier
@@ -226,6 +258,16 @@ private fun HomeContent(
                         }
                     }
                 }
+                AnimatedVisibility(
+                    visible = isBottomBarVisible,
+                    enter = slideInVertically { it },
+                    exit = slideOutVertically { it }
+                ) {
+                    TripPlannerBottomBar(
+                        navController = navController,
+                        currentScreen = currentScreen
+                    )
+                }
             }
         }
     }
@@ -238,8 +280,8 @@ private fun HomeScreenPreview() {
         TripUiModel(
             id = 1L,
             destination = "Lisbon, Portugal",
-            startDate = java.time.LocalDate.of(2025, 2, 20),
-            endDate = java.time.LocalDate.of(2025, 3, 2),
+            startDate = LocalDate.of(2025, 2, 20),
+            endDate = LocalDate.of(2025, 3, 2),
             timezone = ZoneId.systemDefault(),
             dateRangeText = "Feb 20, 2025 - Mar 02, 2025",
             status = TripStatusUi.InProgress,
@@ -250,8 +292,8 @@ private fun HomeScreenPreview() {
         TripUiModel(
             id = 2L,
             destination = "Tokyo, Japan",
-            startDate = java.time.LocalDate.of(2025, 5, 1),
-            endDate = java.time.LocalDate.of(2025, 5, 8),
+            startDate = LocalDate.of(2025, 5, 1),
+            endDate = LocalDate.of(2025, 5, 8),
             timezone = ZoneId.systemDefault(),
             dateRangeText = "May 01, 2025 - May 08, 2025",
             status = TripStatusUi.None,
@@ -262,8 +304,8 @@ private fun HomeScreenPreview() {
         TripUiModel(
             id = 3L,
             destination = "Berlin, Germany",
-            startDate = java.time.LocalDate.of(2024, 12, 10),
-            endDate = java.time.LocalDate.of(2024, 12, 15),
+            startDate = LocalDate.of(2024, 12, 10),
+            endDate = LocalDate.of(2024, 12, 15),
             timezone = ZoneId.systemDefault(),
             dateRangeText = "Dec 10, 2024 - Dec 15, 2024",
             status = TripStatusUi.Ended,
@@ -280,12 +322,15 @@ private fun HomeScreenPreview() {
                 currentTripId = 1L,
                 countdown = null,
                 countdownTripId = null,
-                activeFilter = HomeFilterType.All
+                activeFilter = HomeFilter.All
             ),
             snackbarHostState = SnackbarHostState(),
             onRetry = {},
             onTripClick = {},
-            onFilterSelected = {}
+            onFilterSelected = {},
+            isBottomBarVisible = true,
+            currentScreen = Screen.fromRoute("home_screen"),
+            navController = rememberNavController()
         )
     }
 }

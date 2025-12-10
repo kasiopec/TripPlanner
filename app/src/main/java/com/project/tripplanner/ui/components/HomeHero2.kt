@@ -1,8 +1,5 @@
 package com.project.tripplanner.ui.components
 
-import android.app.Activity
-import android.content.Context
-import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,29 +25,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.core.view.WindowCompat
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
-import coil.ImageLoader
 import coil.compose.AsyncImage
-import coil.request.ImageRequest
-import coil.request.SuccessResult
 import com.project.tripplanner.R
 import com.project.tripplanner.features.home.TripProgress
 import com.project.tripplanner.features.home.TripStatusUi
@@ -62,10 +49,9 @@ import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 import java.time.LocalDate
 import java.time.ZoneId
-import androidx.core.graphics.get
 
 @Composable
-fun CurrentTripHero(
+fun CurrentTripHero2(
     modifier: Modifier = Modifier,
     trip: TripUiModel,
     onClick: () -> Unit
@@ -79,9 +65,15 @@ fun CurrentTripHero(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 240.dp)
-            .background(backgroundBrush)
             .clickable(onClick = onClick)
     ) {
+        // 1) Artwork as full-screen background
+        HeroArtwork(
+            modifier = Modifier.matchParentSize(),
+            coverImageUri = trip.coverImageUri
+        )
+
+        // 3) Foreground content
         Row(
             modifier = Modifier
                 .matchParentSize()
@@ -144,9 +136,10 @@ fun CurrentTripHero(
                     }
                 }
             }
-
-            HeroArtwork(coverImageUri = trip.coverImageUri)
         }
+
+        // 4) Bottom overlay on top of everything
+        ImageBottomOverlay()
     }
 }
 
@@ -157,107 +150,34 @@ private fun HeroArtwork(
 ) {
     val colors = TripPlannerTheme.colors
     val accent = colors.onPrimary.copy(alpha = 0.12f)
-    val context = LocalContext.current
-    val view = LocalView.current
-    val window = (view.context as? Activity)?.window
-    val controller = remember(window, view) {
-        window?.let { WindowCompat.getInsetsController(it, view) }
-    }
 
-    LaunchedEffect(coverImageUri) {
-        if (coverImageUri != null && controller != null) {
-            val bitmap = loadBitmap(context, coverImageUri)
-            if (bitmap != null) {
-                val isLight = isImageAreaLight(bitmap)
-                controller.isAppearanceLightStatusBars = isLight  // <-- MAGIC ✨
-            }
-        }
-    }
     Box(
         modifier = modifier
-            .fillMaxHeight()
-            .width(180.dp),
-        contentAlignment = Alignment.CenterEnd
+            .clip(RoundedCornerShape(Dimensions.radiusL))
     ) {
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .fillMaxHeight()
-                .width(160.dp)
-                .clip(RoundedCornerShape(Dimensions.radiusL))
-                .background(accent)
-        )
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .fillMaxHeight()
-                .width(160.dp)
-                .clip(RoundedCornerShape(Dimensions.radiusL))
-        ) {
-            if (coverImageUri != null) {
-                AsyncImage(
-                    model = coverImageUri,
+        if (coverImageUri != null) {
+            AsyncImage(
+                model = coverImageUri,
+                contentDescription = null,
+                modifier = Modifier.matchParentSize(),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(accent),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_image_placeholder_48),
                     contentDescription = null,
-                    modifier = Modifier.matchParentSize(),
-                    contentScale = ContentScale.Crop
+                    modifier = Modifier.size(Dimensions.iconSizeM)
                 )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .background(accent),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_image_placeholder_48),
-                        contentDescription = null,
-                        modifier = Modifier.size(Dimensions.iconSizeM)
-                    )
-                }
             }
-
-            ImageBottomOverlay()
         }
     }
 }
-
-suspend fun loadBitmap(context: Context, uri: Uri): Bitmap? {
-    val loader = ImageLoader(context)
-    val req = ImageRequest.Builder(context)
-        .data(uri)
-        .allowHardware(false)
-        .build()
-
-    val result = loader.execute(req)
-    return (result as? SuccessResult)?.drawable?.toBitmap()
-}
-
-fun isImageAreaLight(
-    bmp: Bitmap,
-    sampleHeightFraction: Float = 0.20f,
-    sampleStep: Int = 15
-): Boolean {
-    val width = bmp.width
-    val height = (bmp.height * sampleHeightFraction).toInt().coerceAtLeast(1)
-
-    var sum = 0.0
-    var count = 0
-
-    for (y in 0 until height step sampleStep) {
-        for (x in 0 until width step sampleStep) {
-            val c = bmp[x, y]
-            val lum = 0.299 * android.graphics.Color.red(c) +
-                    0.587 * android.graphics.Color.green(c) +
-                    0.114 * android.graphics.Color.blue(c)
-            sum += lum
-            count++
-        }
-    }
-
-    if (count == 0) return false
-    return (sum / count) > 160
-}
-
 
 @Composable
 private fun BoxScope.ImageBottomOverlay(modifier: Modifier = Modifier) {
@@ -317,9 +237,9 @@ private fun BoxScope.ImageBottomOverlay(modifier: Modifier = Modifier) {
 
 @Preview(showBackground = true)
 @Composable
-private fun CurrentTripHeroPreview() {
+private fun CurrentTripHeroPreview2() {
     TripPlannerTheme {
-        CurrentTripHero(
+        CurrentTripHero2(
             trip = TripUiModel(
                 id = 1L,
                 destination = "Lisbon, Portugal",
@@ -339,9 +259,9 @@ private fun CurrentTripHeroPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun CurrentTripHeroLightImagePreview() {
+private fun CurrentTripHeroLightImagePreview2() {
     TripPlannerTheme {
-        CurrentTripHero(
+        CurrentTripHero2(
             trip = TripUiModel(
                 id = 2L,
                 destination = "Geneva, Switzerland",

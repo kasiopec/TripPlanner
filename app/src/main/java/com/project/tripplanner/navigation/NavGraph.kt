@@ -102,6 +102,7 @@ fun NavGraph(
         }
         composable(route = Screen.Home.route) {
             HomeRoute(
+                navController = navController,
                 onTripClick = { tripId ->
                     navController.navigate(Screen.TripForm.createRoute(tripId))
                 }
