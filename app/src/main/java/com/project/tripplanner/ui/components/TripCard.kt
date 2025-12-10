@@ -33,7 +33,6 @@ import com.project.tripplanner.ui.theme.TripPlannerTheme
 import com.project.tripplanner.R
 import com.project.tripplanner.ui.components.text.Headline2
 
-
 enum class TripCardStatus {
     None,
     Upcoming,
@@ -108,28 +107,49 @@ fun TripCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+
+                Spacer(modifier = Modifier.height(Dimensions.spacingXS))
+
                 Row(
-                    modifier = Modifier.padding(top = Dimensions.spacingXS),
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_calendar_24),
-                        contentDescription = "Location Pin",
-                        tint = TripPlannerTheme.colors.onSurfaceVariant,
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_calendar_24),
+                            contentDescription = "Calendar",
+                            tint = TripPlannerTheme.colors.onSurfaceVariant,
+                            modifier = Modifier.width(Dimensions.iconSizeS)
+                        )
+
+                        Spacer(modifier = Modifier.width(Dimensions.spacingXS))
+
+                        LabelText(
+                            text = dateRange,
+                            color = TripPlannerTheme.colors.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    Box(
                         modifier = Modifier
-                            .width(Dimensions.iconSizeS)
-                    )
-
-                    Spacer(modifier = Modifier.width(Dimensions.spacingXS))
-
-                    LabelText(
-                        text = dateRange,
-                        color = TripPlannerTheme.colors.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                            .clip(RoundedCornerShape(50))
+                            .background(TripPlannerTheme.colors.surfaceVariant.copy(alpha = 0.8f))
+                            .padding(6.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_chevron_right_24),
+                            contentDescription = null,
+                            tint = TripPlannerTheme.colors.onSurfaceVariant,
+                            modifier = Modifier.width(Dimensions.spacingL)
+                        )
+                    }
                 }
             }
+
         }
     }
 }
