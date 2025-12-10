@@ -44,6 +44,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.size.Dimension
 import com.project.tripplanner.R
 import com.project.tripplanner.ui.components.text.DisplayText
 import com.project.tripplanner.ui.components.text.Headline1

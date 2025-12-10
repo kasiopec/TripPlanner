@@ -5,15 +5,19 @@ import android.app.Activity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -31,12 +35,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -171,105 +178,114 @@ private fun HomeContent(
     val density = LocalDensity.current
     val hasHero = currentTrip != null || countdownTrip != null
     var heroHeight by remember(hasHero) { mutableStateOf(if (hasHero) defaultHeroHeight else 0.dp) }
-
-    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         val heroHeightDp = if (hasHero && heroHeight > 0.dp) heroHeight else 0.dp
         val overlap = if (heroHeightDp > 0.dp) Dimensions.spacingM else 0.dp
-        val surfaceHeight = (maxHeight - heroHeightDp + overlap).coerceAtLeast(0.dp)
-
-        if (currentTrip != null) {
-            CurrentTripHero2(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onSizeChanged { size ->
-                        heroHeight = with(density) { size.height.toDp() }
-                    },
-                trip = currentTrip,
-                onClick = { onTripClick(currentTrip.id) }
-            )
-        } else if (countdownTrip != null) {
-            CountdownCard2(
-                destination = countdownTrip.destination,
-                until = countdownTrip.startDate.atStartOfDay(countdownTrip.timezone),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onSizeChanged { size ->
-                        heroHeight = with(density) { size.height.toDp() }
-                    },
-                heroStyle = true
-            )
-        }
-
-        Surface(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .height(surfaceHeight),
-            shape = RoundedCornerShape(topStart = Dimensions.radiusL, topEnd = Dimensions.radiusL),
-            tonalElevation = 0.dp,
-            shadowElevation = 0.dp,
-            color = TripPlannerTheme.colors.background
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Top
-            ) {
-                HomeHeader(
+        //val surfaceHeight = (maxHeight - heroHeightDp + overlap).coerceAtLeast(0.dp)
+        Column(modifier = Modifier.fillMaxSize()) {
+            if (currentTrip != null) {
+                CurrentTripHero2(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(
-                            start = Dimensions.spacingL,
-                            end = Dimensions.spacingL,
-                            top = Dimensions.spacingL,
-                            bottom = Dimensions.spacingS
-                        ),
-                    activeFilter = uiState.activeFilter,
-                    onFilterSelected = onFilterSelected
+                        .onSizeChanged { size ->
+                            heroHeight = with(density) { size.height.toDp() }
+                        },
+                    trip = currentTrip,
+                    onClick = { onTripClick(currentTrip.id) }
                 )
-                Box(
+            } else if (countdownTrip != null) {
+                CountdownCard2(
+                    destination = countdownTrip.destination,
+                    until = countdownTrip.startDate.atStartOfDay(countdownTrip.timezone),
                     modifier = Modifier
-                        .weight(1f)
                         .fillMaxWidth()
+                        .onSizeChanged { size ->
+                            heroHeight = with(density) { size.height.toDp() }
+                        },
+                    heroStyle = true
+                )
+            }
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(topStart = Dimensions.radiusL, topEnd = Dimensions.radiusL),
+                tonalElevation = 0.dp,
+                shadowElevation = 0.dp,
+                color = TripPlannerTheme.colors.surface
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Top
                 ) {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(Dimensions.spacingL),
-                        contentPadding = PaddingValues(
-                            start = Dimensions.spacingL,
-                            end = Dimensions.spacingL,
-                            top = Dimensions.spacingL,
-                            bottom = Dimensions.spacingL
-                        ),
-                        state = listState
+                    HomeHeader(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = Dimensions.spacingL,
+                                end = Dimensions.spacingL,
+                                top = Dimensions.spacingL,
+                                bottom = Dimensions.spacingS
+                            ),
+                        activeFilter = uiState.activeFilter,
+                        onFilterSelected = onFilterSelected
+                    )
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
                     ) {
-                        items(filteredTrips, key = { it.id }) { trip ->
-                            TripCard(
-                                modifier = Modifier.fillMaxWidth(),
-                                title = trip.destination,
-                                dateRange = trip.dateRangeText,
-                                coverImageUri = trip.coverImageUri?.toString(),
-                                status = when (trip.status) {
-                                    TripStatusUi.InProgress -> TripCardStatus.InProgress
-                                    TripStatusUi.Ended -> TripCardStatus.Ended
-                                    else -> TripCardStatus.Upcoming
-                                },
-                                onClick = { onTripClick(trip.id) }
-                            )
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(Dimensions.spacingL),
+                            contentPadding = PaddingValues(
+                                start = Dimensions.spacingL,
+                                end = Dimensions.spacingL,
+                                top = Dimensions.spacingL,
+                                bottom = Dimensions.spacingL
+                            ),
+                            state = listState
+                        ) {
+                            items(filteredTrips, key = { it.id }) { trip ->
+                                TripCard(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    title = trip.destination,
+                                    dateRange = trip.dateRangeText,
+                                    coverImageUri = trip.coverImageUri?.toString(),
+                                    status = when (trip.status) {
+                                        TripStatusUi.InProgress -> TripCardStatus.InProgress
+                                        TripStatusUi.Ended -> TripCardStatus.Ended
+                                        else -> TripCardStatus.Upcoming
+                                    },
+                                    onClick = { onTripClick(trip.id) }
+                                )
+                            }
                         }
                     }
-                }
-                AnimatedVisibility(
-                    visible = isBottomBarVisible,
-                    enter = slideInVertically { it },
-                    exit = slideOutVertically { it }
-                ) {
-                    TripPlannerBottomBar(
-                        navController = navController,
-                        currentScreen = currentScreen
-                    )
+                    AnimatedVisibility(
+                        visible = isBottomBarVisible,
+                        enter = slideInVertically { it },
+                        exit = slideOutVertically { it }
+                    ) {
+                        TripPlannerBottomBar(
+                            navController = navController,
+                            currentScreen = currentScreen
+                        )
+                    }
                 }
             }
         }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsTopHeight(WindowInsets.statusBars)
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            Color.Black,
+                            Color.Transparent
+                        )
+                    )
+                )
+        )
     }
 }
 

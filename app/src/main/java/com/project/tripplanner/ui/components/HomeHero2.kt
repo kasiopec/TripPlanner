@@ -6,19 +6,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,8 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,23 +50,16 @@ fun CurrentTripHero2(
     onClick: () -> Unit
 ) {
     val colors = TripPlannerTheme.colors
-    val backgroundBrush = Brush.linearGradient(
-        colors = listOf(colors.primaryStrong, colors.primary)
-    )
-
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 240.dp)
+            .heightIn(min = 280.dp)
             .clickable(onClick = onClick)
     ) {
-        // 1) Artwork as full-screen background
         HeroArtwork(
             modifier = Modifier.matchParentSize(),
             coverImageUri = trip.coverImageUri
         )
-
-        // 3) Foreground content
         Row(
             modifier = Modifier
                 .matchParentSize()
@@ -138,8 +124,20 @@ fun CurrentTripHero2(
             }
         }
 
-        // 4) Bottom overlay on top of everything
-        ImageBottomOverlay()
+        Box(
+            modifier = Modifier
+                .padding(bottom = 16.dp, end = 16.dp)
+                .align(Alignment.BottomEnd)
+                .clip(RoundedCornerShape(50))
+                .background(TripPlannerTheme.colors.surfaceVariant),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_chevron_right_24),
+                contentDescription = null,
+                tint = TripPlannerTheme.colors.onSurfaceVariant
+            )
+        }
     }
 }
 
@@ -148,13 +146,7 @@ private fun HeroArtwork(
     modifier: Modifier = Modifier,
     coverImageUri: Uri?
 ) {
-    val colors = TripPlannerTheme.colors
-    val accent = colors.onPrimary.copy(alpha = 0.12f)
-
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(Dimensions.radiusL))
-    ) {
+    Box(modifier = modifier) {
         if (coverImageUri != null) {
             AsyncImage(
                 model = coverImageUri,
@@ -166,7 +158,7 @@ private fun HeroArtwork(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .background(accent),
+                    .background(TripPlannerTheme.colors.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Image(
@@ -174,62 +166,6 @@ private fun HeroArtwork(
                     contentDescription = null,
                     modifier = Modifier.size(Dimensions.iconSizeM)
                 )
-            }
-        }
-    }
-}
-
-@Composable
-private fun BoxScope.ImageBottomOverlay(modifier: Modifier = Modifier) {
-    val colors = TripPlannerTheme.colors
-    val gradient = Brush.verticalGradient(
-        colors = listOf(
-            Color.Transparent,
-            colors.scrim
-        )
-    )
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(64.dp)
-            .align(Alignment.BottomCenter)
-            .background(gradient)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    horizontal = Dimensions.spacingM,
-                    vertical = Dimensions.spacingS
-                ),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.End
-        ) {
-            Surface(
-                color = colors.surface.copy(alpha = 0.92f),
-                shape = RoundedCornerShape(Dimensions.radiusM),
-                shadowElevation = 2.dp
-            ) {
-                Row(
-                    modifier = Modifier
-                        .heightIn(min = Dimensions.chipHeight)
-                        .padding(
-                            horizontal = Dimensions.spacingM,
-                            vertical = Dimensions.spacingXS
-                        ),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingXS)
-                ) {
-                    BodyRegular(
-                        text = stringResource(id = R.string.home_hero_view_details),
-                        color = colors.onSurface
-                    )
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_chevron_right_24),
-                        contentDescription = null,
-                        tint = colors.onSurface
-                    )
-                }
             }
         }
     }
