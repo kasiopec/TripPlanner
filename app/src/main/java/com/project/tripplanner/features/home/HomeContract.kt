@@ -16,14 +16,14 @@ data class HomeUiState(
     val currentTripId: Long? = null,
     val countdown: Countdown? = null,
     val countdownTripId: Long? = null,
-    val activeFilter: HomeFilter = HomeFilter.All
+    val activeFilter: HomeFilterType = HomeFilterType.All
 ) : State
 
 sealed interface HomeEvent : Event {
     data object ScreenLoaded : HomeEvent
     data object RetryClicked : HomeEvent
     data class TripClicked(val tripId: Long) : HomeEvent
-    data class FilterSelected(val filter: HomeFilter) : HomeEvent
+    data class FilterSelected(val filter: HomeFilterType) : HomeEvent
 }
 
 sealed interface HomeEffect : Effect {

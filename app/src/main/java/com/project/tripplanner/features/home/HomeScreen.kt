@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.project.tripplanner.R
 import com.project.tripplanner.ui.components.CountdownCard
+import com.project.tripplanner.ui.components.CurrentTripHero
 import com.project.tripplanner.ui.components.HomeHeader
 import com.project.tripplanner.ui.components.TripCard
 import com.project.tripplanner.ui.components.TripCardStatus
@@ -83,7 +84,7 @@ fun HomeScreen(
     snackbarHostState: SnackbarHostState,
     onRetry: () -> Unit,
     onTripClick: (Long) -> Unit,
-    onFilterSelected: (HomeFilter) -> Unit
+    onFilterSelected: (HomeFilterType) -> Unit
 ) {
     val colors = TripPlannerTheme.colors
     Scaffold(
@@ -115,7 +116,7 @@ private fun HomeContent(
     modifier: Modifier = Modifier,
     uiState: HomeUiState,
     onTripClick: (Long) -> Unit,
-    onFilterSelected: (HomeFilter) -> Unit
+    onFilterSelected: (HomeFilterType) -> Unit
 ) {
     val defaultHeroHeight = 240.dp
     val listState = rememberLazyListState()
@@ -123,9 +124,9 @@ private fun HomeContent(
         .filterNot { it.id == uiState.currentTripId }
         .filter { it.status != TripStatusUi.InProgress }
     val filteredTrips = when (uiState.activeFilter) {
-        HomeFilter.All -> baseTrips
-        HomeFilter.Upcoming -> baseTrips.filter { it.status == TripStatusUi.None }
-        HomeFilter.Ended -> baseTrips.filter { it.status == TripStatusUi.Ended }
+        HomeFilterType.All -> baseTrips
+        HomeFilterType.Upcoming -> baseTrips.filter { it.status == TripStatusUi.None }
+        HomeFilterType.Ended -> baseTrips.filter { it.status == TripStatusUi.Ended }
     }
     val currentTrip = uiState.currentTripId?.let { id ->
         uiState.trips.firstOrNull { it.id == id }
@@ -279,7 +280,7 @@ private fun HomeScreenPreview() {
                 currentTripId = 1L,
                 countdown = null,
                 countdownTripId = null,
-                activeFilter = HomeFilter.All
+                activeFilter = HomeFilterType.All
             ),
             snackbarHostState = SnackbarHostState(),
             onRetry = {},

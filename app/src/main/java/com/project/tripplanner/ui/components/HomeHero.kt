@@ -1,5 +1,6 @@
-package com.project.tripplanner.features.home
+package com.project.tripplanner.ui.components
 
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,6 +37,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import com.project.tripplanner.R
+import com.project.tripplanner.features.home.TripProgress
+import com.project.tripplanner.features.home.TripStatusUi
+import com.project.tripplanner.features.home.TripUiModel
 import com.project.tripplanner.ui.components.text.BodyRegular
 import com.project.tripplanner.ui.components.text.Headline2
 import com.project.tripplanner.ui.components.text.MetaText
@@ -133,7 +137,7 @@ fun CurrentTripHero(
 @Composable
 private fun HeroArtwork(
     modifier: Modifier = Modifier,
-    coverImageUri: android.net.Uri?
+    coverImageUri: Uri?
 ) {
     val colors = TripPlannerTheme.colors
     val accent = colors.onPrimary.copy(alpha = 0.12f)

@@ -19,7 +19,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -181,10 +180,10 @@ class HomeViewModelTest {
         viewModel.emitEvent(HomeEvent.ScreenLoaded)
         advanceUntilIdle()
 
-        viewModel.emitEvent(HomeEvent.FilterSelected(HomeFilter.Ended))
+        viewModel.emitEvent(HomeEvent.FilterSelected(HomeFilterType.Ended))
         advanceUntilIdle()
 
-        assertEquals(HomeFilter.Ended, viewModel.state.value.activeFilter)
+        assertEquals(HomeFilterType.Ended, viewModel.state.value.activeFilter)
     }
 
     private fun createViewModel(initialTrips: List<Trip>): HomeViewModel {
