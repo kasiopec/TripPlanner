@@ -23,6 +23,7 @@ object Dimensions {
     val textFieldHeight = 48.dp
     val chipHeight = 32.dp
     val iconSize = 24.dp
+    val iconSizeS = 12.dp
     val iconSizeM = 48.dp
     val iconButtonSize = 40.dp
     val fabSize = 56.dp

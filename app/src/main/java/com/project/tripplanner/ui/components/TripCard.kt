@@ -5,13 +5,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +31,7 @@ import com.project.tripplanner.ui.components.text.LabelText
 import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 import com.project.tripplanner.R
+import com.project.tripplanner.ui.components.text.Headline2
 
 
 enum class TripCardStatus {
@@ -98,19 +102,33 @@ fun TripCard(
             Column(
                 modifier = Modifier.padding(Dimensions.cardPadding)
             ) {
-                Headline3(
-                    text = title,
+                Headline2(
+                    text = title.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
                     color = TripPlannerTheme.colors.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                LabelText(
-                    text = dateRange,
-                    color = TripPlannerTheme.colors.onSurfaceVariant,
+                Row(
                     modifier = Modifier.padding(top = Dimensions.spacingXS),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_calendar_24),
+                        contentDescription = "Location Pin",
+                        tint = TripPlannerTheme.colors.onSurfaceVariant,
+                        modifier = Modifier
+                            .width(Dimensions.iconSizeS)
+                    )
+
+                    Spacer(modifier = Modifier.width(Dimensions.spacingXS))
+
+                    LabelText(
+                        text = dateRange,
+                        color = TripPlannerTheme.colors.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
         }
     }
