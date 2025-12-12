@@ -15,6 +15,7 @@ sealed class Screen(
         fun createRoute(tripId: Long? = null): String =
             if (tripId != null) "trip_form_screen/$tripId" else "trip_form_screen/-1"
     }
+    object Debug : Screen(route = "debug_screen", title = "Debug")
 
     companion object {
         fun fromRoute(route: String?): Screen? = when (route?.substringBefore("/")?.substringBefore("?")) {
@@ -23,6 +24,7 @@ sealed class Screen(
             RegisterForm.route.substringBefore("/") -> RegisterForm
             ResetPassword.route.substringBefore("/") -> ResetPassword
             "trip_form_screen" -> TripForm
+            Debug.route.substringBefore("/") -> Debug
             else -> null
         }
     }

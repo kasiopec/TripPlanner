@@ -1,7 +1,7 @@
 package com.project.tripplanner.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,7 +43,8 @@ import com.project.tripplanner.ui.theme.TripPlannerTheme
 fun TripPlannerBottomBar(
     modifier: Modifier = Modifier,
     currentScreen: Screen? = null,
-    onItemSelected: (Screen) -> Unit
+    onItemSelected: (Screen) -> Unit,
+    onLastItemLongPress: (() -> Unit)? = null
 ) {
     val items = listOf(
         BottomBarItem(icon = R.drawable.home_alt_24, route = Screen.Home.route, contentDescription = "Home"),
@@ -79,12 +80,14 @@ fun TripPlannerBottomBar(
                     else -> colors.onSurface
                 }
 
+                val isLastItem = item == items.last()
+
                 Column(
                     modifier = Modifier
                         .heightIn(min = 48.dp)
                         .widthIn(min = 48.dp)
                         .clip(CircleShape)
-                        .clickable(
+                        .combinedClickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = ripple(bounded = true, color = colors.primary),
                             onClick = {
@@ -102,6 +105,13 @@ fun TripPlannerBottomBar(
                                     onItemSelected(Screen.TripForm)
                                 }
 
+                            },
+                            onLongClick = if (isLastItem) {
+                                {
+                                    onLastItemLongPress?.invoke()
+                                }
+                            } else {
+                                null
                             }
                         ),
                     horizontalAlignment = Alignment.CenterHorizontally,

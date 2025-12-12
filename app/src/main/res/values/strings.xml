@@ -81,4 +81,12 @@
     <!-- Trip Card -->
     <string name="trip_status_in_progress">On Trip</string>
     <string name="trip_status_ended">Ended</string>
+
+    <!-- Debug -->
+    <string name="debug_title">Debug tools</string>
+    <string name="debug_description">Utilities for local testing.</string>
+    <string name="debug_delete_trips">Delete all trips</string>
+    <string name="debug_mark_all_ended">Mark all trips as ended</string>
+    <string name="debug_delete_success">All trips deleted</string>
+    <string name="debug_mark_ended_success">All trips marked as ended</string>
 </resources>

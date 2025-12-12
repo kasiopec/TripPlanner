@@ -55,6 +55,7 @@ fun HomeRoute(
     isBottomBarVisible: Boolean,
     onTripClick: (Long) -> Unit,
     onBottomBarItemClick: (Screen) -> Unit,
+    onBottomBarDebugLongClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.state.collectAsState()
@@ -84,7 +85,8 @@ fun HomeRoute(
         onFilterSelected = { viewModel.emitEvent(HomeEvent.FilterSelected(it)) },
         currentScreen = currentScreen,
         isBottomBarVisible = isBottomBarVisible,
-        onBottomBarItemClick = onBottomBarItemClick
+        onBottomBarItemClick = onBottomBarItemClick,
+        onBottomBarDebugLongClick = onBottomBarDebugLongClick
     )
 }
 
@@ -98,7 +100,8 @@ fun HomeScreen(
     onFilterSelected: (HomeFilter) -> Unit,
     isBottomBarVisible: Boolean,
     currentScreen: Screen?,
-    onBottomBarItemClick: (Screen) -> Unit
+    onBottomBarItemClick: (Screen) -> Unit,
+    onBottomBarDebugLongClick: () -> Unit
 ) {
     val colors = TripPlannerTheme.colors
 
@@ -123,7 +126,8 @@ fun HomeScreen(
                 onFilterSelected = onFilterSelected,
                 currentScreen = currentScreen,
                 isBottomBarVisible = isBottomBarVisible,
-                onBottomBarItemClick = onBottomBarItemClick
+                onBottomBarItemClick = onBottomBarItemClick,
+                onBottomBarDebugLongClick = onBottomBarDebugLongClick
             )
         }
     }
@@ -137,7 +141,8 @@ private fun HomeContent(
     onFilterSelected: (HomeFilter) -> Unit,
     isBottomBarVisible: Boolean,
     currentScreen: Screen?,
-    onBottomBarItemClick: (Screen) -> Unit
+    onBottomBarItemClick: (Screen) -> Unit,
+    onBottomBarDebugLongClick: () -> Unit
 ) {
     val listState = rememberLazyListState()
     val baseTrips = uiState.trips
@@ -238,7 +243,8 @@ private fun HomeContent(
                     ) {
                         TripPlannerBottomBar(
                             currentScreen = currentScreen,
-                            onItemSelected = onBottomBarItemClick
+                            onItemSelected = onBottomBarItemClick,
+                            onLastItemLongPress = onBottomBarDebugLongClick
                         )
                     }
                 }
@@ -305,7 +311,8 @@ private fun HomeScreenPreview() {
             onFilterSelected = {},
             isBottomBarVisible = true,
             currentScreen = Screen.fromRoute("home_screen"),
-            onBottomBarItemClick = {}
+            onBottomBarItemClick = {},
+            onBottomBarDebugLongClick = {}
         )
     }
 }

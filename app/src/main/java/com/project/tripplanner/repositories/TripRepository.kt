@@ -18,6 +18,8 @@ interface TripRepository {
     suspend fun createTrip(input: TripInput): Long
     suspend fun updateTrip(trip: Trip)
     suspend fun deleteTrip(tripId: Long)
+    suspend fun deleteAllTrips()
+    suspend fun markAllTripsEnded()
 }
 
 class TripRepositoryImpl @Inject constructor(
@@ -49,5 +51,15 @@ class TripRepositoryImpl @Inject constructor(
 
     override suspend fun deleteTrip(tripId: Long) {
         tripDao.deleteTrip(tripId)
+    }
+
+    override suspend fun deleteAllTrips() {
+        tripDao.deleteAllTrips()
+    }
+
+    override suspend fun markAllTripsEnded() {
+        val targetDate = clockProvider.now().toLocalDate().minusDays(1)
+        val updatedAt = clockProvider.nowInstant()
+        tripDao.markAllTripsEnded(targetDate = targetDate, updatedAt = updatedAt)
     }
 }
