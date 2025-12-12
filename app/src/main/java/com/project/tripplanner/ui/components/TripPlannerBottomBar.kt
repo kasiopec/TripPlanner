@@ -9,9 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -36,8 +34,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.project.tripplanner.R
 import com.project.tripplanner.navigation.BottomBarItem
 import com.project.tripplanner.navigation.Screen
@@ -47,7 +43,7 @@ import com.project.tripplanner.ui.theme.TripPlannerTheme
 fun TripPlannerBottomBar(
     modifier: Modifier = Modifier,
     currentScreen: Screen? = null,
-    navController: NavController
+    onItemSelected: (Screen) -> Unit
 ) {
     val items = listOf(
         BottomBarItem(icon = R.drawable.home_alt_24, route = Screen.Home.route, contentDescription = "Home"),
@@ -56,9 +52,9 @@ fun TripPlannerBottomBar(
         BottomBarItem(icon = R.drawable.ic_error_24, route = Screen.Login.route, contentDescription = "Check"),
         BottomBarItem(icon = R.drawable.ic_user_24, route = Screen.Home.route, contentDescription = "Profile")
     )
-    var selectedItem by remember { mutableStateOf(items.firstOrNull { it.isSelectable && it.route == currentScreen?.route }) }
-    val paddingValues = WindowInsets.navigationBars.asPaddingValues()
-    val bottomBarHeight = paddingValues.calculateBottomPadding()
+    var selectedItem by remember(currentScreen) {
+        mutableStateOf(items.firstOrNull { it.isSelectable && it.route == currentScreen?.route })
+    }
     val colors = TripPlannerTheme.colors
 
     Column(
@@ -95,22 +91,15 @@ fun TripPlannerBottomBar(
                                 if (item.isSelectable) {
                                     selectedItem = item
                                     when (item.route) {
-                                        Screen.TripDetails.route -> {
-                                            navController.navigate(Screen.TripDetails.route)
-                                        }
-
-                                        else -> {
-                                            item.route?.let {
-                                                navController.navigate(it) {
-                                                    popUpTo(Screen.Home.route) {
-                                                        inclusive = true
-                                                    }
-                                                }
-                                            }
+                                        Screen.TripDetails.route -> onItemSelected(Screen.TripDetails)
+                                        Screen.Home.route -> onItemSelected(Screen.Home)
+                                        Screen.Login.route -> onItemSelected(Screen.Login)
+                                        else -> item.route?.let { route ->
+                                            Screen.fromRoute(route)?.let { onItemSelected(it) }
                                         }
                                     }
                                 } else {
-                                    navController.navigate(Screen.TripForm.createRoute())
+                                    onItemSelected(Screen.TripForm)
                                 }
 
                             }
@@ -155,7 +144,6 @@ fun TripPlannerBottomBar(
 @PreviewLightDark
 fun TripPlannerBottomBarPreview() {
     TripPlannerTheme {
-        val navController = rememberNavController()
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -165,7 +153,10 @@ fun TripPlannerBottomBarPreview() {
                 .background(Color.Gray),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            TripPlannerBottomBar(navController = navController, currentScreen = Screen.Home)
+            TripPlannerBottomBar(
+                currentScreen = Screen.Home,
+                onItemSelected = {}
+            )
         }
     }
 }

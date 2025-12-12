@@ -1,27 +1,24 @@
 package com.project.tripplanner.features.home
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -30,32 +27,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import com.project.tripplanner.R
 import com.project.tripplanner.navigation.Screen
 import com.project.tripplanner.ui.components.CountdownCard2
-import com.project.tripplanner.ui.components.CurrentTripHero
 import com.project.tripplanner.ui.components.CurrentTripHero2
 import com.project.tripplanner.ui.components.HomeHeader
+import com.project.tripplanner.ui.components.StatusBarScrim
 import com.project.tripplanner.ui.components.TripCard
 import com.project.tripplanner.ui.components.TripCardStatus
 import com.project.tripplanner.ui.components.TripPlannerBottomBar
@@ -66,18 +51,15 @@ import java.time.ZoneId
 
 @Composable
 fun HomeRoute(
+    currentScreen: Screen?,
+    isBottomBarVisible: Boolean,
     onTripClick: (Long) -> Unit,
-    viewModel: HomeViewModel = hiltViewModel(),
-    navController: NavController
+    onBottomBarItemClick: (Screen) -> Unit,
+    viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
-
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-    val currentScreen = Screen.fromRoute(currentRoute)
-    val isBottomBarVisible = currentScreen?.isBottomBarVisible == true
 
     LaunchedEffect(Unit) {
         viewModel.emitEvent(HomeEvent.ScreenLoaded)
@@ -102,7 +84,7 @@ fun HomeRoute(
         onFilterSelected = { viewModel.emitEvent(HomeEvent.FilterSelected(it)) },
         currentScreen = currentScreen,
         isBottomBarVisible = isBottomBarVisible,
-        navController = navController
+        onBottomBarItemClick = onBottomBarItemClick
     )
 }
 
@@ -116,7 +98,7 @@ fun HomeScreen(
     onFilterSelected: (HomeFilter) -> Unit,
     isBottomBarVisible: Boolean,
     currentScreen: Screen?,
-    navController: NavController
+    onBottomBarItemClick: (Screen) -> Unit
 ) {
     val colors = TripPlannerTheme.colors
 
@@ -141,7 +123,7 @@ fun HomeScreen(
                 onFilterSelected = onFilterSelected,
                 currentScreen = currentScreen,
                 isBottomBarVisible = isBottomBarVisible,
-                navController = navController,
+                onBottomBarItemClick = onBottomBarItemClick
             )
         }
     }
@@ -155,9 +137,8 @@ private fun HomeContent(
     onFilterSelected: (HomeFilter) -> Unit,
     isBottomBarVisible: Boolean,
     currentScreen: Screen?,
-    navController: NavController
+    onBottomBarItemClick: (Screen) -> Unit
 ) {
-    val defaultHeroHeight = 240.dp
     val listState = rememberLazyListState()
     val baseTrips = uiState.trips
         .filterNot { it.id == uiState.currentTripId }
@@ -175,21 +156,12 @@ private fun HomeContent(
     } else {
         null
     }
-    val density = LocalDensity.current
     val hasHero = currentTrip != null || countdownTrip != null
-    var heroHeight by remember(hasHero) { mutableStateOf(if (hasHero) defaultHeroHeight else 0.dp) }
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
-        val heroHeightDp = if (hasHero && heroHeight > 0.dp) heroHeight else 0.dp
-        val overlap = if (heroHeightDp > 0.dp) Dimensions.spacingM else 0.dp
-        //val surfaceHeight = (maxHeight - heroHeightDp + overlap).coerceAtLeast(0.dp)
         Column(modifier = Modifier.fillMaxSize()) {
             if (currentTrip != null) {
                 CurrentTripHero2(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onSizeChanged { size ->
-                            heroHeight = with(density) { size.height.toDp() }
-                        },
+                    modifier = Modifier.fillMaxWidth(),
                     trip = currentTrip,
                     onClick = { onTripClick(currentTrip.id) }
                 )
@@ -197,11 +169,7 @@ private fun HomeContent(
                 CountdownCard2(
                     destination = countdownTrip.destination,
                     until = countdownTrip.startDate.atStartOfDay(countdownTrip.timezone),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onSizeChanged { size ->
-                            heroHeight = with(density) { size.height.toDp() }
-                        },
+                    modifier = Modifier.fillMaxWidth(),
                     heroStyle = true
                 )
             }
@@ -216,6 +184,9 @@ private fun HomeContent(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Top
                 ) {
+                    if (!hasHero) {
+                        Spacer(modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
+                    }
                     HomeHeader(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -266,26 +237,14 @@ private fun HomeContent(
                         exit = slideOutVertically { it }
                     ) {
                         TripPlannerBottomBar(
-                            navController = navController,
-                            currentScreen = currentScreen
+                            currentScreen = currentScreen,
+                            onItemSelected = onBottomBarItemClick
                         )
                     }
                 }
             }
         }
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .windowInsetsTopHeight(WindowInsets.statusBars)
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color.Black,
-                            Color.Transparent
-                        )
-                    )
-                )
-        )
+        StatusBarScrim(modifier = Modifier.zIndex(1f))
     }
 }
 
@@ -346,7 +305,7 @@ private fun HomeScreenPreview() {
             onFilterSelected = {},
             isBottomBarVisible = true,
             currentScreen = Screen.fromRoute("home_screen"),
-            navController = rememberNavController()
+            onBottomBarItemClick = {}
         )
     }
 }

@@ -15,6 +15,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.project.tripplanner.Effect
 import com.project.tripplanner.features.home.HomeRoute
@@ -71,6 +72,9 @@ fun NavGraph(
 //            }
 //        }
 //    }
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentScreen = Screen.fromRoute(backStackEntry?.destination?.route)
+
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route
@@ -102,9 +106,30 @@ fun NavGraph(
         }
         composable(route = Screen.Home.route) {
             HomeRoute(
-                navController = navController,
+                currentScreen = currentScreen,
+                isBottomBarVisible = currentScreen?.isBottomBarVisible == true,
                 onTripClick = { tripId ->
                     navController.navigate(Screen.TripForm.createRoute(tripId))
+                },
+                onBottomBarItemClick = { screen ->
+                    when (screen) {
+                        Screen.Home -> navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Home.route) {
+                                inclusive = true
+                            }
+                        }
+
+                        Screen.TripDetails -> navController.navigate(Screen.TripDetails.route)
+                        Screen.TripForm -> navController.navigate(Screen.TripForm.createRoute())
+                        Screen.Login -> navController.navigate(Screen.Login.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                inclusive = true
+                            }
+                        }
+
+                        Screen.RegisterForm -> navController.navigate(Screen.RegisterForm.route)
+                        Screen.ResetPassword -> navController.navigate(Screen.ResetPassword.route)
+                    }
                 }
             )
         }
