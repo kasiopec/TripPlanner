@@ -9,15 +9,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -119,7 +121,28 @@ fun HomeScreen(
                 onRetry = onRetry
             )
 
-            uiState.trips.isEmpty() -> HomeEmptyState(modifier = Modifier.fillMaxSize())
+            uiState.trips.isEmpty() -> Box(modifier = Modifier.fillMaxSize()) {
+                HomeEmptyState(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowInsetsPadding(WindowInsets.statusBars)
+                        .windowInsetsPadding(WindowInsets.navigationBars)
+                        .padding(bottom = Dimensions.spacingXXL)
+                )
+                AnimatedVisibility(
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    visible = isBottomBarVisible,
+                    enter = slideInVertically { it },
+                    exit = slideOutVertically { it }
+                ) {
+                    TripPlannerBottomBar(
+                        currentScreen = currentScreen,
+                        onItemSelected = onBottomBarItemClick,
+                        onLastItemLongPress = onBottomBarDebugLongClick
+                    )
+                }
+                StatusBarScrim(modifier = Modifier.zIndex(1f))
+            }
             else -> HomeContent(
                 uiState = uiState,
                 onTripClick = onTripClick,
