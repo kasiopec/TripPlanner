@@ -1,12 +1,14 @@
 package com.project.tripplanner.ui.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,22 +18,27 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.project.tripplanner.ui.components.text.Headline3
 import com.project.tripplanner.ui.components.text.LabelText
+import com.project.tripplanner.ui.components.text.MetaText
 import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 import com.project.tripplanner.R
 import com.project.tripplanner.ui.components.text.Headline2
+
 
 enum class TripCardStatus {
     None,
@@ -49,40 +56,56 @@ fun TripCard(
     status: TripCardStatus = TripCardStatus.None,
     onClick: () -> Unit = {}
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val cardShape = RoundedCornerShape(Dimensions.radiusCard)
+    val imageShape = RoundedCornerShape(Dimensions.radiusM)
+
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(Dimensions.radiusCard),
+            .graphicsLayer(
+                scaleX = if (isPressed) 0.98f else 1f,
+                scaleY = if (isPressed) 0.98f else 1f
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                onClick = onClick
+            ),
+        shape = cardShape,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = TripPlannerTheme.colors.surface)
     ) {
-        Column {
+        Column(
+            modifier = Modifier.padding(Dimensions.cardPadding)
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(160.dp)
+                    .height(140.dp)
             ) {
                 if (coverImageUri != null) {
                     AsyncImage(
                         model = coverImageUri,
                         contentDescription = null,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(160.dp),
+                            .fillMaxSize()
+                            .clip(imageShape),
                         contentScale = ContentScale.Crop
                     )
                 } else {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(160.dp)
-                            .background(TripPlannerTheme.colors.primaryContainer),
+                            .fillMaxSize()
+                            .clip(imageShape)
+                            .background(TripPlannerTheme.colors.mutedSurface),
                         contentAlignment = Alignment.Center
                     ) {
-                        Image(
+                        Icon(
                             painter = painterResource(R.drawable.ic_image_placeholder_48),
                             contentDescription = null,
+                            tint = TripPlannerTheme.colors.iconMuted,
                             modifier = Modifier.height(Dimensions.iconSizeM)
                         )
                     }
@@ -93,63 +116,44 @@ fun TripCard(
                         status = status,
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .padding(top = Dimensions.spacingS, end = Dimensions.spacingS)
+                            .padding(Dimensions.spacingS)
                     )
                 }
             }
 
-            Column(
-                modifier = Modifier.padding(Dimensions.cardPadding)
+            Spacer(modifier = Modifier.height(Dimensions.spacingM))
+
+            Headline2(
+                text = title.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
+                color = TripPlannerTheme.colors.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Spacer(modifier = Modifier.height(Dimensions.spacingXS))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Headline2(
-                    text = title.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
-                    color = TripPlannerTheme.colors.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_calendar_24),
+                    contentDescription = null,
+                    tint = TripPlannerTheme.colors.onSurfaceVariant,
+                    modifier = Modifier
+                        .width(14.dp)
+                        .height(14.dp)
                 )
 
-                Spacer(modifier = Modifier.height(Dimensions.spacingXS))
+                Spacer(modifier = Modifier.width(6.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_calendar_24),
-                            contentDescription = "Calendar",
-                            tint = TripPlannerTheme.colors.onSurfaceVariant,
-                            modifier = Modifier.width(Dimensions.iconSizeS)
-                        )
-
-                        Spacer(modifier = Modifier.width(Dimensions.spacingXS))
-
-                        LabelText(
-                            text = dateRange,
-                            color = TripPlannerTheme.colors.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(50))
-                            .background(TripPlannerTheme.colors.surfaceVariant.copy(alpha = 0.8f))
-                            .padding(6.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_chevron_right_24),
-                            contentDescription = null,
-                            tint = TripPlannerTheme.colors.onSurfaceVariant,
-                            modifier = Modifier.width(Dimensions.spacingL)
-                        )
-                    }
-                }
+                LabelText(
+                    text = dateRange,
+                    color = TripPlannerTheme.colors.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.W500
+                )
             }
-
         }
     }
 }
@@ -159,19 +163,6 @@ private fun StatusBadge(
     status: TripCardStatus,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = when (status) {
-        TripCardStatus.InProgress -> TripPlannerTheme.colors.primary
-        TripCardStatus.Ended -> TripPlannerTheme.colors.tertiaryContainer
-        TripCardStatus.Upcoming -> TripPlannerTheme.colors.primaryContainer
-        else -> TripPlannerTheme.colors.surface
-    }
-
-    val textColor = when (status) {
-        TripCardStatus.InProgress -> TripPlannerTheme.colors.onPrimary
-        TripCardStatus.Ended -> TripPlannerTheme.colors.onTertiaryContainer
-        TripCardStatus.Upcoming -> TripPlannerTheme.colors.onPrimaryContainer
-        else -> TripPlannerTheme.colors.onSurface
-    }
     val text = when (status) {
         TripCardStatus.InProgress -> stringResource(id = R.string.trip_status_in_progress)
         TripCardStatus.Ended -> stringResource(id = R.string.trip_status_ended)
@@ -179,14 +170,24 @@ private fun StatusBadge(
         else -> ""
     }
 
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(Dimensions.radiusS))
-            .background(backgroundColor)
-            .padding(horizontal = Dimensions.spacingS, vertical = Dimensions.spacingXS)
+    val textColor = when (status) {
+        TripCardStatus.Upcoming -> TripPlannerTheme.colors.primary
+        TripCardStatus.InProgress -> TripPlannerTheme.additionalColors.success
+        TripCardStatus.Ended -> TripPlannerTheme.colors.secondary
+        else -> TripPlannerTheme.colors.onSurfaceVariant
+    }
+
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(Dimensions.radiusL),
+        colors = CardDefaults.cardColors(
+            containerColor = TripPlannerTheme.colors.surface.copy(alpha = 0.95f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        LabelText(
-            text = text,
+        MetaText(
+            modifier = Modifier.padding(horizontal = Dimensions.spacingS, vertical = Dimensions.spacingXS),
+            text = text.uppercase(),
             color = textColor
         )
     }
@@ -198,28 +199,14 @@ private fun TripCardPreview() {
     TripPlannerTheme {
         Column(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(Dimensions.spacingL)
                 .background(TripPlannerTheme.colors.background)
         ) {
             TripCard(
-                title = "Osaka Castle",
-                dateRange = "Jan 12 - Jan 20",
+                title = "Adventure 2",
+                dateRange = "Dec 16, 2025",
                 coverImageUri = null,
-                status = TripCardStatus.None
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            TripCard(
-                title = "Tokyo Trip",
-                dateRange = "Feb 10 - Feb 15",
-                coverImageUri = null,
-                status = TripCardStatus.InProgress
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            TripCard(
-                title = "Kyoto Zen",
-                dateRange = "Dec 01 - Dec 05",
-                coverImageUri = null,
-                status = TripCardStatus.Ended
+                status = TripCardStatus.Upcoming
             )
         }
     }

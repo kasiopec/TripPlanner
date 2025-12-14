@@ -10,11 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import com.project.tripplanner.ui.theme.TripPlannerTheme
 
 @Composable
 fun StatusBarScrim(modifier: Modifier = Modifier) {
-    val colors = TripPlannerTheme.colors
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -22,7 +20,7 @@ fun StatusBarScrim(modifier: Modifier = Modifier) {
             .background(
                 Brush.verticalGradient(
                     listOf(
-                        colors.scrim,
+                        Color.White.copy(alpha = 0.7f),
                         Color.Transparent
                     )
                 )

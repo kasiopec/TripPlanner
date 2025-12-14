@@ -16,15 +16,14 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -34,13 +33,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.project.tripplanner.R
 import com.project.tripplanner.navigation.Screen
-import com.project.tripplanner.ui.components.CountdownCard2
-import com.project.tripplanner.ui.components.CurrentTripHero2
+import com.project.tripplanner.ui.components.CountdownCard
+import com.project.tripplanner.ui.components.CurrentTripCard
 import com.project.tripplanner.ui.components.HomeHeader
 import com.project.tripplanner.ui.components.StatusBarScrim
 import com.project.tripplanner.ui.components.TripCard
@@ -109,9 +107,9 @@ fun HomeScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = colors.background,
+        containerColor = colors.surface,
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { _ ->
         when {
             uiState.isInitialLoading -> HomeLoading(modifier = Modifier.fillMaxSize())
@@ -143,6 +141,7 @@ fun HomeScreen(
                 }
                 StatusBarScrim(modifier = Modifier.zIndex(1f))
             }
+
             else -> HomeContent(
                 uiState = uiState,
                 onTripClick = onTripClick,
@@ -184,95 +183,93 @@ private fun HomeContent(
     } else {
         null
     }
-    val hasHero = currentTrip != null || countdownTrip != null
-    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+
+    Box(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            if (currentTrip != null) {
-                CurrentTripHero2(
-                    modifier = Modifier.fillMaxWidth(),
-                    trip = currentTrip,
-                    onClick = { onTripClick(currentTrip.id) }
-                )
-            } else if (countdownTrip != null) {
-                CountdownCard2(
-                    destination = countdownTrip.destination,
-                    until = countdownTrip.startDate.atStartOfDay(countdownTrip.timezone),
-                    modifier = Modifier.fillMaxWidth(),
-                    heroStyle = true
-                )
-            }
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(topStart = Dimensions.radiusL, topEnd = Dimensions.radiusL),
-                tonalElevation = 0.dp,
-                shadowElevation = 0.dp,
-                color = TripPlannerTheme.colors.surface
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
             ) {
-                Column(
+                LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Top
+                    verticalArrangement = Arrangement.spacedBy(Dimensions.spacingL),
+                    contentPadding = PaddingValues(
+                        start = Dimensions.spacingL,
+                        end = Dimensions.spacingL,
+                        bottom = Dimensions.spacingL
+                    ),
+                    state = listState
                 ) {
-                    if (!hasHero) {
+                    item(key = "status_bar_spacer") {
                         Spacer(modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
                     }
-                    HomeHeader(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = Dimensions.spacingL,
-                                end = Dimensions.spacingL,
-                                top = Dimensions.spacingL,
-                                bottom = Dimensions.spacingS
-                            ),
-                        activeFilter = uiState.activeFilter,
-                        onFilterSelected = onFilterSelected
-                    )
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                    ) {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(Dimensions.spacingL),
-                            contentPadding = PaddingValues(
-                                start = Dimensions.spacingL,
-                                end = Dimensions.spacingL,
-                                top = Dimensions.spacingL,
-                                bottom = Dimensions.spacingL
-                            ),
-                            state = listState
-                        ) {
-                            items(filteredTrips, key = { it.id }) { trip ->
-                                TripCard(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    title = trip.destination,
-                                    dateRange = trip.dateRangeText,
-                                    coverImageUri = trip.coverImageUri?.toString(),
-                                    status = when (trip.status) {
-                                        TripStatusUi.InProgress -> TripCardStatus.InProgress
-                                        TripStatusUi.Ended -> TripCardStatus.Ended
-                                        else -> TripCardStatus.Upcoming
-                                    },
-                                    onClick = { onTripClick(trip.id) }
-                                )
-                            }
+
+                    if (currentTrip != null) {
+                        item(key = "current_trip") {
+                            CurrentTripCard(
+                                modifier = Modifier.fillMaxWidth(),
+                                trip = currentTrip,
+                                onClick = { onTripClick(currentTrip.id) }
+                            )
+                        }
+                    } else if (countdownTrip != null) {
+                        item(key = "countdown") {
+                            CountdownCard(
+                                destination = countdownTrip.destination,
+                                until = countdownTrip.startDate.atStartOfDay(countdownTrip.timezone),
+                                modifier = Modifier.fillMaxWidth(),
+                                heroStyle = true
+                            )
+                        }
+                        item(key = "countdown_divider") {
+                            HorizontalDivider(
+                                thickness = Dimensions.strokeThin,
+                                color = TripPlannerTheme.colors.divider
+                            )
                         }
                     }
-                    AnimatedVisibility(
-                        visible = isBottomBarVisible,
-                        enter = slideInVertically { it },
-                        exit = slideOutVertically { it }
-                    ) {
-                        TripPlannerBottomBar(
-                            currentScreen = currentScreen,
-                            onItemSelected = onBottomBarItemClick,
-                            onLastItemLongPress = onBottomBarDebugLongClick
+
+                    item(key = "home_header") {
+                        HomeHeader(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = Dimensions.spacingL),
+                            activeFilter = uiState.activeFilter,
+                            onFilterSelected = onFilterSelected
+                        )
+                    }
+
+                    items(filteredTrips, key = { it.id }) { trip ->
+                        TripCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            title = trip.destination,
+                            dateRange = trip.dateRangeText,
+                            coverImageUri = trip.coverImageUri?.toString(),
+                            status = when (trip.status) {
+                                TripStatusUi.InProgress -> TripCardStatus.InProgress
+                                TripStatusUi.Ended -> TripCardStatus.Ended
+                                else -> TripCardStatus.Upcoming
+                            },
+                            onClick = { onTripClick(trip.id) }
                         )
                     }
                 }
             }
+
+            AnimatedVisibility(
+                visible = isBottomBarVisible,
+                enter = slideInVertically { it },
+                exit = slideOutVertically { it }
+            ) {
+                TripPlannerBottomBar(
+                    currentScreen = currentScreen,
+                    onItemSelected = onBottomBarItemClick,
+                    onLastItemLongPress = onBottomBarDebugLongClick
+                )
+            }
         }
+
         StatusBarScrim(modifier = Modifier.zIndex(1f))
     }
 }

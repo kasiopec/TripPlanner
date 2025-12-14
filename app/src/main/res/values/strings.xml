@@ -70,7 +70,7 @@
     <string name="home_filter_upcoming">Upcoming</string>
     <string name="home_filter_ended">Ended</string>
     <string name="home_status_upcoming">Upcoming</string>
-    <string name="home_current_trip_label">Current trip</string>
+    <string name="home_current_trip_label">ONGOING TRIP</string>
     <string name="home_current_trip_progress">Day %1$d of %2$d</string>
     <string name="home_hero_view_details">View details</string>
     <string name="home_empty_title">Plan your first trip</string>

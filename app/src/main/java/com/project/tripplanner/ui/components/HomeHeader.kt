@@ -9,22 +9,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.project.tripplanner.R
-import com.project.tripplanner.features.home.HomeFilterType
-import com.project.tripplanner.ui.components.text.Headline2
+import com.project.tripplanner.features.home.HomeFilter
+import com.project.tripplanner.ui.components.text.DisplayText
 import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 
 @Composable
 fun HomeHeader(
     modifier: Modifier = Modifier,
-    activeFilter: HomeFilterType,
-    onFilterSelected: (HomeFilterType) -> Unit
+    activeFilter: HomeFilter,
+    onFilterSelected: (HomeFilter) -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.Top
     ) {
-        Headline2(
+        DisplayText(
             text = stringResource(id = R.string.home_title),
             color = TripPlannerTheme.colors.onBackground
         )
@@ -33,7 +33,7 @@ fun HomeHeader(
             horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingS),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            HomeFilterType.entries.forEach { filter ->
+            HomeFilter.entries.forEach { filter ->
                 FilterChip(
                     label = stringResource(id = filter.labelResId),
                     selected = activeFilter == filter,
