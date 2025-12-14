@@ -19,7 +19,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.project.tripplanner.Effect
 import com.project.tripplanner.features.debug.DebugRoute
-import com.project.tripplanner.features.home.HomeRoute
+import com.project.tripplanner.features.home.ui.HomeRoute
 import com.project.tripplanner.features.login.LoginEffect
 import com.project.tripplanner.features.login.LoginEvent
 import com.project.tripplanner.features.login.LoginScreen

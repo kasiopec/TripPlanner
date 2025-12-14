@@ -31,7 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.project.tripplanner.R
-import com.project.tripplanner.ui.components.text.BodyRegular
+import com.project.tripplanner.ui.components.text.Headline2
 import com.project.tripplanner.ui.components.text.Headline3
 import com.project.tripplanner.ui.components.text.MetaText
 import com.project.tripplanner.ui.theme.Dimensions
@@ -54,8 +54,7 @@ fun CompactCurrentTrip(
 
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .background(colors.surface),
+            .fillMaxWidth(),
         shape = cardShape,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = colors.surface)
@@ -122,20 +121,20 @@ fun CompactCurrentTrip(
                 verticalArrangement = Arrangement.spacedBy(Dimensions.spacingXS)
             ) {
                 MetaText(
-                    text = "DAY",
+                    text = stringResource(id = R.string.home_current_trip_day_label),
                     color = additionalColors.inactive,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 if (totalDays > 0) {
                     Row(verticalAlignment = Alignment.Bottom) {
-                        Headline3(
+                        Headline2(
                             text = currentDay.toString(),
                             color = colors.primary,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
-                        BodyRegular(
+                        MetaText(
                             text = "/$totalDays",
                             color = additionalColors.inactive,
                             maxLines = 1,
@@ -143,7 +142,7 @@ fun CompactCurrentTrip(
                         )
                     }
                 } else {
-                    Headline3(
+                    Headline2(
                         text = currentDay.toString(),
                         color = colors.primary,
                         maxLines = 1,

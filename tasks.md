@@ -35,10 +35,10 @@ TripPlanner MVP Tasks
     - Loading state (`HomeLoading`).
     - Error state with retry (`HomeError` using `FullScreenError`) when initial load fails.
     - Empty state (`HomeEmptyState`) encouraging creation of the first trip when there is no data.
-    - Content state with:
-      - A top hero area that can render one of two hero items:
-        - If `currentTripId != null`: show `CurrentTripCard` for that trip. Also show a compact pinned header (`CompactCurrentTrip`) that animates in once the hero card scrolls out of view.
-        - Else, if `countdown`/`countdownTripId` are set: show a single `CountdownCard(heroStyle = true)` for the next upcoming trip (informational only; no navigation).
+      - Content state with:
+        - A top hero area that can render one of two hero items:
+          - If `currentTripId != null`: show `CurrentTripCard` for that trip. Also show a compact pinned header (`CompactCurrentTrip`) that animates in once the hero card scrolls out of view.
+          - Else, if `countdown`/`countdownTripId` are set: show a single `CountdownCard(heroStyle = true)` for the next upcoming trip (informational only; no navigation) and a compact pinned header (`CompactCountdown`) that animates in once the countdown hero scrolls out of view.
       - A chip row for `activeFilter` with `All`, `Upcoming`, and `Ended` as mutually exclusive options.
       - A `LazyColumn` of full-width `TripCard` items (upcoming and ended only), keyed by trip id.
   - Trip cards:

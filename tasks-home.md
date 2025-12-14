@@ -8,6 +8,7 @@ This document refines Task 2 from `tasks.md` with a concrete implementation plan
   - A **current-trip hero** (`CurrentTripCard`) when there is a trip in progress, or
   - A **countdown hero** (`CountdownCard(heroStyle = true)`) for the next upcoming trip when there is no current trip.
 - When a current-trip hero exists, show a **compact pinned header** (`CompactCurrentTrip`) that animates in once the current-trip hero card scrolls out of view.
+- When a countdown hero exists, show a **compact pinned header** (`CompactCountdown`) that animates in once the countdown hero card scrolls out of view.
 - Show a **filterable list of trips** (All / Upcoming / Ended) with destination, date range, status label, and optional cover image.
 - Handle initial loading, error, empty, and content states in a clear but minimal way.
 - Keep Home logic localized to the `features.home` package using the app's existing MVI pattern.
@@ -35,7 +36,7 @@ This document refines Task 2 from `tasks.md` with a concrete implementation plan
 - Events (`HomeEvent : Event`):
   - `data object ScreenLoaded : HomeEvent` - initial load.
   - `data object RetryClicked : HomeEvent` - from full-screen error retry.
-  - `data class TripClicked(val tripId: Long) : HomeEvent` - tap on a trip card or hero (current-trip or countdown hero item).
+  - `data class TripClicked(val tripId: Long) : HomeEvent` - tap on a trip card or the current-trip hero.
   - `data class FilterSelected(val filter: HomeFilter) : HomeEvent` - user taps one of the filter chips.
 
 - Effects (`HomeEffect : Effect`):
@@ -140,6 +141,7 @@ This document refines Task 2 from `tasks.md` with a concrete implementation plan
         - Render `CompactCurrentTrip` as a top overlay that appears only when the `CurrentTripCard` list item is fully out of view (to avoid list jump). `CompactCurrentTrip` draws behind the status bar and pads its content below it.
       - Else, if `uiState.countdown != null` and `uiState.countdownTripId != null` matches an upcoming trip:
         - Render a single `CountdownCard(heroStyle = true)` hero item for the next upcoming trip at the top of the content. The countdown hero is informational only and is not tappable.
+        - Render `CompactCountdown` as a top overlay that appears only when the `CountdownCard` list item is fully out of view (to avoid list jump). `CompactCountdown` draws behind the status bar and pads its content below it.
     - Filter chips:
       - Render a horizontal chip row just under the hero area with `All`, `Upcoming`, and `Ended`.
       - Chips are mutually exclusive and reflect `uiState.activeFilter`.
@@ -188,7 +190,7 @@ This document refines Task 2 from `tasks.md` with a concrete implementation plan
 - Current implementation notes:
   - `Scaffold` uses `contentWindowInsets = WindowInsets(0, 0, 0, 0)` and the list includes a `status_bar_spacer` item using `windowInsetsTopHeight(WindowInsets.statusBars)` so content can draw edge-to-edge.
   - A `StatusBarScrim` overlay is drawn above content/empty states to ensure the status-bar area never shows list content directly.
-  - The compact pinned header (`CompactCurrentTrip`) is responsible for its own status-bar padding via `WindowInsets.statusBars`.
+  - The compact pinned headers (`CompactCurrentTrip`, `CompactCountdown`) are responsible for their own status-bar padding via `WindowInsets.statusBars`.
 
 ---
 

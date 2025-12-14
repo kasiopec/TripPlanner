@@ -65,12 +65,15 @@
     <string name="home_countdown_hours">HOURS</string>
     <string name="home_countdown_mins">MINS</string>
     <string name="home_countdown_months">MONTHS</string>
+    <string name="home_countdown_now">Now</string>
+    <string name="home_compact_countdown_days_format">%1$dd</string>
     <!-- Home -->
     <string name="home_filter_all">All</string>
     <string name="home_filter_upcoming">Upcoming</string>
     <string name="home_filter_ended">Ended</string>
     <string name="home_status_upcoming">Upcoming</string>
     <string name="home_current_trip_label">ONGOING TRIP</string>
+    <string name="home_current_trip_day_label">DAY</string>
     <string name="home_current_trip_progress">Day %1$d of %2$d</string>
     <string name="home_hero_view_details">View details</string>
     <string name="home_empty_title">Plan your first trip</string>

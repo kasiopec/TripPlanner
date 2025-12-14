@@ -1,13 +1,9 @@
-package com.project.tripplanner.features.home
+package com.project.tripplanner.features.home.ui
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -41,7 +37,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.project.tripplanner.R
+import com.project.tripplanner.features.home.HomeEffect
+import com.project.tripplanner.features.home.HomeEmptyState
+import com.project.tripplanner.features.home.HomeError
+import com.project.tripplanner.features.home.HomeEvent
+import com.project.tripplanner.features.home.HomeFilter
+import com.project.tripplanner.features.home.HomeLoading
+import com.project.tripplanner.features.home.HomeUiState
+import com.project.tripplanner.features.home.HomeViewModel
+import com.project.tripplanner.features.home.TripProgress
+import com.project.tripplanner.features.home.TripStatusUi
+import com.project.tripplanner.features.home.TripUiModel
 import com.project.tripplanner.navigation.Screen
+import com.project.tripplanner.ui.components.CompactCountdown
 import com.project.tripplanner.ui.components.CompactCurrentTrip
 import com.project.tripplanner.ui.components.CountdownCard
 import com.project.tripplanner.ui.components.CurrentTripCard
@@ -54,7 +62,6 @@ import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 import java.time.LocalDate
 import java.time.ZoneId
-import kotlinx.coroutines.flow.Flow
 
 private const val KeyStatusBarSpacer = "status_bar_spacer"
 private const val KeyCurrentTrip = "current_trip"
@@ -73,16 +80,24 @@ fun HomeRoute(
 ) {
     val uiState by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.emitEvent(HomeEvent.ScreenLoaded)
     }
 
-    HomeEffectHandler(
-        effect = viewModel.effect,
-        snackbarHostState = snackbarHostState,
-        onTripClick = onTripClick
-    )
+    LaunchedEffect(viewModel.effect) {
+        viewModel.effect.collect { event ->
+            when (event) {
+                is HomeEffect.NavigateToTripDetail -> onTripClick(event.tripId)
+                is HomeEffect.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(
+                        message = context.getString(event.messageResId)
+                    )
+                }
+            }
+        }
+    }
 
     HomeScreen(
         uiState = uiState,
@@ -190,13 +205,10 @@ private fun HomeContent(
         null
     }
 
-    val showCompactHero by remember(listState, currentTrip) {
-        derivedStateOf {
-            if (currentTrip == null) return@derivedStateOf false
-            val visibleItems = listState.layoutInfo.visibleItemsInfo
-            visibleItems.isNotEmpty() && visibleItems.none { it.key == KeyCurrentTrip }
-        }
-    }
+    val isCurrentTripOutOfView by rememberIsItemKeyOutOfView(listState, KeyCurrentTrip)
+    val isCountdownOutOfView by rememberIsItemKeyOutOfView(listState, KeyCountdown)
+    val showCompactHero = currentTrip != null && isCurrentTripOutOfView
+    val showCompactCountdown = currentTrip == null && countdownTrip != null && isCountdownOutOfView
 
     Box(modifier = modifier.fillMaxSize()) {
         HomeTripList(
@@ -212,7 +224,9 @@ private fun HomeContent(
 
         HomeOverlays(
             currentTrip = currentTrip,
-            showCompactHero = showCompactHero
+            showCompactHero = showCompactHero,
+            countdownTrip = countdownTrip,
+            showCompactCountdown = showCompactCountdown
         )
     }
 }
@@ -337,10 +351,12 @@ private fun HomeTripList(
 @Composable
 private fun BoxScope.HomeOverlays(
     currentTrip: TripUiModel?,
-    showCompactHero: Boolean
+    showCompactHero: Boolean,
+    countdownTrip: TripUiModel?,
+    showCompactCountdown: Boolean
 ) {
     if (currentTrip != null) {
-        CompactStickyHeader(
+        CompactCurrentTripHeader(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
@@ -348,26 +364,15 @@ private fun BoxScope.HomeOverlays(
             trip = currentTrip,
             visible = showCompactHero
         )
-    }
-}
-
-@Composable
-private fun HomeEffectHandler(
-    effect: Flow<HomeEffect>,
-    snackbarHostState: SnackbarHostState,
-    onTripClick: (Long) -> Unit
-) {
-    val context = LocalContext.current
-
-    LaunchedEffect(effect) {
-        effect.collect { event ->
-            when (event) {
-                is HomeEffect.NavigateToTripDetail -> onTripClick(event.tripId)
-                is HomeEffect.ShowSnackbar -> snackbarHostState.showSnackbar(
-                    message = context.getString(event.messageResId)
-                )
-            }
-        }
+    } else if (countdownTrip != null) {
+        CompactCountdownHeader(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .zIndex(2f),
+            trip = countdownTrip,
+            visible = showCompactCountdown
+        )
     }
 }
 
@@ -378,25 +383,14 @@ private fun TripStatusUi.toTripCardStatus(): TripCardStatus = when (this) {
 }
 
 @Composable
-private fun CompactStickyHeader(
+private fun CompactCurrentTripHeader(
     modifier: Modifier = Modifier,
     trip: TripUiModel,
     visible: Boolean
 ) {
-    val animationDurationMs = 250
-    AnimatedVisibility(
-        visible = visible,
+    CompactPinnedHeader(
         modifier = modifier,
-        enter = fadeIn(animationSpec = tween(durationMillis = animationDurationMs)) +
-                expandVertically(
-                    animationSpec = tween(durationMillis = animationDurationMs),
-                    expandFrom = Alignment.Top
-                ),
-        exit = fadeOut(animationSpec = tween(durationMillis = animationDurationMs)) +
-                slideOutVertically(
-                    animationSpec = tween(durationMillis = animationDurationMs),
-                    targetOffsetY = { -it }
-                )
+        visible = visible
     ) {
         CompactCurrentTrip(
             labelRes = R.string.home_current_trip_label,
@@ -405,6 +399,38 @@ private fun CompactStickyHeader(
             currentDay = trip.progress?.currentDay ?: 1,
             totalDays = trip.progress?.totalDays ?: 0
         )
+    }
+}
+
+@Composable
+private fun CompactCountdownHeader(
+    modifier: Modifier = Modifier,
+    trip: TripUiModel,
+    visible: Boolean
+) {
+    CompactPinnedHeader(
+        modifier = modifier,
+        visible = visible
+    ) {
+        CompactCountdown(
+            tripTitle = trip.destination,
+            dateRangeText = trip.dateRangeText,
+            countdownTargetEpochMillis = trip.startDate
+                .atStartOfDay(trip.timezone)
+                .toInstant()
+                .toEpochMilli()
+        )
+    }
+}
+
+@Composable
+private fun rememberIsItemKeyOutOfView(
+    listState: LazyListState,
+    key: Any
+) = remember(listState, key) {
+    derivedStateOf {
+        val visibleItems = listState.layoutInfo.visibleItemsInfo
+        visibleItems.isNotEmpty() && visibleItems.none { it.key == key }
     }
 }
 
