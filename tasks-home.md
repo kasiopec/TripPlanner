@@ -5,8 +5,9 @@ This document refines Task 2 from `tasks.md` with a concrete implementation plan
 ## 1. Goals
 
 - Show either:
-  - A **current-trip hero** when there is a trip in progress, or
-  - A **countdown hero** (as a separate hero item based on `CountdownCard`) for the next upcoming trip when there is no current trip.
+  - A **current-trip hero** (`CurrentTripCard`) when there is a trip in progress, or
+  - A **countdown hero** (`CountdownCard(heroStyle = true)`) for the next upcoming trip when there is no current trip.
+- When a current-trip hero exists, show a **compact pinned header** (`CompactCurrentTrip`) that animates in once the current-trip hero card scrolls out of view.
 - Show a **filterable list of trips** (All / Upcoming / Ended) with destination, date range, status label, and optional cover image.
 - Handle initial loading, error, empty, and content states in a clear but minimal way.
 - Keep Home logic localized to the `features.home` package using the app's existing MVI pattern.
@@ -115,7 +116,7 @@ This document refines Task 2 from `tasks.md` with a concrete implementation plan
     - Collects `HomeUiState` via `state.collectAsState()`.
     - Emits `HomeEvent.ScreenLoaded` once.
     - Passes callbacks to `HomeScreen`.
-    - Observes `HomeEffect` and calls navigation/snackbar APIs.
+    - Observes `HomeEffect` (via a small helper composable) and calls navigation/snackbar APIs.
 
 - Stateless `HomeScreen`:
   - Signature: `@Composable fun HomeScreen(uiState: HomeUiState, ...)`.
@@ -134,10 +135,11 @@ This document refines Task 2 from `tasks.md` with a concrete implementation plan
   - When there are trips:
     - Hero area:
       - If `uiState.currentTripId != null`:
-        - Render a "CURRENT TRIP" hero using the matching `TripUiModel` (destination, date range, simple progress hint).
+        - Render a "CURRENT TRIP" hero using `CurrentTripCard` and the matching `TripUiModel` (destination, date range, simple progress hint).
         - This hero is the only place where an in-progress trip is shown; the list below must not duplicate it.
+        - Render `CompactCurrentTrip` as a top overlay that appears only when the `CurrentTripCard` list item is fully out of view (to avoid list jump). `CompactCurrentTrip` draws behind the status bar and pads its content below it.
       - Else, if `uiState.countdown != null` and `uiState.countdownTripId != null` matches an upcoming trip:
-        - Render a single countdown hero item (a dedicated hero composable visually derived from `CountdownCard`, not a variant of `HomeHero`) for the next upcoming trip at the top of the content. The countdown hero is informational only and is not tappable.
+        - Render a single `CountdownCard(heroStyle = true)` hero item for the next upcoming trip at the top of the content. The countdown hero is informational only and is not tappable.
     - Filter chips:
       - Render a horizontal chip row just under the hero area with `All`, `Upcoming`, and `Ended`.
       - Chips are mutually exclusive and reflect `uiState.activeFilter`.
@@ -162,10 +164,10 @@ This document refines Task 2 from `tasks.md` with a concrete implementation plan
   - This document does not prescribe the exact parameter list as long as it uses `TripUiModel` data and fits the design system.
 
 - `CountdownCard`:
-  - Reuse the shared `CountdownCard` from `ui/components` as the visual basis for a separate countdown hero item when there is no current trip.
+  - Reuse the shared `CountdownCard` from `ui/components` directly as the countdown hero item when there is no current trip.
   - On Home:
     - The countdown appears at most once, derived from `HomeUiState.countdown` and `countdownTripId`.
-    - It is not per-list-item; it appears above the list as a standalone hero item separate from `HomeHero`.
+    - It is not per-list-item; it appears above the list as a standalone hero item.
     - It is informational only and is not tappable; navigation continues to be driven by the trip list.
 
 - `FullScreenError`:
@@ -183,7 +185,10 @@ This document refines Task 2 from `tasks.md` with a concrete implementation plan
 - Home screen must follow the global edge-to-edge rules defined in `AGENTS.md` and the app's host `Activity`:
   - Do not use deprecated APIs such as `android:fitsSystemWindows` or legacy insets libraries.
   - Use the standard app pattern (for example, `Scaffold` with `contentWindowInsets` and insets-aware modifiers) rather than custom, one-off insets logic.
-- This document does not define a separate edge-to-edge strategy for Home; it relies on the app-wide convention.
+- Current implementation notes:
+  - `Scaffold` uses `contentWindowInsets = WindowInsets(0, 0, 0, 0)` and the list includes a `status_bar_spacer` item using `windowInsetsTopHeight(WindowInsets.statusBars)` so content can draw edge-to-edge.
+  - A `StatusBarScrim` overlay is drawn above content/empty states to ensure the status-bar area never shows list content directly.
+  - The compact pinned header (`CompactCurrentTrip`) is responsible for its own status-bar padding via `WindowInsets.statusBars`.
 
 ---
 
