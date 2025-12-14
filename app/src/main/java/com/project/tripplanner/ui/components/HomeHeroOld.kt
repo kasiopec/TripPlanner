@@ -1,5 +1,8 @@
 package com.project.tripplanner.ui.components
 
+import android.app.Activity
+import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -9,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,26 +20,36 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.core.view.WindowCompat
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
+import coil.ImageLoader
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import coil.request.SuccessResult
 import com.project.tripplanner.R
 import com.project.tripplanner.features.home.TripProgress
 import com.project.tripplanner.features.home.TripStatusUi
@@ -47,6 +61,7 @@ import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 import java.time.LocalDate
 import java.time.ZoneId
+import androidx.core.graphics.get
 
 @Composable
 fun CurrentTripHero(
@@ -62,17 +77,17 @@ fun CurrentTripHero(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(240.dp)
+            .heightIn(min = 240.dp)
             .background(backgroundBrush)
             .clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier
                 .matchParentSize()
+                .windowInsetsPadding(WindowInsets.statusBars)
                 .padding(
                     start = Dimensions.spacingXL,
                     end = Dimensions.spacingXL,
-                    top = 20.dp,
                     bottom = Dimensions.spacingXXL
                 ),
             verticalAlignment = Alignment.CenterVertically,
@@ -141,7 +156,22 @@ private fun HeroArtwork(
 ) {
     val colors = TripPlannerTheme.colors
     val accent = colors.onPrimary.copy(alpha = 0.12f)
-    val accentStrong = colors.onPrimary.copy(alpha = 0.2f)
+    val context = LocalContext.current
+    val view = LocalView.current
+    val window = (view.context as? Activity)?.window
+    val controller = remember(window, view) {
+        window?.let { WindowCompat.getInsetsController(it, view) }
+    }
+
+    LaunchedEffect(coverImageUri) {
+        if (coverImageUri != null && controller != null) {
+            val bitmap = loadBitmap(context, coverImageUri)
+            if (bitmap != null) {
+                val isLight = isImageAreaLight(bitmap)
+                controller.isAppearanceLightStatusBars = isLight  // <-- MAGIC ✨
+            }
+        }
+    }
     Box(
         modifier = modifier
             .fillMaxHeight()
@@ -156,15 +186,6 @@ private fun HeroArtwork(
                 .clip(RoundedCornerShape(Dimensions.radiusL))
                 .background(accent)
         )
-        Column(
-            modifier = Modifier.align(Alignment.CenterEnd),
-            verticalArrangement = Arrangement.spacedBy(Dimensions.spacingS),
-            horizontalAlignment = Alignment.End
-        ) {
-            Bar(accent = accentStrong, width = 72.dp)
-            Bar(accent = accent, width = 56.dp)
-            Bar(accent = accentStrong, width = 48.dp)
-        }
         Box(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
@@ -199,19 +220,43 @@ private fun HeroArtwork(
     }
 }
 
-@Composable
-private fun Bar(
-    accent: Color,
-    width: Dp
-) {
-    Box(
-        modifier = Modifier
-            .width(width)
-            .height(Dimensions.strokeThick * 3)
-            .clip(RoundedCornerShape(Dimensions.radiusS))
-            .background(accent)
-    )
+suspend fun loadBitmap(context: Context, uri: Uri): Bitmap? {
+    val loader = ImageLoader(context)
+    val req = ImageRequest.Builder(context)
+        .data(uri)
+        .allowHardware(false)
+        .build()
+
+    val result = loader.execute(req)
+    return (result as? SuccessResult)?.drawable?.toBitmap()
 }
+
+fun isImageAreaLight(
+    bmp: Bitmap,
+    sampleHeightFraction: Float = 0.20f,
+    sampleStep: Int = 15
+): Boolean {
+    val width = bmp.width
+    val height = (bmp.height * sampleHeightFraction).toInt().coerceAtLeast(1)
+
+    var sum = 0.0
+    var count = 0
+
+    for (y in 0 until height step sampleStep) {
+        for (x in 0 until width step sampleStep) {
+            val c = bmp[x, y]
+            val lum = 0.299 * android.graphics.Color.red(c) +
+                    0.587 * android.graphics.Color.green(c) +
+                    0.114 * android.graphics.Color.blue(c)
+            sum += lum
+            count++
+        }
+    }
+
+    if (count == 0) return false
+    return (sum / count) > 160
+}
+
 
 @Composable
 private fun BoxScope.ImageBottomOverlay(modifier: Modifier = Modifier) {

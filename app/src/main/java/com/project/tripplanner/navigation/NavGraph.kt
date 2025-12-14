@@ -15,9 +15,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.project.tripplanner.Effect
-import com.project.tripplanner.features.home.HomeRoute
+import com.project.tripplanner.features.debug.DebugRoute
+import com.project.tripplanner.features.home.ui.HomeRoute
 import com.project.tripplanner.features.login.LoginEffect
 import com.project.tripplanner.features.login.LoginEvent
 import com.project.tripplanner.features.login.LoginScreen
@@ -71,6 +73,9 @@ fun NavGraph(
 //            }
 //        }
 //    }
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentScreen = Screen.fromRoute(backStackEntry?.destination?.route)
+
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route
@@ -102,8 +107,34 @@ fun NavGraph(
         }
         composable(route = Screen.Home.route) {
             HomeRoute(
+                currentScreen = currentScreen,
+                isBottomBarVisible = currentScreen?.isBottomBarVisible == true,
                 onTripClick = { tripId ->
                     navController.navigate(Screen.TripForm.createRoute(tripId))
+                },
+                onBottomBarItemClick = { screen ->
+                    when (screen) {
+                        Screen.Home -> navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Home.route) {
+                                inclusive = true
+                            }
+                        }
+
+                        Screen.TripDetails -> navController.navigate(Screen.TripDetails.route)
+                        Screen.TripForm -> navController.navigate(Screen.TripForm.createRoute())
+                        Screen.Login -> navController.navigate(Screen.Login.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                inclusive = true
+                            }
+                        }
+
+                        Screen.RegisterForm -> navController.navigate(Screen.RegisterForm.route)
+                        Screen.ResetPassword -> navController.navigate(Screen.ResetPassword.route)
+                        Screen.Debug -> navController.navigate(Screen.Debug.route)
+                    }
+                },
+                onBottomBarDebugLongClick = {
+                    navController.navigate(Screen.Debug.route)
                 }
             )
         }
@@ -198,10 +229,13 @@ fun NavGraph(
                     }
 
                     is TripFormEffect.ShowSnackbar -> {
-                        Toast.makeText(context, effect.messageResId, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, effect.messageResId, Toast.LENGTH_SHORT).show()
                     }
                 }
             }
+        }
+        composable(route = Screen.Debug.route) {
+            DebugRoute()
         }
     }
 }

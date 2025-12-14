@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.project.tripplanner.R
 import com.project.tripplanner.features.home.HomeFilterType
-import com.project.tripplanner.ui.components.text.Headline2
+import com.project.tripplanner.ui.components.text.DisplayText
 import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 
@@ -24,7 +24,7 @@ fun HomeHeader(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.Top
     ) {
-        Headline2(
+        DisplayText(
             text = stringResource(id = R.string.home_title),
             color = TripPlannerTheme.colors.onBackground
         )

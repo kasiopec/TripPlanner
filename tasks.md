@@ -35,10 +35,10 @@ TripPlanner MVP Tasks
     - Loading state (`HomeLoading`).
     - Error state with retry (`HomeError` using `FullScreenError`) when initial load fails.
     - Empty state (`HomeEmptyState`) encouraging creation of the first trip when there is no data.
-    - Content state with:
-      - A top hero area that can render one of two dedicated hero items:
-        - If `currentTripId != null`: show a "CURRENT TRIP" hero for that trip (destination, date range, simple progress hint such as "Day 3 of 11"). This is the only place the in-progress trip appears.
-        - Else, if `countdown`/`countdownTripId` are set: show a single countdown hero item for the next upcoming trip, implemented as a separate hero composable based on `CountdownCard` (not via `HomeHero`).
+      - Content state with:
+        - A top hero area that can render one of two hero items:
+          - If `currentTripId != null`: show `CurrentTripCard` for that trip. Also show a compact pinned header (`CompactCurrentTrip`) that animates in once the hero card scrolls out of view.
+          - Else, if `countdown`/`countdownTripId` are set: show a single `CountdownCard(heroStyle = true)` for the next upcoming trip (informational only; no navigation) and a compact pinned header (`CompactCountdown`) that animates in once the countdown hero scrolls out of view.
       - A chip row for `activeFilter` with `All`, `Upcoming`, and `Ended` as mutually exclusive options.
       - A `LazyColumn` of full-width `TripCard` items (upcoming and ended only), keyed by trip id.
   - Trip cards:
@@ -50,7 +50,7 @@ TripPlanner MVP Tasks
 
 - Shared UI components:
   - Reuse the shared `TripCard` composable in `ui/components` so Trip detail or future surfaces can reuse it.
-  - Reuse `CountdownCard` as the visual basis for a dedicated countdown hero item in the "no current trip" case (the countdown hero is a separate hero composable that appears once, above the list, and is not rendered through `HomeHero`).
+  - Reuse `CountdownCard(heroStyle = true)` directly as the hero item in the "no current trip" case.
   - Reuse `FullScreenError` for initial hard errors and keep non-blocking errors as snackbars when data already exists.
   - Home screen remains display-only and should rely on stored cover URIs.
 
@@ -61,7 +61,7 @@ TripPlanner MVP Tasks
     - Ended: `now > endDate`.
   - Hero rules:
     - When at least one trip is in progress, feature exactly one as the current-trip hero and do not show any countdown hero item.
-    - When there are no in-progress trips and at least one upcoming trip, show a single countdown hero item for the next upcoming trip (earliest `startDate`) using `CountdownFormatter`, implemented as the dedicated `CountdownCard`-based hero rather than a variant of `HomeHero`. The countdown hero is informational only and does not handle navigation.
+    - When there are no in-progress trips and at least one upcoming trip, show a single countdown hero item for the next upcoming trip (earliest `startDate`) using `CountdownFormatter` and `CountdownCard(heroStyle = true)` (informational only; no navigation).
     - Current trip should appear only in the hero, never duplicated in the list; upcoming trips that drive the countdown hero remain visible in the list.
   - Filtering rules:
     - `All`: show all trips except the current trip (which lives only in the hero).

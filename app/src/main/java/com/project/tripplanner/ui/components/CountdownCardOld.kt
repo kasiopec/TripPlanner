@@ -18,10 +18,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,12 +32,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.project.tripplanner.R
 import com.project.tripplanner.ui.components.text.DisplayText
+import com.project.tripplanner.ui.components.text.Headline1
 import com.project.tripplanner.ui.components.text.MetaText
 import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
@@ -44,14 +48,13 @@ import kotlinx.coroutines.delay
 import java.time.Duration
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
-import kotlin.math.min
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun CountdownCard(
-    modifier: Modifier = Modifier,
+fun CountdownCardOld(
     destination: String,
     until: ZonedDateTime,
+    modifier: Modifier = Modifier,
     heroStyle: Boolean = false
 ) {
     val colors = TripPlannerTheme.colors
@@ -59,7 +62,6 @@ fun CountdownCard(
     var now by remember { mutableStateOf(ZonedDateTime.now(until.zone)) }
 
     LaunchedEffect(Unit) {
-        // Update the time only once per minute to save battery and match the display unit
         while (true) {
             now = ZonedDateTime.now(until.zone)
             delay(60000)
@@ -70,33 +72,40 @@ fun CountdownCard(
         calculateDisplayUnits(now, until)
     }
 
-    val backgroundColor = colors.surface
+    val backgroundBrush = Brush.verticalGradient(
+        colors = listOf(
+            colors.primary,
+            colors.primaryStrong
+        )
+    )
+
     val content: @Composable () -> Unit = {
         Box(
             modifier = Modifier
-                .background(backgroundColor) // Use solid light background
+                .background(backgroundBrush)
                 .fillMaxWidth()
+                .padding(
+                    top = Dimensions.spacingL,
+                    bottom = Dimensions.spacingXL,
+                    start = Dimensions.spacingL,
+                    end = Dimensions.spacingXL
+                )
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        top = Dimensions.spacingL,
-                        bottom = Dimensions.spacingXL
-                    )
+                modifier = Modifier.fillMaxWidth()
             ) {
                 MetaText(
                     text = stringResource(id = R.string.home_countdown_title),
-                    color = colors.secondary,
+                    color = colors.onPrimary.copy(alpha = 0.8f),
                     modifier = Modifier.padding(bottom = Dimensions.spacingXS)
                 )
 
-                DisplayText(
-                    text = destination.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
-                    color = colors.primary,
+                Headline1(
+                    text = destination,
+                    color = colors.onPrimary,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(bottom = Dimensions.spacingL)
+                    modifier = Modifier.padding(bottom = Dimensions.spacingXL)
                 )
 
                 Row(
@@ -106,17 +115,20 @@ fun CountdownCard(
                 ) {
                     CountdownUnit(
                         value = displayUnits.unit1Value,
-                        label = stringResource(displayUnits.unit1Label)
+                        label = stringResource(displayUnits.unit1Label),
+                        textColor = colors.primaryStrong
                     )
-                    TimeUnitSeparator()
+                    TimeUnitSeparator(color = colors.onPrimary)
                     CountdownUnit(
                         value = displayUnits.unit2Value,
-                        label = stringResource(displayUnits.unit2Label)
+                        label = stringResource(displayUnits.unit2Label),
+                        textColor = colors.primaryStrong
                     )
-                    TimeUnitSeparator()
+                    TimeUnitSeparator(color = colors.onPrimary)
                     CountdownUnit(
                         value = displayUnits.unit3Value,
-                        label = stringResource(displayUnits.unit3Label)
+                        label = stringResource(displayUnits.unit3Label),
+                        textColor = colors.primaryStrong
                     )
                 }
             }
@@ -134,10 +146,8 @@ fun CountdownCard(
         Card(
             modifier = modifier
                 .fillMaxWidth()
-                // RECOMMENDATION (from DS): Use radiusL (12dp) for cards
                 .clip(RoundedCornerShape(Dimensions.radiusL)),
-            // RECOMMENDATION (from DS): Use low elevation
-            elevation = CardDefaults.cardElevation(defaultElevation = Dimensions.strokeThick),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             colors = CardDefaults.cardColors(
                 containerColor = Color.Transparent
             )
@@ -146,6 +156,12 @@ fun CountdownCard(
         }
     }
 }
+
+data class DisplayUnits(
+    val unit1Value: Int, val unit1Label: Int,
+    val unit2Value: Int, val unit2Label: Int,
+    val unit3Value: Int, val unit3Label: Int
+)
 
 private fun calculateDisplayUnits(now: ZonedDateTime, until: ZonedDateTime): DisplayUnits {
     val duration = Duration.between(now, until)
@@ -169,7 +185,7 @@ private fun calculateDisplayUnits(now: ZonedDateTime, until: ZonedDateTime): Dis
 
         DisplayUnits(
             displayMonths, R.string.home_countdown_months,
-            min(remainingDays, 30), R.string.home_countdown_days, // Cap days to 30 for display clarity
+            remainingDays, R.string.home_countdown_days,
             hours, R.string.home_countdown_hours
         )
     } else {
@@ -185,15 +201,13 @@ private fun calculateDisplayUnits(now: ZonedDateTime, until: ZonedDateTime): Dis
     }
 }
 
-// Renamed from TimeUnitSeparator2 to TimeUnitSeparator and simplified
 @Composable
-fun TimeUnitSeparator() {
+fun TimeUnitSeparator(color: Color) {
     DisplayText(
         text = ":",
-        color = TripPlannerTheme.colors.onSurfaceVariant.copy(alpha = 0.35f),
+        color = color.copy(alpha = 0.6f),
         modifier = Modifier
             .padding(horizontal = Dimensions.spacingS)
-            // Adjust vertical alignment to match the DisplayText number's baseline
             .padding(bottom = Dimensions.spacingL),
         scalable = false
     )
@@ -201,38 +215,40 @@ fun TimeUnitSeparator() {
 
 @SuppressLint("DefaultLocale")
 @OptIn(ExperimentalAnimationApi::class)
-// Renamed from CountdownUnit2 to CountdownUnit and simplified signature
 @Composable
 fun CountdownUnit(
     value: Int,
     label: String,
+    textColor: Color
 ) {
-    // RECOMMENDATION 2: Removed Surface, making the timer text-only (airier UI)
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Box is still useful for AnimatedContent alignment but no longer draws the box surface
-        Box(
-            contentAlignment = Alignment.Center,
-            // Adjust modifier to maintain proper spacing without the fixed size of the old box
-            modifier = Modifier.padding(horizontal = Dimensions.spacingXS)
+        Surface(
+            color = TripPlannerTheme.colors.surface.copy(alpha = 0.9f),
+            shape = RoundedCornerShape(Dimensions.radiusM),
+            modifier = Modifier
+                .width(64.dp)
+                .height(68.dp),
+            tonalElevation = 4.dp
         ) {
-            AnimatedContent(
-                targetState = value,
-                transitionSpec = {
-                    (slideInVertically { height -> height } + fadeIn() togetherWith
-                            slideOutVertically { height -> -height } + fadeOut()).using(
-                        SizeTransform(clip = true)
+            Box(contentAlignment = Alignment.Center) {
+                AnimatedContent(
+                    targetState = value,
+                    transitionSpec = {
+                        (slideInVertically { height -> height } + fadeIn() togetherWith
+                                slideOutVertically { height -> -height } + fadeOut()).using(
+                            SizeTransform(clip = true)
+                        )
+                    },
+                    label = "Unit"
+                ) { targetValue ->
+                    DisplayText(
+                        text = String.format("%02d", targetValue),
+                        color = textColor,
+                        scalable = false
                     )
-                },
-                label = "Unit"
-            ) { targetValue ->
-                DisplayText(
-                    text = String.format("%02d", targetValue),
-                    // RECOMMENDATION 3: Use Primary Brand color for numbers
-                    color = TripPlannerTheme.colors.primary,
-                    scalable = false
-                )
+                }
             }
         }
 
@@ -240,25 +256,34 @@ fun CountdownUnit(
 
         MetaText(
             text = label,
-            // RECOMMENDATION 3: Use dark secondary color for labels
-            color = TripPlannerTheme.colors.secondary
+            color = TripPlannerTheme.colors.onPrimary.copy(alpha = 0.8f)
         )
     }
 }
 
-@Composable
 @Preview
-fun previewCT() {
-    Column(
-        modifier = Modifier
-            .wrapContentHeight()
-            .fillMaxWidth()
-    ) {
-        CountdownCard(
-            destination = "Santorini, Greece",
-            until = ZonedDateTime.now().plusMonths(2).plusDays(
-                5
+@Composable
+private fun CountdownCardOldMonthsPreview() {
+    TripPlannerTheme {
+        Box(modifier = Modifier.padding(16.dp)) {
+            CountdownCardOld(
+                destination = "Santorini, Greece",
+                until = ZonedDateTime.now().plusMonths(2).plusDays(5).plusHours(4)
             )
-        )
+        }
     }
 }
+
+@Preview
+@Composable
+private fun CountdownCardOldUrgentPreview() {
+    TripPlannerTheme {
+        Box(modifier = Modifier.padding(16.dp)) {
+            CountdownCardOld(
+                destination = "Tokyo",
+                until = ZonedDateTime.now().plusHours(2).plusMinutes(45).plusSeconds(10)
+            )
+        }
+    }
+}
+

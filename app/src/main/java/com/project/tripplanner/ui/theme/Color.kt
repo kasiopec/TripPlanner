@@ -70,7 +70,7 @@ val LightColorScheme = TripPlannerColorScheme(
     onError = Color(0xFFFFFFFF),
     iconMuted = Color(0xFFC7CED8),
     rating = Color(0xFFF5B400),
-    scrim = Color(0x66000000)
+    scrim = Color(0xCD000000)
 )
 
 val DarkColorScheme = LightColorScheme.copy()
