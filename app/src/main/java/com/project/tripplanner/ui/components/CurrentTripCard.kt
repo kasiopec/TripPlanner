@@ -21,9 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -42,6 +39,7 @@ import com.project.tripplanner.ui.components.text.LabelText
 import com.project.tripplanner.ui.components.text.MetaText
 import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
+import com.project.tripplanner.utils.capitalize
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -125,7 +123,7 @@ fun CurrentTripCard(
                         .padding(Dimensions.spacingL)
                 ) {
                     Headline1(
-                        text = trip.destination.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
+                        text = trip.destination.capitalize(),
                         color = colors.surface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis

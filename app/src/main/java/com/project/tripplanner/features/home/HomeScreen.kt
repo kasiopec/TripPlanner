@@ -2,9 +2,12 @@ package com.project.tripplanner.features.home
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,7 +21,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
@@ -27,6 +30,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -37,6 +41,7 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.project.tripplanner.R
 import com.project.tripplanner.navigation.Screen
+import com.project.tripplanner.ui.components.CompactCurrentTrip
 import com.project.tripplanner.ui.components.CountdownCard
 import com.project.tripplanner.ui.components.CurrentTripCard
 import com.project.tripplanner.ui.components.HomeHeader
@@ -184,6 +189,14 @@ private fun HomeContent(
         null
     }
 
+    val showCompactHero by remember(listState, currentTrip) {
+        derivedStateOf {
+            if (currentTrip == null) return@derivedStateOf false
+            val visibleItems = listState.layoutInfo.visibleItemsInfo
+            visibleItems.isNotEmpty() && visibleItems.none { it.key == "current_trip" }
+        }
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             Box(
@@ -193,22 +206,24 @@ private fun HomeContent(
             ) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(Dimensions.spacingL),
-                    contentPadding = PaddingValues(
-                        start = Dimensions.spacingL,
-                        end = Dimensions.spacingL,
-                        bottom = Dimensions.spacingL
-                    ),
+                    contentPadding = PaddingValues(bottom = Dimensions.spacingL),
                     state = listState
                 ) {
                     item(key = "status_bar_spacer") {
-                        Spacer(modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
+                        Spacer(
+                            modifier = Modifier
+                                .windowInsetsTopHeight(WindowInsets.statusBars)
+                                .padding(bottom = Dimensions.spacingL)
+                        )
                     }
 
                     if (currentTrip != null) {
                         item(key = "current_trip") {
                             CurrentTripCard(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .padding(horizontal = Dimensions.spacingL)
+                                    .padding(bottom = Dimensions.spacingL)
+                                    .fillMaxWidth(),
                                 trip = currentTrip,
                                 onClick = { onTripClick(currentTrip.id) }
                             )
@@ -218,12 +233,18 @@ private fun HomeContent(
                             CountdownCard(
                                 destination = countdownTrip.destination,
                                 until = countdownTrip.startDate.atStartOfDay(countdownTrip.timezone),
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .padding(horizontal = Dimensions.spacingL)
+                                    .padding(bottom = Dimensions.spacingL)
+                                    .fillMaxWidth(),
                                 heroStyle = true
                             )
                         }
                         item(key = "countdown_divider") {
                             HorizontalDivider(
+                                modifier = Modifier
+                                    .padding(horizontal = Dimensions.spacingL)
+                                    .padding(bottom = Dimensions.spacingL),
                                 thickness = Dimensions.strokeThin,
                                 color = TripPlannerTheme.colors.divider
                             )
@@ -233,16 +254,29 @@ private fun HomeContent(
                     item(key = "home_header") {
                         HomeHeader(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = Dimensions.spacingL),
+                                .padding(
+                                    start = Dimensions.spacingL,
+                                    top = Dimensions.spacingL,
+                                    end = Dimensions.spacingL,
+                                    bottom = Dimensions.spacingL
+                                )
+                                .fillMaxWidth(),
                             activeFilter = uiState.activeFilter,
                             onFilterSelected = onFilterSelected
                         )
                     }
 
-                    items(filteredTrips, key = { it.id }) { trip ->
+                    itemsIndexed(filteredTrips, key = { _, trip -> trip.id }) { index, trip ->
+                        val bottomPaddingModifier = if (index != filteredTrips.lastIndex) {
+                            Modifier.padding(bottom = Dimensions.spacingL)
+                        } else {
+                            Modifier
+                        }
                         TripCard(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .padding(horizontal = Dimensions.spacingL)
+                                .then(bottomPaddingModifier)
+                                .fillMaxWidth(),
                             title = trip.destination,
                             dateRange = trip.dateRangeText,
                             coverImageUri = trip.coverImageUri?.toString(),
@@ -270,7 +304,49 @@ private fun HomeContent(
             }
         }
 
+        if (currentTrip != null) {
+            CompactHeroStickyHeader(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .zIndex(2f),
+                trip = currentTrip,
+                visible = showCompactHero
+            )
+        }
+
         StatusBarScrim(modifier = Modifier.zIndex(1f))
+    }
+}
+
+@Composable
+private fun CompactHeroStickyHeader(
+    modifier: Modifier = Modifier,
+    trip: TripUiModel,
+    visible: Boolean
+) {
+    val animationDurationMs = 250
+    AnimatedVisibility(
+        visible = visible,
+        modifier = modifier,
+        enter = fadeIn(animationSpec = tween(durationMillis = animationDurationMs)) +
+                expandVertically(
+                    animationSpec = tween(durationMillis = animationDurationMs),
+                    expandFrom = Alignment.Top
+                ),
+        exit = fadeOut(animationSpec = tween(durationMillis = animationDurationMs)) +
+                slideOutVertically(
+                    animationSpec = tween(durationMillis = animationDurationMs),
+                    targetOffsetY = { -it }
+                )
+    ) {
+        CompactCurrentTrip(
+            labelRes = R.string.home_current_trip_label,
+            coverImageUri = trip.coverImageUri?.toString(),
+            tripTitle = trip.destination,
+            currentDay = trip.progress?.currentDay ?: 1,
+            totalDays = trip.progress?.totalDays ?: 0
+        )
     }
 }
 

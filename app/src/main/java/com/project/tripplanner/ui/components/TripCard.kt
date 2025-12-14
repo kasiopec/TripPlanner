@@ -38,6 +38,7 @@ import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 import com.project.tripplanner.R
 import com.project.tripplanner.ui.components.text.Headline2
+import com.project.tripplanner.utils.capitalize
 
 
 enum class TripCardStatus {
@@ -124,7 +125,7 @@ fun TripCard(
             Spacer(modifier = Modifier.height(Dimensions.spacingM))
 
             Headline2(
-                text = title.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
+                text = title.capitalize(),
                 color = TripPlannerTheme.colors.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
