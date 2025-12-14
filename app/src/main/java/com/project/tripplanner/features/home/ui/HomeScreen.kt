@@ -41,7 +41,7 @@ import com.project.tripplanner.features.home.HomeEffect
 import com.project.tripplanner.features.home.HomeEmptyState
 import com.project.tripplanner.features.home.HomeError
 import com.project.tripplanner.features.home.HomeEvent
-import com.project.tripplanner.features.home.HomeFilter
+import com.project.tripplanner.features.home.HomeFilterType
 import com.project.tripplanner.features.home.HomeLoading
 import com.project.tripplanner.features.home.HomeUiState
 import com.project.tripplanner.features.home.HomeViewModel
@@ -119,7 +119,7 @@ fun HomeScreen(
     snackbarHostState: SnackbarHostState,
     onRetry: () -> Unit,
     onTripClick: (Long) -> Unit,
-    onFilterSelected: (HomeFilter) -> Unit,
+    onFilterSelected: (HomeFilterType) -> Unit,
     isBottomBarVisible: Boolean,
     currentScreen: Screen?,
     onBottomBarItemClick: (Screen) -> Unit,
@@ -185,16 +185,16 @@ private fun HomeContent(
     modifier: Modifier = Modifier,
     uiState: HomeUiState,
     onTripClick: (Long) -> Unit,
-    onFilterSelected: (HomeFilter) -> Unit
+    onFilterSelected: (HomeFilterType) -> Unit
 ) {
     val listState = rememberLazyListState()
     val baseTrips = uiState.trips
         .filterNot { it.id == uiState.currentTripId }
         .filter { it.status != TripStatusUi.InProgress }
     val filteredTrips = when (uiState.activeFilter) {
-        HomeFilter.All -> baseTrips
-        HomeFilter.Upcoming -> baseTrips.filter { it.status == TripStatusUi.None }
-        HomeFilter.Ended -> baseTrips.filter { it.status == TripStatusUi.Ended }
+        HomeFilterType.All -> baseTrips
+        HomeFilterType.Upcoming -> baseTrips.filter { it.status == TripStatusUi.None }
+        HomeFilterType.Ended -> baseTrips.filter { it.status == TripStatusUi.Ended }
     }
     val currentTrip = uiState.currentTripId?.let { id ->
         uiState.trips.firstOrNull { it.id == id }
@@ -269,9 +269,9 @@ private fun HomeTripList(
     currentTrip: TripUiModel?,
     countdownTrip: TripUiModel?,
     filteredTrips: List<TripUiModel>,
-    activeFilter: HomeFilter,
+    activeFilter: HomeFilterType,
     onTripClick: (Long) -> Unit,
-    onFilterSelected: (HomeFilter) -> Unit
+    onFilterSelected: (HomeFilterType) -> Unit
 ) {
     val fullWidthPadded = Modifier
         .fillMaxWidth()
@@ -483,7 +483,7 @@ private fun HomeScreenPreview() {
                 currentTripId = 1L,
                 countdown = null,
                 countdownTripId = null,
-                activeFilter = HomeFilter.All
+                activeFilter = HomeFilterType.All
             ),
             snackbarHostState = SnackbarHostState(),
             onRetry = {},
