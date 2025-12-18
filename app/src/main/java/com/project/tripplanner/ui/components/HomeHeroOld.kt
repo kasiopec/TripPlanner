@@ -327,7 +327,6 @@ private fun CurrentTripHeroPreview() {
                 timezone = ZoneId.systemDefault(),
                 dateRangeText = "Feb 20, 2025 - Mar 02, 2025",
                 status = TripStatusUi.InProgress,
-                statusLabelResId = R.string.trip_status_in_progress,
                 coverImageUri = null,
                 progress = TripProgress(currentDay = 3, totalDays = 11)
             ),
@@ -349,7 +348,6 @@ private fun CurrentTripHeroLightImagePreview() {
                 timezone = ZoneId.systemDefault(),
                 dateRangeText = "Mar 05, 2025 - Mar 12, 2025",
                 status = TripStatusUi.InProgress,
-                statusLabelResId = R.string.trip_status_in_progress,
                 coverImageUri = "android.resource://com.project.tripplanner/drawable/home_hero_light".toUri(),
                 progress = TripProgress(currentDay = 2, totalDays = 7)
             ),

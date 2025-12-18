@@ -155,7 +155,6 @@ private fun CurrentTripCardPreview() {
                 timezone = ZoneId.systemDefault(),
                 dateRangeText = "Dec 13, 2025 - Dec 17, 2025",
                 status = TripStatusUi.InProgress,
-                statusLabelResId = R.string.trip_status_in_progress,
                 coverImageUri = null,
                 progress = TripProgress(currentDay = 1, totalDays = 5)
             ),

@@ -7,7 +7,6 @@ import com.project.tripplanner.data.model.TripInput
 import com.project.tripplanner.data.model.TripWithItinerary
 import com.project.tripplanner.repositories.TripRepository
 import com.project.tripplanner.utils.TestClockProvider
-import com.project.tripplanner.utils.time.CountdownFormatter
 import com.project.tripplanner.utils.time.DateFormatter
 import java.time.Instant
 import java.time.LocalDate
@@ -15,14 +14,12 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -44,8 +41,6 @@ class HomeViewModelTest {
     private lateinit var repository: FakeTripRepository
     private lateinit var storage: FakeTripCoverImageStorage
     private lateinit var viewModel: HomeViewModel
-    private lateinit var effectsJob: Job
-    private val capturedEffects = mutableListOf<HomeEffect>()
 
     @Before
     fun setup() {
@@ -57,9 +52,6 @@ class HomeViewModelTest {
 
     @After
     fun tearDown() {
-        if (::effectsJob.isInitialized) {
-            effectsJob.cancel()
-        }
         Dispatchers.resetMain()
     }
 
@@ -90,8 +82,8 @@ class HomeViewModelTest {
         advanceUntilIdle()
 
         val state = viewModel.state.value
-        assertEquals(inProgressTrip.id, state.currentTripId)
-        assertNull(state.countdown)
+        assertEquals(inProgressTrip.id, state.currentTrip?.id)
+        assertNull(state.countdownTrip)
         val heroTrip = state.trips.first { it.id == inProgressTrip.id }
         assertEquals(TripStatusUi.InProgress, heroTrip.status)
         assertNotNull(heroTrip.progress)
@@ -126,15 +118,15 @@ class HomeViewModelTest {
         advanceUntilIdle()
 
         val state = viewModel.state.value
-        assertNull(state.currentTripId)
-        assertEquals(earlyUpcoming.id, state.countdownTripId)
-        assertNotNull(state.countdown)
+        assertNull(state.currentTrip)
+        assertEquals(earlyUpcoming.id, state.countdownTrip?.id)
+        assertNotNull(state.countdownTrip)
         val countdownTrip = state.trips.first { it.id == earlyUpcoming.id }
         assertEquals(TripStatusUi.None, countdownTrip.status)
     }
 
     @Test
-    fun refreshFailure_keepsTripsAndEmitsSnackbar() = runTest(testDispatcher.scheduler) {
+    fun retryFailure_keepsTrips() = runTest(testDispatcher.scheduler) {
         clockProvider.setNow(ZonedDateTime.of(2025, 4, 1, 10, 0, 0, 0, ZoneId.of("UTC")))
         val upcoming = Trip(
             id = 9L,
@@ -154,12 +146,12 @@ class HomeViewModelTest {
 
         repository.throwOnCallIndex = 2
 
-        viewModel.emitEvent(HomeEvent.RefreshRequested)
+        viewModel.emitEvent(HomeEvent.RetryClicked)
         advanceUntilIdle()
 
         val state = viewModel.state.value
         assertTrue(state.trips.isNotEmpty())
-        assertTrue(capturedEffects.any { it is HomeEffect.ShowSnackbar })
+        assertNull(state.error)
     }
 
     @Test
@@ -189,18 +181,14 @@ class HomeViewModelTest {
     private fun createViewModel(initialTrips: List<Trip>): HomeViewModel {
         repository = FakeTripRepository(initialTrips)
         storage = FakeTripCoverImageStorage()
-        val countdownFormatter = CountdownFormatter(clockProvider)
-        capturedEffects.clear()
         viewModel = HomeViewModel(
             tripRepository = repository,
-            clockProvider = clockProvider,
-            countdownFormatter = countdownFormatter,
-            tripCoverImageStorage = storage,
-            dateFormatter = DateFormatter
+            tripUiMapper = HomeTripUiMapper(
+                clockProvider = clockProvider,
+                tripCoverImageStorage = storage,
+                dateFormatter = DateFormatter,
+            )
         )
-        effectsJob = backgroundScope.launch(testDispatcher) {
-            viewModel.effect.collect { effect -> capturedEffects.add(effect) }
-        }
         return viewModel
     }
 }
@@ -254,6 +242,12 @@ private class FakeTripRepository(
     override suspend fun deleteTrip(tripId: Long) {
         tripsFlow.update { current -> current - tripId }
     }
+
+    override suspend fun deleteAllTrips() {
+        tripsFlow.update { emptyMap() }
+    }
+
+    override suspend fun markAllTripsEnded() = Unit
 }
 
 private class FakeTripCoverImageStorage : TripCoverImageStorage {

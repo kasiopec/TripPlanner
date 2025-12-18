@@ -1,4 +1,4 @@
-package com.project.tripplanner.ui.components
+package com.project.tripplanner.features.home.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.project.tripplanner.R
 import com.project.tripplanner.features.home.HomeFilterType
+import com.project.tripplanner.ui.components.FilterChip
 import com.project.tripplanner.ui.components.text.DisplayText
 import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme

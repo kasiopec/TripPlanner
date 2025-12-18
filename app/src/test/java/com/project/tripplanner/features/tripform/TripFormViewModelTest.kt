@@ -241,6 +241,12 @@ private class FakeTripRepository(
     override suspend fun deleteTrip(tripId: Long) {
         tripsFlow.update { current -> current - tripId }
     }
+
+    override suspend fun deleteAllTrips() {
+        tripsFlow.update { emptyMap() }
+    }
+
+    override suspend fun markAllTripsEnded() = Unit
 }
 
 private class FakeTripCoverImageStorage : TripCoverImageStorage {

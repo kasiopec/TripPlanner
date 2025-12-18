@@ -6,16 +6,15 @@ import com.project.tripplanner.Effect
 import com.project.tripplanner.ErrorState
 import com.project.tripplanner.Event
 import com.project.tripplanner.State
-import com.project.tripplanner.utils.time.Countdown
 
 @Immutable
 data class HomeUiState(
     val isInitialLoading: Boolean = true,
     val error: ErrorState? = null,
     val trips: List<TripUiModel> = emptyList(),
-    val currentTripId: Long? = null,
-    val countdown: Countdown? = null,
-    val countdownTripId: Long? = null,
+    val currentTrip: TripUiModel? = null,
+    val countdownTrip: TripUiModel? = null,
+    val listTrips: List<TripUiModel> = emptyList(),
     val activeFilter: HomeFilterType = HomeFilterType.All
 ) : State
 

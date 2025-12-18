@@ -25,26 +25,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.zIndex
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.project.tripplanner.R
-import com.project.tripplanner.features.home.HomeEffect
 import com.project.tripplanner.features.home.HomeEmptyState
 import com.project.tripplanner.features.home.HomeError
-import com.project.tripplanner.features.home.HomeEvent
 import com.project.tripplanner.features.home.HomeFilterType
 import com.project.tripplanner.features.home.HomeLoading
 import com.project.tripplanner.features.home.HomeUiState
-import com.project.tripplanner.features.home.HomeViewModel
 import com.project.tripplanner.features.home.TripProgress
 import com.project.tripplanner.features.home.TripStatusUi
 import com.project.tripplanner.features.home.TripUiModel
@@ -53,10 +46,8 @@ import com.project.tripplanner.ui.components.CompactCountdown
 import com.project.tripplanner.ui.components.CompactCurrentTrip
 import com.project.tripplanner.ui.components.CountdownCard
 import com.project.tripplanner.ui.components.CurrentTripCard
-import com.project.tripplanner.ui.components.HomeHeader
 import com.project.tripplanner.ui.components.StatusBarScrim
 import com.project.tripplanner.ui.components.TripCard
-import com.project.tripplanner.ui.components.TripCardStatus
 import com.project.tripplanner.ui.components.TripPlannerBottomBar
 import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
@@ -68,49 +59,6 @@ private const val KeyCurrentTrip = "current_trip"
 private const val KeyCountdown = "countdown"
 private const val KeyCountdownDivider = "countdown_divider"
 private const val KeyHomeHeader = "home_header"
-
-@Composable
-fun HomeRoute(
-    currentScreen: Screen?,
-    isBottomBarVisible: Boolean,
-    onTripClick: (Long) -> Unit,
-    onBottomBarItemClick: (Screen) -> Unit,
-    onBottomBarDebugLongClick: () -> Unit,
-    viewModel: HomeViewModel = hiltViewModel()
-) {
-    val uiState by viewModel.state.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
-
-    LaunchedEffect(Unit) {
-        viewModel.emitEvent(HomeEvent.ScreenLoaded)
-    }
-
-    LaunchedEffect(viewModel.effect) {
-        viewModel.effect.collect { event ->
-            when (event) {
-                is HomeEffect.NavigateToTripDetail -> onTripClick(event.tripId)
-                is HomeEffect.ShowSnackbar -> {
-                    snackbarHostState.showSnackbar(
-                        message = context.getString(event.messageResId)
-                    )
-                }
-            }
-        }
-    }
-
-    HomeScreen(
-        uiState = uiState,
-        snackbarHostState = snackbarHostState,
-        onRetry = { viewModel.emitEvent(HomeEvent.RetryClicked) },
-        onTripClick = { viewModel.emitEvent(HomeEvent.TripClicked(it)) },
-        onFilterSelected = { viewModel.emitEvent(HomeEvent.FilterSelected(it)) },
-        currentScreen = currentScreen,
-        isBottomBarVisible = isBottomBarVisible,
-        onBottomBarItemClick = onBottomBarItemClick,
-        onBottomBarDebugLongClick = onBottomBarDebugLongClick
-    )
-}
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -188,22 +136,9 @@ private fun HomeContent(
     onFilterSelected: (HomeFilterType) -> Unit
 ) {
     val listState = rememberLazyListState()
-    val baseTrips = uiState.trips
-        .filterNot { it.id == uiState.currentTripId }
-        .filter { it.status != TripStatusUi.InProgress }
-    val filteredTrips = when (uiState.activeFilter) {
-        HomeFilterType.All -> baseTrips
-        HomeFilterType.Upcoming -> baseTrips.filter { it.status == TripStatusUi.None }
-        HomeFilterType.Ended -> baseTrips.filter { it.status == TripStatusUi.Ended }
-    }
-    val currentTrip = uiState.currentTripId?.let { id ->
-        uiState.trips.firstOrNull { it.id == id }
-    }
-    val countdownTrip = if (uiState.countdown != null && uiState.countdownTripId != null) {
-        uiState.trips.firstOrNull { it.id == uiState.countdownTripId }
-    } else {
-        null
-    }
+    val currentTrip = uiState.currentTrip
+    val countdownTrip = uiState.countdownTrip
+    val listTrips = uiState.listTrips
 
     val isCurrentTripOutOfView by rememberIsItemKeyOutOfView(listState, KeyCurrentTrip)
     val isCountdownOutOfView by rememberIsItemKeyOutOfView(listState, KeyCountdown)
@@ -216,7 +151,7 @@ private fun HomeContent(
             listState = listState,
             currentTrip = currentTrip,
             countdownTrip = countdownTrip,
-            filteredTrips = filteredTrips,
+            listTrips = listTrips,
             activeFilter = uiState.activeFilter,
             onTripClick = onTripClick,
             onFilterSelected = onFilterSelected
@@ -268,7 +203,7 @@ private fun HomeTripList(
     listState: LazyListState,
     currentTrip: TripUiModel?,
     countdownTrip: TripUiModel?,
-    filteredTrips: List<TripUiModel>,
+    listTrips: List<TripUiModel>,
     activeFilter: HomeFilterType,
     onTripClick: (Long) -> Unit,
     onFilterSelected: (HomeFilterType) -> Unit
@@ -330,8 +265,8 @@ private fun HomeTripList(
             )
         }
 
-        itemsIndexed(filteredTrips, key = { _, trip -> trip.id }) { index, trip ->
-            val bottomPaddingModifier = if (index != filteredTrips.lastIndex) {
+        itemsIndexed(listTrips, key = { _, trip -> trip.id }) { index, trip ->
+            val bottomPaddingModifier = if (index != listTrips.lastIndex) {
                 Modifier.padding(bottom = Dimensions.spacingL)
             } else {
                 Modifier
@@ -341,7 +276,7 @@ private fun HomeTripList(
                 title = trip.destination,
                 dateRange = trip.dateRangeText,
                 coverImageUri = trip.coverImageUri?.toString(),
-                status = trip.status.toTripCardStatus(),
+                status = trip.status,
                 onClick = { onTripClick(trip.id) }
             )
         }
@@ -374,12 +309,6 @@ private fun BoxScope.HomeOverlays(
             visible = showCompactCountdown
         )
     }
-}
-
-private fun TripStatusUi.toTripCardStatus(): TripCardStatus = when (this) {
-    TripStatusUi.InProgress -> TripCardStatus.InProgress
-    TripStatusUi.Ended -> TripCardStatus.Ended
-    else -> TripCardStatus.Upcoming
 }
 
 @Composable
@@ -446,7 +375,6 @@ private fun HomeScreenPreview() {
             timezone = ZoneId.systemDefault(),
             dateRangeText = "Feb 20, 2025 - Mar 02, 2025",
             status = TripStatusUi.InProgress,
-            statusLabelResId = R.string.trip_status_in_progress,
             coverImageUri = null,
             progress = TripProgress(currentDay = 3, totalDays = 11)
         ),
@@ -458,7 +386,6 @@ private fun HomeScreenPreview() {
             timezone = ZoneId.systemDefault(),
             dateRangeText = "May 01, 2025 - May 08, 2025",
             status = TripStatusUi.None,
-            statusLabelResId = R.string.home_status_upcoming,
             coverImageUri = null,
             progress = null
         ),
@@ -470,7 +397,6 @@ private fun HomeScreenPreview() {
             timezone = ZoneId.systemDefault(),
             dateRangeText = "Dec 10, 2024 - Dec 15, 2024",
             status = TripStatusUi.Ended,
-            statusLabelResId = R.string.trip_status_ended,
             coverImageUri = null,
             progress = null
         )
@@ -480,9 +406,9 @@ private fun HomeScreenPreview() {
             uiState = HomeUiState(
                 isInitialLoading = false,
                 trips = trips,
-                currentTripId = 1L,
-                countdown = null,
-                countdownTripId = null,
+                currentTrip = trips.firstOrNull { it.status == TripStatusUi.InProgress },
+                countdownTrip = null,
+                listTrips = trips.filter { it.status != TripStatusUi.InProgress },
                 activeFilter = HomeFilterType.All
             ),
             snackbarHostState = SnackbarHostState(),

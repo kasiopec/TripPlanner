@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.project.tripplanner.features.home.TripStatusUi
 import com.project.tripplanner.ui.components.text.LabelText
 import com.project.tripplanner.ui.components.text.MetaText
 import com.project.tripplanner.ui.theme.Dimensions
@@ -40,21 +41,13 @@ import com.project.tripplanner.R
 import com.project.tripplanner.ui.components.text.Headline2
 import com.project.tripplanner.utils.capitalize
 
-
-enum class TripCardStatus {
-    None,
-    Upcoming,
-    InProgress,
-    Ended
-}
-
 @Composable
 fun TripCard(
     modifier: Modifier = Modifier,
     title: String,
     dateRange: String,
     coverImageUri: String?,
-    status: TripCardStatus = TripCardStatus.None,
+    status: TripStatusUi? = null,
     onClick: () -> Unit = {}
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -112,7 +105,7 @@ fun TripCard(
                     }
                 }
 
-                if (status != TripCardStatus.None) {
+                if (status != null) {
                     StatusBadge(
                         status = status,
                         modifier = Modifier
@@ -161,21 +154,15 @@ fun TripCard(
 
 @Composable
 private fun StatusBadge(
-    status: TripCardStatus,
+    status: TripStatusUi,
     modifier: Modifier = Modifier
 ) {
-    val text = when (status) {
-        TripCardStatus.InProgress -> stringResource(id = R.string.trip_status_in_progress)
-        TripCardStatus.Ended -> stringResource(id = R.string.trip_status_ended)
-        TripCardStatus.Upcoming -> stringResource(id = R.string.home_status_upcoming)
-        else -> ""
-    }
+    val text = stringResource(id = status.labelResId)
 
     val textColor = when (status) {
-        TripCardStatus.Upcoming -> TripPlannerTheme.colors.primary
-        TripCardStatus.InProgress -> TripPlannerTheme.additionalColors.success
-        TripCardStatus.Ended -> TripPlannerTheme.colors.secondary
-        else -> TripPlannerTheme.colors.onSurfaceVariant
+        TripStatusUi.None -> TripPlannerTheme.colors.primary
+        TripStatusUi.InProgress -> TripPlannerTheme.additionalColors.success
+        TripStatusUi.Ended -> TripPlannerTheme.colors.secondary
     }
 
     Card(
@@ -207,7 +194,7 @@ private fun TripCardPreview() {
                 title = "Adventure 2",
                 dateRange = "Dec 16, 2025",
                 coverImageUri = null,
-                status = TripCardStatus.Upcoming
+                status = TripStatusUi.None
             )
         }
     }
