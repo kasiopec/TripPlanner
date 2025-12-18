@@ -85,6 +85,26 @@ Use Kotlin, Jetpack Compose, AndroidX, Material 3.
   - Put filter enums, status enums, item UI models, and progress models into their own files with clear names (for example, `HomeFilter.kt`, `TripStatusUi.kt`, `TripUiModel.kt`) in the most appropriate package for that feature.
   - Keep these files under the same feature package (for example, `features.home`) unless they are clearly shared across multiple features.
 
+## Feature UI Cleanliness
+
+- Keep feature screens "dumb":
+  - `*Screen.kt` composables should only render UI + handle scroll/visibility UI logic.
+  - Do not derive hero selection, list filtering, "exclude current trip", sorting, or status/progress computations inside screen composables.
+- Prefer ready-to-render `UiState`:
+  - `UiState` should expose the exact fields the UI needs (for example `currentTrip`, `countdownTrip`, and `listTrips`) instead of IDs that force the UI to re-lookup/derive data.
+- Keep shared UI truly shared:
+  - Files under `ui/components` must not depend on `features.*` (no feature enums/models imported into shared components).
+  - If a component is feature-only (for example it depends on `HomeFilterType`), keep it under the feature package (for example `features/home/ui` or `features/home/ui/components`).
+- Avoid duplicated status modeling:
+  - Do not introduce parallel status enums across layers (for example `TripStatusUi` + `TripCardStatus`) unless there is an explicit, current multi-feature need.
+- Keep ViewModels thin and readable:
+  - ViewModels should orchestrate flows, events, effects, and state updates.
+  - Move mapping/classification/progress/sort-order logic into a dedicated helper (for example `HomeTripUiMapper`) in the feature package.
+- Name methods by outcome:
+  - Avoid generic names like `mapTrips` when the method also sorts/selects/derives; prefer names that reflect results (for example `buildHomeTripsUi`, `filterListTrips`, `deriveStatusUi`, `statusSortOrder`).
+- Don’t add abstractions for hypothetical reuse:
+  - If reuse is not required today, keep the simplest feature-local solution; introduce shared abstractions only when there is a second real call site.
+
 ## UI Requirements
 
 All UI must be Jetpack Compose.
