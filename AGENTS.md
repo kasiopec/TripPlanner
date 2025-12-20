@@ -171,6 +171,8 @@ Use PascalCase nouns (`HomeScreen`). UI states, events, and effects follow `Feat
 When creating UI composables dp variables needs to be taken from `Dimensions` object. Don't create new dimensions unless really necessary and will most likely be reused. Instead use already created ones. 
 If dp values are one shot and only makes sense in the isolated component it can be left hardcoded.
 
+Avoid declaring local size/radius/spacing variables outside composables; use the shared `Dimensions` object directly for all reusable dp-based values. Do not introduce magic numbers for non-dp values either (for example rotation degrees) – define them as SNAKE_CASE constants (for example `CHEVRON_ROTATION_EXPANDED`) in the relevant file and reuse them.
+
 Inside composables parameter `modifier: Modifier` should be the first optional parameter
 
 Full import path of the obejcts, classes etc. should not be in the actual code. For example: `import androidx.compose.foundation.layout.Spacer` all imports must be in the dedicated section. 
