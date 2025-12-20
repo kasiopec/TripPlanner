@@ -17,6 +17,7 @@ object Dimensions {
     val radiusM = 12.dp
     val radiusCard = 14.dp
     val radiusL = 16.dp
+    val radiusButton = 10.dp
 
     val touchTarget = 48.dp
     val buttonMinHeight = 56.dp
@@ -24,7 +25,11 @@ object Dimensions {
     val chipHeight = 32.dp
     val iconSize = 24.dp
     val iconSizeS = 12.dp
+    val iconSizeMd = 20.dp
     val iconSizeM = 48.dp
+
+    val iconContainerSize = 32.dp
+    val iconContainerRadius = 10.dp
     val iconButtonSize = 40.dp
     val fabSize = 56.dp
 

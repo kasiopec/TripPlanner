@@ -30,6 +30,24 @@ data class TripPlannerColorScheme(
     val iconMuted: Color,
     val rating: Color,
     val scrim: Color,
+    val inactiveContainer: Color,
+    val categories: CategoryColors
+)
+
+@Immutable
+data class CategoryColors(
+    val flightIcon: Color,
+    val flightTint: Color,
+    val hotelIcon: Color,
+    val hotelTint: Color,
+    val sightseeingIcon: Color,
+    val sightseeingTint: Color,
+    val shoppingIcon: Color,
+    val shoppingTint: Color,
+    val foodIcon: Color,
+    val foodTint: Color,
+    val transitIcon: Color,
+    val transitTint: Color
 )
 
 @Immutable
@@ -70,7 +88,22 @@ val LightColorScheme = TripPlannerColorScheme(
     onError = Color(0xFFFFFFFF),
     iconMuted = Color(0xFFC7CED8),
     rating = Color(0xFFF5B400),
-    scrim = Color(0xCD000000)
+    scrim = Color(0xCD000000),
+    inactiveContainer = Color(0xFFF0F1F1),
+    categories = CategoryColors(
+        flightIcon = Color(0xFFFF3B30),
+        flightTint = Color(0xFFFFF1F0),
+        hotelIcon = Color(0xFF24C3FF),
+        hotelTint = Color(0xFFE6FBFF),
+        sightseeingIcon = Color(0xFF63C25E),
+        sightseeingTint = Color(0xFFF0FADC),
+        shoppingIcon = Color(0xFFD56BF5),
+        shoppingTint = Color(0xFFFDF4FD),
+        foodIcon = Color(0xFFFF8A34),
+        foodTint = Color(0xFFFFF2E8),
+        transitIcon = Color(0xFF9BA1AA),
+        transitTint = Color(0xFFF2F3F8)
+    )
 )
 
 val DarkColorScheme = LightColorScheme.copy()
