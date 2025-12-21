@@ -70,12 +70,13 @@ fun ItineraryItemCard(
             stiffness = Spring.StiffnessMedium
         )
     }
+    val cardInteractionSource = remember { MutableInteractionSource() }
+
 
     Card(
         modifier = modifier
             .fillMaxWidth(),
         shape = cardShape,
-        onClick = { onExpandedChange(!isExpanded) },
         colors = CardDefaults.cardColors(
             containerColor = colors.surface,
             disabledContainerColor = colors.surface
@@ -94,6 +95,10 @@ fun ItineraryItemCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clickable(
+                        interactionSource = cardInteractionSource,
+                        indication = ripple(bounded = true)
+                    ) { onExpandedChange(!isExpanded) }
                     .padding(Dimensions.spacingM),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -186,7 +191,6 @@ private fun ItineraryActionItem(
     iconTint: Color? = null
 ) {
     val colors = TripPlannerTheme.colors
-    val labelInteractionSource = remember { MutableInteractionSource() }
     val iconInteractionSource = remember { MutableInteractionSource() }
 
     Column(
