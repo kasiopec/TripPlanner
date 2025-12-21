@@ -166,29 +166,36 @@ TripPlanner MVP Tasks
     - Save success and failure paths.
     - (These tests can be part of a follow-up pass once flows stabilize.)
 
-## 4. Trip detail + timeline shell
+## 4. Trip detail
 
-- Screen structure:
-  - Full-screen itinerary screen (`TripDetail`) with:
-    - Header showing destination, date range, and status.
-    - Countdown banner only for upcoming trips.
-    - Status only (no countdown) for in-progress and ended trips.
-  - Date strip from start to end dates with stateful selection.
-  - Timeline scaffold for the selected day.
+- ViewModel and MVI:
+  - Create a feature package `features.tripdetails` and co-locate all TripDetails logic in it.
+  - Add `TripDetailsContract.kt` with `TripDetailsUiState`, `TripDetailsEvent`, and `TripDetailsEffect` (contract file contains only these types).
+  - Model `TripDetailsUiState` as a pure data holder with at minimum:
+    - `isInitialLoading: Boolean`, `error: ErrorState?`.
+    - Header display data (destination/title + date range text).
+    - `days: List<DayItem>` and `selectedDate: LocalDate` for the day strip selection (derived from `Trip.startDate..Trip.endDate`).
+    - `itinerary: List<ItineraryUiModel>` for the currently selected day (ready-to-render; screen must not re-derive/filter).
+    - `isReorderMode: Boolean` toggled by the split button (drag-and-drop).
+  - Implement `TripDetailsViewModel` (Hilt) that loads the `Trip` and its itinerary from repositories:
+    - Initial load should use single-shot APIs (`getTrip(id)`.
+    - Keep selection/filtering/mapping in the ViewModel so the screen remains "dumb".
+    - Emit effects for navigation/snackbars (no hard-coded user-facing strings in the ViewModel).
 
-- Timeline:
-  - Group items by day.
-  - Show vertical connectors and placeholders where appropriate.
-  - Prepare structure for drag-and-drop and icons (detailed in later tasks).
-
-- State and error handling:
-  - Support loading and error states when fetching trip + itinerary.
-  - Ensure state restoration across configuration changes.
-
-- Testing:
-  - Integration test for navigation from Trips list -> TripDetail.
-  - Test interactions with the date strip and day selection.
-
+- UI:
+  - Add `TripDetailsRoute` that obtains `TripDetailsViewModel` via Hilt, collects `TripDetailsUiState`, and reacts to `TripDetailsEffect`.
+  - Add a stateless `TripDetailsScreen` that renders, aligned with `tripdetails.png`:
+    - Centered header (destination/title + date range subtitle).
+    - Day strip using the shared `CalendarRow`.
+    - Itinerary list for the selected day using the shared TripDetails card (`ItineraryItemCard`) with expand/collapse actions.
+    - Floating split CTA using the shared `SplitButton` floating. When scrolling button hides, when scroll up it shows. 
+  - Define dedicated screen-state composables under the feature package:
+    - `TripDetailsLoading`, `TripDetailsEmptyState`.
+    - 
+- Behavior and state:
+  - Day selection updates `selectedDate` and the rendered itinerary list for that day.
+  - "Add places" triggers an effect carrying `tripId` + `selectedDate` (for ActivityForm create flow).
+  - 
 ## 5. Activity form
 
 - Presentation:
@@ -212,20 +219,7 @@ TripPlanner MVP Tasks
   - Unit tests for validators (title, date bounds).
   - Unit tests for Activity form ViewModel flows (create/edit success and failure).
   - These tests can be done as a later step after flows are solid.
-
-## 6. Drag & drop + sorting
-
-- Reordering:
-  - Enable drag-and-drop reorder in the per-day timeline using standard Compose drag-and-drop APIs (no third-party libraries).
-  - Update and persist `sortOrder` when items are moved.
-  - Ensure default `sortOrder` for new items is time-based (fallback when necessary).
-
-- State and persistence:
-  - Keep UI state consistent while dragging.
-  - Reloading the screen should reflect the persisted order.
-
-- Testing:
-  - UI test to verify reorder persists after reload.
+ 
 
 ## 7. Polish + navigation
 
