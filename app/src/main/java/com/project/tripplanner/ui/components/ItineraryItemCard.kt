@@ -2,8 +2,12 @@ package com.project.tripplanner.ui.components
 
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,18 +18,24 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntSize
 import com.project.tripplanner.R
 import com.project.tripplanner.data.model.ItineraryType
 import com.project.tripplanner.ui.components.text.Headline3
@@ -48,21 +58,43 @@ fun ItineraryItemCard(
     onDocsClick: () -> Unit = {}
 ) {
     val colors = TripPlannerTheme.colors
+    val cardShape = RoundedCornerShape(Dimensions.radiusM)
+    val contentAnimationSpec: FiniteAnimationSpec<IntSize> = if (isExpanded) {
+        spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMediumLow
+        )
+    } else {
+        spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMedium
+        )
+    }
 
-    Surface(
+    Card(
         modifier = modifier
-            .fillMaxWidth()
-            .clickable { onExpandedChange(!isExpanded) }
-            .animateContentSize(),
-        shape = RoundedCornerShape(Dimensions.radiusM),
-        color = colors.surface,
-        shadowElevation = Dimensions.strokeThick
+            .fillMaxWidth(),
+        shape = cardShape,
+        onClick = { onExpandedChange(!isExpanded) },
+        colors = CardDefaults.cardColors(
+            containerColor = colors.surface,
+            disabledContainerColor = colors.surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = Dimensions.strokeThick,
+            disabledElevation = Dimensions.strokeThick
+        )
     ) {
-        Column {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(cardShape)
+                .animateContentSize(animationSpec = contentAnimationSpec)
+        ) {
             Row(
                 modifier = Modifier
-                    .padding(Dimensions.spacingM)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(Dimensions.spacingM),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
@@ -111,14 +143,13 @@ fun ItineraryItemCard(
 
             if (isExpanded) {
                 HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = Dimensions.spacingM),
                     thickness = Dimensions.strokeThin,
                     color = colors.divider
                 )
 
                 Row(
                     modifier = Modifier
-                        .background(colors.mutedSurface)
+                        .background(color = colors.mutedSurface)
                         .fillMaxWidth()
                         .padding(vertical = Dimensions.spacingM),
                     horizontalArrangement = Arrangement.SpaceEvenly
@@ -154,23 +185,38 @@ private fun ItineraryActionItem(
     onClick: () -> Unit,
     iconTint: Color? = null
 ) {
+    val colors = TripPlannerTheme.colors
+    val labelInteractionSource = remember { MutableInteractionSource() }
+    val iconInteractionSource = remember { MutableInteractionSource() }
+
     Column(
         modifier = Modifier
-            .clickable(onClick = onClick)
             .padding(horizontal = Dimensions.spacingL),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            painter = painterResource(id = icon),
-            contentDescription = label,
-            tint = iconTint ?: Color.Unspecified,
-            modifier = Modifier.size(Dimensions.iconSize)
-        )
+        Box(
+            modifier = Modifier
+                .size(Dimensions.touchTarget)
+                .clip(CircleShape)
+                .clickable(
+                    interactionSource = iconInteractionSource,
+                    indication = ripple(bounded = true),
+                    onClick = onClick
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(id = icon),
+                contentDescription = label,
+                tint = iconTint ?: Color.Unspecified,
+                modifier = Modifier.size(Dimensions.iconSize)
+            )
+        }
         Spacer(modifier = Modifier.height(Dimensions.spacingXS))
         MetaText(
             text = label,
-            color = TripPlannerTheme.colors.onSurfaceVariant
+            color = colors.onSurfaceVariant
         )
     }
 }
@@ -218,4 +264,3 @@ private fun ItineraryItemCardExpandedPreview() {
         }
     }
 }
-
