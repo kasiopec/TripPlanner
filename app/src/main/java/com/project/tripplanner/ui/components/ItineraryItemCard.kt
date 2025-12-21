@@ -122,16 +122,21 @@ fun ItineraryItemCard(
                 Spacer(modifier = Modifier.width(Dimensions.spacingS))
 
                 Column(modifier = Modifier.weight(1f)) {
+                    val subtitleText = if (itinerary.durationText.isNotBlank()) {
+                        stringResource(
+                            R.string.itinerary_subtitle_format,
+                            itinerary.categoryName,
+                            itinerary.durationText
+                        )
+                    } else {
+                        itinerary.categoryName
+                    }
                     Headline3(
                         text = itinerary.title,
                         color = colors.onSurface
                     )
                     LabelText(
-                        text = stringResource(
-                            R.string.itinerary_subtitle_format,
-                            itinerary.categoryName,
-                            itinerary.durationText
-                        ),
+                        text = subtitleText,
                         color = colors.onSurfaceVariant
                     )
                 }

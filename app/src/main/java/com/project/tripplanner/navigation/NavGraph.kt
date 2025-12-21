@@ -29,7 +29,7 @@ import com.project.tripplanner.features.register.RegisterScreen
 import com.project.tripplanner.features.register.RegisterViewModel
 import com.project.tripplanner.features.resetpassword.ResetPasswordScreen
 import com.project.tripplanner.features.resetpassword.ResetPasswordViewModel
-import com.project.tripplanner.features.tripdetails.TripDetailsScreen
+import com.project.tripplanner.features.tripdetails.TripDetailsRoute
 import com.project.tripplanner.features.tripform.TripFormEffect
 import com.project.tripplanner.features.tripform.TripFormEvent
 import com.project.tripplanner.features.tripform.TripFormScreen
@@ -112,6 +112,9 @@ fun NavGraph(
                 onTripClick = { tripId ->
                     navController.navigate(Screen.TripForm.createRoute(tripId))
                 },
+                onTripDetailsClick = { tripId ->
+                    navController.navigate(Screen.TripDetails.createRoute(tripId))
+                },
                 onBottomBarItemClick = { screen ->
                     when (screen) {
                         Screen.Home -> navController.navigate(Screen.Home.route) {
@@ -120,7 +123,7 @@ fun NavGraph(
                             }
                         }
 
-                        Screen.TripDetails -> navController.navigate(Screen.TripDetails.route)
+                        Screen.TripDetails -> Unit
                         Screen.TripForm -> navController.navigate(Screen.TripForm.createRoute())
                         Screen.Login -> navController.navigate(Screen.Login.route) {
                             popUpTo(navController.graph.findStartDestination().id) {
@@ -138,8 +141,18 @@ fun NavGraph(
                 }
             )
         }
-        composable(route = Screen.TripDetails.route) {
-            TripDetailsScreen()
+        composable(
+            route = Screen.TripDetails.route,
+            arguments = listOf(
+                navArgument(Screen.TripDetails.ARG_TRIP_ID) {
+                    type = NavType.LongType
+                }
+            )
+        ) {
+            TripDetailsRoute(
+                onNavigateBack = { navController.navigateUp() },
+                onNavigateToActivityForm = { _, _ -> }
+            )
         }
         composable(route = Screen.RegisterForm.route) {
             val registerViewModel = hiltViewModel<RegisterViewModel>()

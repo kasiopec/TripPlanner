@@ -19,6 +19,9 @@ interface TripDao {
     @Query("SELECT * FROM trips WHERE id = :tripId LIMIT 1")
     fun observeTrip(tripId: Long): Flow<TripEntity?>
 
+    @Query("SELECT * FROM trips WHERE id = :tripId LIMIT 1")
+    suspend fun getTrip(tripId: Long): TripEntity?
+
     @Transaction
     @Query("SELECT * FROM trips WHERE id = :tripId LIMIT 1")
     fun observeTripWithItinerary(tripId: Long): Flow<TripWithItineraryEntity?>

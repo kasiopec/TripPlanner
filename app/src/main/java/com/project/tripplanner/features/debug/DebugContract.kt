@@ -12,6 +12,8 @@ data class DebugUiState(
 sealed interface DebugEvent : Event {
     data object DeleteAllTripsClicked : DebugEvent
     data object MarkAllTripsEndedClicked : DebugEvent
+    data object AddTenPlacesToCurrentTripClicked : DebugEvent
+    data object DeleteTenPlacesFromCurrentTripClicked : DebugEvent
 }
 
 sealed interface DebugEffect : Effect {

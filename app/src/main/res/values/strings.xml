@@ -98,12 +98,21 @@
 
     <!-- Trip Details -->
     <string name="trip_details_title">Trip Itinerary</string>
+    <string name="trip_details_empty_title">No places yet</string>
+    <string name="trip_details_empty_message">Tap Add places to start building this day.</string>
+    <string name="trip_details_done">Done</string>
+    <string name="trip_details_load_failed">Could not load itinerary. Please try again.</string>
+    <string name="trip_details_reorder_failed">Could not save your new order. Please try again.</string>
 
     <!-- Debug -->
     <string name="debug_title">Debug tools</string>
     <string name="debug_description">Utilities for local testing.</string>
+    <string name="debug_add_10_places">Add 10 places to current trip</string>
+    <string name="debug_delete_10_places">Delete debug places from current trip</string>
     <string name="debug_delete_trips">Delete all trips</string>
     <string name="debug_mark_all_ended">Mark all trips as ended</string>
+    <string name="debug_add_10_places_success">Added 10 places</string>
+    <string name="debug_delete_10_places_success">Deleted debug places</string>
     <string name="debug_delete_success">All trips deleted</string>
     <string name="debug_mark_ended_success">All trips marked as ended</string>
 </resources>

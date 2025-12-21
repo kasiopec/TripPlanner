@@ -19,6 +19,7 @@ fun HomeRoute(
     currentScreen: Screen?,
     isBottomBarVisible: Boolean,
     onTripClick: (Long) -> Unit,
+    onTripDetailsClick: (Long) -> Unit,
     onBottomBarItemClick: (Screen) -> Unit,
     onBottomBarDebugLongClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
@@ -49,6 +50,7 @@ fun HomeRoute(
         snackbarHostState = snackbarHostState,
         onRetry = { viewModel.emitEvent(HomeEvent.RetryClicked) },
         onTripClick = { viewModel.emitEvent(HomeEvent.TripClicked(it)) },
+        onTripDetailsClick = onTripDetailsClick,
         onFilterSelected = { viewModel.emitEvent(HomeEvent.FilterSelected(it)) },
         currentScreen = currentScreen,
         isBottomBarVisible = isBottomBarVisible,
@@ -56,4 +58,3 @@ fun HomeRoute(
         onBottomBarDebugLongClick = onBottomBarDebugLongClick,
     )
 }
-

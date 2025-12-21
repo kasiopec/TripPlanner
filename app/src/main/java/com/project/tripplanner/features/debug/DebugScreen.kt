@@ -54,6 +54,8 @@ fun DebugRoute(
     DebugScreen(
         uiState = uiState,
         snackbarHostState = snackbarHostState,
+        onAddTenPlacesClick = { viewModel.emitEvent(DebugEvent.AddTenPlacesToCurrentTripClicked) },
+        onDeleteTenPlacesClick = { viewModel.emitEvent(DebugEvent.DeleteTenPlacesFromCurrentTripClicked) },
         onDeleteAllTripsClick = { viewModel.emitEvent(DebugEvent.DeleteAllTripsClicked) },
         onMarkAllEndedClick = { viewModel.emitEvent(DebugEvent.MarkAllTripsEndedClicked) }
     )
@@ -63,6 +65,8 @@ fun DebugRoute(
 fun DebugScreen(
     uiState: DebugUiState,
     snackbarHostState: SnackbarHostState,
+    onAddTenPlacesClick: () -> Unit,
+    onDeleteTenPlacesClick: () -> Unit,
     onDeleteAllTripsClick: () -> Unit,
     onMarkAllEndedClick: () -> Unit
 ) {
@@ -92,6 +96,16 @@ fun DebugScreen(
                     color = colors.onBackground
                 )
                 LargeRoundedButton(
+                    text = stringResource(id = R.string.debug_add_10_places),
+                    onClick = onAddTenPlacesClick,
+                    isEnabled = !uiState.isProcessing
+                )
+                LargeRoundedButton(
+                    text = stringResource(id = R.string.debug_delete_10_places),
+                    onClick = onDeleteTenPlacesClick,
+                    isEnabled = !uiState.isProcessing
+                )
+                LargeRoundedButton(
                     text = stringResource(id = R.string.debug_delete_trips),
                     onClick = onDeleteAllTripsClick,
                     isEnabled = !uiState.isProcessing
@@ -114,6 +128,8 @@ private fun DebugScreenPreview() {
         DebugScreen(
             uiState = DebugUiState(),
             snackbarHostState = SnackbarHostState(),
+            onAddTenPlacesClick = {},
+            onDeleteTenPlacesClick = {},
             onDeleteAllTripsClick = {},
             onMarkAllEndedClick = {}
         )
