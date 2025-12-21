@@ -68,7 +68,7 @@ fun CompactCurrentTrip(
         ) {
             Box(
                 modifier = Modifier
-                    .size(Dimensions.iconSizeM)
+                    .size(Dimensions.iconSize48)
                     .clip(thumbnailShape),
                 contentAlignment = Alignment.Center
             ) {
@@ -90,7 +90,7 @@ fun CompactCurrentTrip(
                             painter = painterResource(R.drawable.ic_image_placeholder_48),
                             contentDescription = null,
                             tint = colors.iconMuted,
-                            modifier = Modifier.size(Dimensions.iconSizeM)
+                            modifier = Modifier.size(Dimensions.iconSize48)
                         )
                     }
                 }

@@ -114,7 +114,7 @@ fun TripDateField(
                 Icon(
                     painter = painterResource(R.drawable.ic_calendar_24),
                     contentDescription = null,
-                    modifier = Modifier.size(Dimensions.iconSize),
+                    modifier = Modifier.size(Dimensions.iconSize24),
                     tint = iconColor
                 )
             }

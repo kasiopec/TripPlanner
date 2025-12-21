@@ -100,7 +100,7 @@ fun TripCard(
                             painter = painterResource(R.drawable.ic_image_placeholder_48),
                             contentDescription = null,
                             tint = TripPlannerTheme.colors.iconMuted,
-                            modifier = Modifier.height(Dimensions.iconSizeM)
+                            modifier = Modifier.height(Dimensions.iconSize48)
                         )
                     }
                 }

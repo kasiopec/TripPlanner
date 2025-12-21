@@ -23,10 +23,10 @@ object Dimensions {
     val buttonMinHeight = 56.dp
     val textFieldHeight = 48.dp
     val chipHeight = 32.dp
-    val iconSize = 24.dp
-    val iconSizeS = 12.dp
-    val iconSizeMd = 20.dp
-    val iconSizeM = 48.dp
+    val iconSize24 = 24.dp
+    val iconSize12 = 12.dp
+    val iconSize20 = 20.dp
+    val iconSize48 = 48.dp
 
     val iconContainerSize = 32.dp
     val iconContainerRadius = 10.dp
@@ -38,4 +38,8 @@ object Dimensions {
 
     val coverPickerHeight = 180.dp
     val notesFieldHeight = 120.dp
+
+    val elevationNone = 0.dp
+    val elevationLow = 2.dp
+    val elevationMedium = 6.dp
 }

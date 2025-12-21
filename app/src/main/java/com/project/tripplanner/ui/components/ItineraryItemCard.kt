@@ -115,7 +115,7 @@ fun ItineraryItemCard(
                         painter = painterResource(id = itinerary.type.getIcon()),
                         contentDescription = null,
                         tint = itinerary.type.getIconColor(),
-                        modifier = Modifier.size(Dimensions.iconSizeMd)
+                        modifier = Modifier.size(Dimensions.iconSize20)
                     )
                 }
 
@@ -141,7 +141,7 @@ fun ItineraryItemCard(
                     contentDescription = null,
                     modifier = Modifier
                         .rotate(if (isExpanded) CHEVRON_ROTATION_EXPANDED else CHEVRON_ROTATION_COLLAPSED)
-                        .size(Dimensions.iconSizeMd),
+                        .size(Dimensions.iconSize20),
                     tint = colors.onSurfaceVariant
                 )
             }
@@ -214,7 +214,7 @@ private fun ItineraryActionItem(
                 painter = painterResource(id = icon),
                 contentDescription = label,
                 tint = iconTint ?: Color.Unspecified,
-                modifier = Modifier.size(Dimensions.iconSize)
+                modifier = Modifier.size(Dimensions.iconSize24)
             )
         }
         Spacer(modifier = Modifier.height(Dimensions.spacingXS))

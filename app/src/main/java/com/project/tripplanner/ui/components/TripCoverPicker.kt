@@ -31,16 +31,11 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
-import coil.size.Dimension
 import com.project.tripplanner.R
 import com.project.tripplanner.ui.components.text.BodyMedium
-import com.project.tripplanner.ui.components.text.BodyRegular
-import com.project.tripplanner.ui.components.text.LabelText
 import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 
@@ -96,7 +91,7 @@ private fun EmptyStateContent(onBrowseClick: () -> Unit) {
         Icon(
             painter = painterResource(R.drawable.ic_image_placeholder_48),
             contentDescription = null,
-            modifier = Modifier.size(Dimensions.iconSizeM),
+            modifier = Modifier.size(Dimensions.iconSize48),
             tint = colors.primary.copy(alpha = 0.7f)
         )
 

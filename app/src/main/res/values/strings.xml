@@ -81,6 +81,8 @@
     <string name="home_error_retry">Retry</string>
     <string name="home_action_refresh">Refresh</string>
     <string name="home_title">My Adventures</string>
+    <string name="add_places_button_label">Add places</string>
+    <string name="add_places_reorder_button_label">Reorder</string>
     <!-- Trip Card -->
     <string name="trip_status_in_progress">On Trip</string>
     <string name="trip_status_ended">Ended</string>

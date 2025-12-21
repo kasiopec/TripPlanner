@@ -112,7 +112,7 @@ fun CurrentTripCard(
                             painter = painterResource(R.drawable.ic_image_placeholder_48),
                             contentDescription = null,
                             tint = colors.iconMuted,
-                            modifier = Modifier.size(Dimensions.iconSizeM)
+                            modifier = Modifier.size(Dimensions.iconSize48)
                         )
                     }
                 }

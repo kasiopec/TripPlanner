@@ -210,7 +210,7 @@ private fun HeroArtwork(
                     Image(
                         painter = painterResource(id = R.drawable.ic_image_placeholder_48),
                         contentDescription = null,
-                        modifier = Modifier.size(Dimensions.iconSizeM)
+                        modifier = Modifier.size(Dimensions.iconSize48)
                     )
                 }
             }
