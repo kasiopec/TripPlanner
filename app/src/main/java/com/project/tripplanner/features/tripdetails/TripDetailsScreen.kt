@@ -1,9 +1,9 @@
 package com.project.tripplanner.features.tripdetails
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,25 +32,26 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.zIndex
-import androidx.compose.runtime.snapshotFlow
 import com.project.tripplanner.R
 import com.project.tripplanner.data.model.ItineraryType
+import com.mohamedrejeb.compose.dnd.reorder.ReorderContainer
+import com.mohamedrejeb.compose.dnd.reorder.ReorderableItem
+import com.mohamedrejeb.compose.dnd.reorder.rememberReorderState
 import com.project.tripplanner.ui.components.CalendarRow
 import com.project.tripplanner.ui.components.DayItem
 import com.project.tripplanner.ui.components.ItineraryItemCard
@@ -62,11 +63,15 @@ import com.project.tripplanner.ui.components.text.MetaText
 import com.project.tripplanner.ui.theme.Dimensions
 import com.project.tripplanner.ui.theme.TripPlannerTheme
 import java.time.LocalDate
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 private const val DRAGGED_ITEM_Z_INDEX = 2f
 private const val CTA_Z_INDEX = 1f
+private const val REORDER_SNAP_TO_TOP_MAX_INDEX = 1
+private const val REORDER_AUTO_SCROLL_EDGE_THRESHOLD = 1
+private const val REORDER_AUTO_SCROLL_ITEM_SIZE_MULTIPLIER = 2f
 
 @Composable
 fun TripDetailsScreen(
@@ -76,68 +81,107 @@ fun TripDetailsScreen(
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
-    val reorderState = rememberReorderState(listState) { from, to ->
-        onEvent(TripDetailsEvent.ItineraryItemMoved(from, to))
+    val reorderState = rememberReorderState<ItineraryUiModel>(dragAfterLongPress = true)
+    val coroutineScope = rememberCoroutineScope()
+    var expandedItineraryItemIds by remember { mutableStateOf(setOf<String>()) }
+    var displayedItinerary by remember { mutableStateOf(uiState.itinerary) }
+
+    LaunchedEffect(uiState.isReorderMode, uiState.itinerary) {
+        val incomingItinerary = uiState.itinerary
+        val shouldSyncFromUiState = uiState.isReorderMode.not() ||
+                displayedItinerary.map(ItineraryUiModel::id) != incomingItinerary.map(ItineraryUiModel::id)
+        if (shouldSyncFromUiState) {
+            displayedItinerary = incomingItinerary
+        }
     }
-    var expandedItemIds by remember { mutableStateOf(setOf<String>()) }
 
     TripDetailsScaffold(
         uiState = uiState,
         snackbarHostState = snackbarHostState,
         onEvent = onEvent,
+        onDoneClick = {
+            onEvent(
+                TripDetailsEvent.DoneClicked(
+                    orderedIds = displayedItinerary.map(ItineraryUiModel::id)
+                )
+            )
+        },
         listState = listState,
         modifier = modifier
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            state = listState,
-            contentPadding = PaddingValues(
-                start = Dimensions.spacingL,
-                end = Dimensions.spacingL,
-                bottom = Dimensions.fabSize + Dimensions.spacingXL
-            ),
-            verticalArrangement = Arrangement.spacedBy(Dimensions.spacingM)
+        ReorderContainer(
+            state = reorderState,
+            enabled = uiState.isReorderMode
         ) {
-            itemsIndexed(
-                items = uiState.itinerary,
-                key = { _, item -> item.id }
-            ) { index, item ->
-                val isExpanded = expandedItemIds.contains(item.id)
-                val isDragging = uiState.isReorderMode && reorderState.draggedIndex == index
-                val dragOffset = if (isDragging) reorderState.dragOffset else 0f
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                state = listState,
+                contentPadding = PaddingValues(
+                    start = Dimensions.spacingL,
+                    end = Dimensions.spacingL,
+                    bottom = Dimensions.fabSize + Dimensions.spacingXL
+                ),
+                verticalArrangement = Arrangement.spacedBy(Dimensions.spacingM)
+            ) {
+                itemsIndexed(
+                    items = displayedItinerary,
+                    key = { _, item -> item.id }
+                ) { _, item ->
+                    val isExpanded = expandedItineraryItemIds.contains(item.id)
 
-                ItineraryItemCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .zIndex(if (isDragging) DRAGGED_ITEM_Z_INDEX else 0f)
-                        .graphicsLayer { translationY = dragOffset }
-                        .then(
-                            if (uiState.isReorderMode) {
-                                Modifier.pointerInput(reorderState) {
-                                    detectDragGesturesAfterLongPress(
-                                        onDragStart = { reorderState.onDragStart(index) },
-                                        onDragCancel = reorderState::onDragEnd,
-                                        onDragEnd = reorderState::onDragEnd,
-                                        onDrag = { change, dragAmount ->
-                                            change.consume()
-                                            reorderState.onDrag(dragAmount.y)
-                                        }
-                                    )
-                                }
-                            } else {
-                                Modifier
+                    ReorderableItem(
+                        state = reorderState,
+                        key = item.id,
+                        data = item,
+                        enabled = uiState.isReorderMode,
+                        onDragEnter = {
+                            if (!uiState.isReorderMode) return@ReorderableItem
+                            val targetIndex = displayedItinerary.indexOfFirst { it.id == item.id }
+                            if (targetIndex == -1) return@ReorderableItem
+                            coroutineScope.launch {
+                                handleReorderAutoScroll(
+                                    lazyListState = listState,
+                                    targetIndex = targetIndex
+                                )
                             }
-                        ),
-                    itinerary = item,
-                    isExpanded = isExpanded,
-                    onExpandedChange = { expanded ->
-                        expandedItemIds = if (expanded) {
-                            expandedItemIds + item.id
-                        } else {
-                            expandedItemIds - item.id
+                        },
+                        onDrop = { draggedItem ->
+                            if (!uiState.isReorderMode) return@ReorderableItem
+                            val currentItinerary = displayedItinerary
+                            val result = reorderItinerary(
+                                itinerary = currentItinerary,
+                                draggedId = draggedItem.data.id,
+                                targetId = item.id
+                            ) ?: return@ReorderableItem
+
+                            displayedItinerary = result.itinerary
+                            if (result.insertedIndex <= REORDER_SNAP_TO_TOP_MAX_INDEX) {
+                                coroutineScope.launch {
+                                    listState.animateScrollToItem(0)
+                                }
+                            }
                         }
+                    ) {
+                        ItineraryItemCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .graphicsLayer {
+                                    alpha = if (isDragging) 0f else 1f
+                                }
+                                .zIndex(if (isDragging) DRAGGED_ITEM_Z_INDEX else 0f),
+                            itinerary = item,
+                            isExpanded = isExpanded,
+                            isReorderMode = uiState.isReorderMode,
+                            onExpandedChange = { expanded ->
+                                expandedItineraryItemIds = if (expanded) {
+                                    expandedItineraryItemIds + item.id
+                                } else {
+                                    expandedItineraryItemIds - item.id
+                                }
+                            }
+                        )
                     }
-                )
+                }
             }
         }
     }
@@ -149,6 +193,7 @@ internal fun TripDetailsScaffold(
     uiState: TripDetailsUiState,
     snackbarHostState: SnackbarHostState,
     onEvent: (TripDetailsEvent) -> Unit,
+    onDoneClick: () -> Unit,
     listState: LazyListState,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
@@ -210,9 +255,9 @@ internal fun TripDetailsScaffold(
                 isReorderMode = uiState.isReorderMode,
                 onAddPlacesClick = { onEvent(TripDetailsEvent.AddPlacesClicked) },
                 onReorderClick = { onEvent(TripDetailsEvent.ReorderClicked) },
-                onDoneClick = { onEvent(TripDetailsEvent.DoneClicked) },
+                onDoneClick = onDoneClick,
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
+                    .align(Alignment.BottomCenter)
                     .padding(Dimensions.spacingL)
                     .zIndex(CTA_Z_INDEX)
             )
@@ -233,8 +278,8 @@ private fun TripDetailsFloatingCta(
 
     AnimatedVisibility(
         visible = visible,
-        enter = slideInVertically { it },
-        exit = slideOutVertically { it },
+        enter = fadeIn(),
+        exit = fadeOut(),
         modifier = modifier
     ) {
         if (isReorderMode) {
@@ -258,7 +303,6 @@ private fun TripDetailsFloatingCta(
 private fun rememberCtaVisibility(listState: LazyListState): State<Boolean> {
     var previousIndex by remember { mutableIntStateOf(listState.firstVisibleItemIndex) }
     var previousOffset by remember { mutableIntStateOf(listState.firstVisibleItemScrollOffset) }
-    var isScrollingUp by remember { mutableStateOf(true) }
     val isVisible = remember { mutableStateOf(true) }
 
     LaunchedEffect(listState) {
@@ -270,59 +314,12 @@ private fun rememberCtaVisibility(listState: LazyListState): State<Boolean> {
                 } else {
                     offset < previousOffset
                 }
-                isScrollingUp = isUp
                 previousIndex = index
                 previousOffset = offset
-                isVisible.value = index == 0 || isScrollingUp
+                isVisible.value = index == 0 || isUp
             }
     }
     return isVisible
-}
-
-@Stable
-private class ReorderState(
-    private val listState: LazyListState,
-    private val onMove: (Int, Int) -> Unit
-) {
-    var draggedIndex by mutableStateOf<Int?>(null)
-        private set
-    var dragOffset by mutableFloatStateOf(0f)
-        private set
-
-    fun onDragStart(index: Int) {
-        draggedIndex = index
-    }
-
-    fun onDrag(dragDelta: Float) {
-        val draggingIndex = draggedIndex ?: return
-        dragOffset += dragDelta
-        val visibleItems = listState.layoutInfo.visibleItemsInfo
-        val draggedItem = visibleItems.firstOrNull { it.index == draggingIndex } ?: return
-        val draggedItemMiddle = draggedItem.offset + dragOffset + draggedItem.size / 2f
-        val targetItem = visibleItems.firstOrNull { item ->
-            item.index != draggingIndex &&
-                draggedItemMiddle in item.offset.toFloat()..(item.offset + item.size).toFloat()
-        } ?: return
-
-        if (targetItem.index != draggingIndex) {
-            onMove(draggingIndex, targetItem.index)
-            draggedIndex = targetItem.index
-            dragOffset += draggedItem.offset - targetItem.offset
-        }
-    }
-
-    fun onDragEnd() {
-        draggedIndex = null
-        dragOffset = 0f
-    }
-}
-
-@Composable
-private fun rememberReorderState(
-    listState: LazyListState,
-    onMove: (Int, Int) -> Unit
-): ReorderState {
-    return remember(listState, onMove) { ReorderState(listState, onMove) }
 }
 
 @Composable
@@ -341,7 +338,7 @@ private fun TripDetailsScreenPreview() {
         ItineraryUiModel(
             id = "1",
             title = "Colosseum",
-            categoryName = "Sightseeing",
+            categoryLabelResId = R.string.itinerary_type_activity,
             durationText = "2h",
             type = ItineraryType.Activity,
             hasMap = true,
@@ -350,7 +347,7 @@ private fun TripDetailsScreenPreview() {
         ItineraryUiModel(
             id = "2",
             title = "Roman Forum",
-            categoryName = "Historical Tour",
+            categoryLabelResId = R.string.itinerary_type_activity,
             durationText = "1.5h",
             type = ItineraryType.Activity,
             hasMap = true,
@@ -372,4 +369,55 @@ private fun TripDetailsScreenPreview() {
             onEvent = {}
         )
     }
+}
+
+private suspend fun handleReorderAutoScroll(
+    lazyListState: LazyListState,
+    targetIndex: Int
+) {
+    val firstVisibleItemIndex = lazyListState.firstVisibleItemIndex
+    val firstVisibleItemScrollOffset = lazyListState.firstVisibleItemScrollOffset
+
+    if (targetIndex <= REORDER_AUTO_SCROLL_EDGE_THRESHOLD) {
+        lazyListState.scrollToItem(firstVisibleItemIndex, firstVisibleItemScrollOffset)
+    }
+
+    val lastVisibleItemIndex =
+        lazyListState.firstVisibleItemIndex + lazyListState.layoutInfo.visibleItemsInfo.lastIndex
+
+    val firstVisibleItem = lazyListState.layoutInfo.visibleItemsInfo.firstOrNull() ?: return
+    val scrollAmount = firstVisibleItem.size * REORDER_AUTO_SCROLL_ITEM_SIZE_MULTIPLIER
+
+    if (targetIndex <= firstVisibleItemIndex + REORDER_AUTO_SCROLL_EDGE_THRESHOLD) {
+        lazyListState.animateScrollBy(-scrollAmount)
+    } else if (targetIndex == lastVisibleItemIndex) {
+        lazyListState.animateScrollBy(scrollAmount)
+    }
+}
+
+private data class ItineraryReorderResult(
+    val itinerary: List<ItineraryUiModel>,
+    val insertedIndex: Int
+)
+
+private fun reorderItinerary(
+    itinerary: List<ItineraryUiModel>,
+    draggedId: String,
+    targetId: String
+): ItineraryReorderResult? {
+    val fromIndex = itinerary.indexOfFirst { it.id == draggedId }
+    val targetIndex = itinerary.indexOfFirst { it.id == targetId }
+    if (fromIndex == -1 || targetIndex == -1 || fromIndex == targetIndex) return null
+
+    val mutableItinerary = itinerary.toMutableList()
+    val movedItem = mutableItinerary.removeAt(fromIndex)
+
+    val desiredIndex = if (fromIndex < targetIndex) targetIndex + 1 else targetIndex
+    val insertIndex = desiredIndex.coerceIn(0, mutableItinerary.size)
+    mutableItinerary.add(insertIndex, movedItem)
+
+    return ItineraryReorderResult(
+        itinerary = mutableItinerary,
+        insertedIndex = insertIndex
+    )
 }

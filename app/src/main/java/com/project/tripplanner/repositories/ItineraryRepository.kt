@@ -21,7 +21,7 @@ interface ItineraryRepository {
     suspend fun updateItem(item: ItineraryItem)
     suspend fun deleteItem(itemId: Long)
     suspend fun deleteItemsForTrip(tripId: Long)
-    suspend fun reorderItems(tripId: Long, orderedIds: List<Long>)
+    suspend fun reorderItems(tripId: Long, localDate: LocalDate, orderedIds: List<Long>)
 }
 
 class ItineraryRepositoryImpl @Inject constructor(
@@ -59,10 +59,10 @@ class ItineraryRepositoryImpl @Inject constructor(
         itineraryDao.deleteItemsForTrip(tripId)
     }
 
-    override suspend fun reorderItems(tripId: Long, orderedIds: List<Long>) {
+    override suspend fun reorderItems(tripId: Long, localDate: LocalDate, orderedIds: List<Long>) {
         if (orderedIds.isEmpty()) return
         database.withTransaction {
-            val existingIds = itineraryDao.getItemIdsForTrip(tripId).toSet()
+            val existingIds = itineraryDao.getItemIdsForDate(tripId, localDate).toSet()
             val updates = orderedIds.filter { it in existingIds }
                 .mapIndexed { index, id -> ItinerarySortUpdate(id = id, sortOrder = index.toLong()) }
             if (updates.isNotEmpty()) {

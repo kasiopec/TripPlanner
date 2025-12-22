@@ -1,6 +1,8 @@
 package com.project.tripplanner.features.tripdetails
 
+import com.project.tripplanner.R
 import com.project.tripplanner.data.model.ItineraryItem
+import com.project.tripplanner.data.model.ItineraryType
 import com.project.tripplanner.ui.components.DayItem
 import com.project.tripplanner.ui.components.ItineraryUiModel
 import com.project.tripplanner.utils.time.DateFormatter
@@ -48,12 +50,22 @@ class TripDetailsUiMapper @Inject constructor(
             ItineraryUiModel(
                 id = item.id.toString(),
                 title = item.title,
-                categoryName = item.type.name,
+                categoryLabelResId = item.type.toLabelRes(),
                 durationText = formatTime(item.localTime),
                 type = item.type,
                 hasMap = !item.location.isNullOrBlank(),
                 hasDocs = false
             )
+        }
+    }
+
+    private fun ItineraryType.toLabelRes(): Int {
+        return when (this) {
+            ItineraryType.Flight -> R.string.itinerary_type_flight
+            ItineraryType.Hotel -> R.string.itinerary_type_hotel
+            ItineraryType.Activity -> R.string.itinerary_type_activity
+            ItineraryType.Food -> R.string.itinerary_type_food
+            ItineraryType.Shopping -> R.string.itinerary_type_shopping
         }
     }
 

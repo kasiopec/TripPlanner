@@ -113,7 +113,7 @@ class ItineraryRepositoryTest {
             )
         )
 
-        repository.reorderItems(tripId, listOf(secondId, firstId))
+        repository.reorderItems(tripId, date, listOf(secondId, firstId))
 
         val items = repository.observeItinerary(tripId).first()
         assertEquals(listOf(secondId, firstId), items.sortedBy { it.sortOrder }.map { it.id })
@@ -123,8 +123,59 @@ class ItineraryRepositoryTest {
     }
 
     @Test
-    fun observeItineraryForDate_filtersItems() = runTest {
+    fun reorderItems_onlyAffectsSelectedDate() = runTest {
         val tripId = 3L
+        val firstDate = LocalDate.of(2025, 4, 1)
+        val secondDate = LocalDate.of(2025, 4, 2)
+        val firstDayMorningId = repository.addItem(
+            ItineraryItemInput(
+                tripId = tripId,
+                localDate = firstDate,
+                localTime = LocalTime.of(9, 0),
+                title = "Breakfast",
+                type = ItineraryType.Food,
+                location = null,
+                notes = null,
+                sortOrder = null
+            )
+        )
+        val firstDayAfternoonId = repository.addItem(
+            ItineraryItemInput(
+                tripId = tripId,
+                localDate = firstDate,
+                localTime = LocalTime.of(13, 0),
+                title = "Museum",
+                type = ItineraryType.Activity,
+                location = null,
+                notes = null,
+                sortOrder = null
+            )
+        )
+        val secondDayId = repository.addItem(
+            ItineraryItemInput(
+                tripId = tripId,
+                localDate = secondDate,
+                localTime = LocalTime.of(10, 0),
+                title = "Walking tour",
+                type = ItineraryType.Activity,
+                location = null,
+                notes = null,
+                sortOrder = null
+            )
+        )
+
+        repository.reorderItems(tripId, firstDate, listOf(firstDayAfternoonId, firstDayMorningId))
+
+        val firstDayOrder = repository.observeItineraryForDate(tripId, firstDate).first().map { it.id }
+        val secondDayOrder = repository.observeItineraryForDate(tripId, secondDate).first().map { it.id }
+
+        assertEquals(listOf(firstDayAfternoonId, firstDayMorningId), firstDayOrder)
+        assertEquals(listOf(secondDayId), secondDayOrder)
+    }
+
+    @Test
+    fun observeItineraryForDate_filtersItems() = runTest {
+        val tripId = 4L
         val firstDate = LocalDate.of(2025, 4, 1)
         val secondDate = LocalDate.of(2025, 4, 2)
         repository.addItem(
@@ -184,9 +235,10 @@ class ItineraryRepositoryTest {
                     .sortedWith(compareBy(ItineraryItemEntity::sortOrder, ItineraryItemEntity::id))
             }
         }
-        coEvery { itineraryDao.getItemIdsForTrip(any()) } answers { call ->
+        coEvery { itineraryDao.getItemIdsForDate(any(), any()) } answers { call ->
             val tripId = call.invocation.args[0] as Long
-            items.filter { it.tripId == tripId }
+            val localDate = call.invocation.args[1] as LocalDate
+            items.filter { it.tripId == tripId && it.localDate == localDate }
                 .sortedWith(compareBy(ItineraryItemEntity::sortOrder, ItineraryItemEntity::id))
                 .map { it.id }
         }

@@ -209,6 +209,8 @@ private class FakeTripRepository(
         return tripsFlow.map { it.values.toList() }
     }
 
+    override suspend fun getTrip(tripId: Long): Trip? = tripsFlow.value[tripId]
+
     override fun observeTrip(tripId: Long): Flow<Trip?> {
         return tripsFlow.map { it[tripId] }
     }

@@ -15,14 +15,17 @@ import com.project.tripplanner.repositories.TripRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
 import javax.inject.Inject
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.launch
+
+private const val ITINERARY_RETRY_DELAY_MS = 500L
 
 @HiltViewModel
 class TripDetailsViewModel @Inject constructor(
@@ -45,7 +48,6 @@ class TripDetailsViewModel @Inject constructor(
         addEventHandler<TripDetailsEvent.AddPlacesClicked>(::onAddPlacesClicked)
         addEventHandler<TripDetailsEvent.ReorderClicked>(::onReorderClicked)
         addEventHandler<TripDetailsEvent.DoneClicked>(::onDoneClicked)
-        addEventHandler<TripDetailsEvent.ItineraryItemMoved>(::onItineraryItemMoved)
         addEventHandler<TripDetailsEvent.BackClicked>(::onBackClicked)
     }
 
@@ -63,7 +65,8 @@ class TripDetailsViewModel @Inject constructor(
         emit.updatedState<TripDetailsUiState> { current ->
             current.copy(
                 selectedDate = event.date,
-                days = uiMapper.updateSelectedDay(current.days, event.date)
+                days = uiMapper.updateSelectedDay(current.days, event.date),
+                isReorderMode = false
             )
         }
     }
@@ -85,27 +88,14 @@ class TripDetailsViewModel @Inject constructor(
     }
 
     private fun onDoneClicked(event: TripDetailsEvent.DoneClicked, emit: Emitter<TripDetailsUiState, TripDetailsEffect>) {
-        persistReorder(emit)
-        emit.updatedState<TripDetailsUiState> { current -> current.copy(isReorderMode = false) }
-    }
-
-    private fun onItineraryItemMoved(
-        event: TripDetailsEvent.ItineraryItemMoved,
-        emit: Emitter<TripDetailsUiState, TripDetailsEffect>
-    ) {
         emit.updatedState<TripDetailsUiState> { current ->
-            if (event.fromIndex == event.toIndex) {
-                current
-            } else {
-                val updated = current.itinerary.toMutableList()
-                if (event.fromIndex in updated.indices && event.toIndex in updated.indices) {
-                    val item = updated.removeAt(event.fromIndex)
-                    val targetIndex = if (event.toIndex > event.fromIndex) event.toIndex - 1 else event.toIndex
-                    updated.add(targetIndex, item)
-                }
-                current.copy(itinerary = updated)
-            }
+            val reordered = event.orderedIds.mapNotNull { id -> current.itinerary.find { it.id == id } }
+            current.copy(
+                itinerary = if (reordered.isEmpty()) current.itinerary else reordered,
+                isReorderMode = false
+            )
         }
+        persistReorder(event.orderedIds, emit)
     }
 
     private fun onBackClicked(event: TripDetailsEvent.BackClicked, emit: Emitter<TripDetailsUiState, TripDetailsEffect>) {
@@ -162,10 +152,14 @@ class TripDetailsViewModel @Inject constructor(
         itineraryJob?.cancel()
         itineraryJob = viewModelScope.launch {
             selectedDate.filterNotNull()
-                .flatMapLatest { date -> itineraryRepository.observeItineraryForDate(tripId, date) }
-                .map(uiMapper::buildItineraryUiModels)
-                .catch {
-                    emit.effect(TripDetailsEffect.ShowSnackbar(R.string.trip_details_load_failed))
+                .flatMapLatest { date ->
+                    itineraryRepository.observeItineraryForDate(tripId, date)
+                        .map(uiMapper::buildItineraryUiModels)
+                        .retryWhen { _, _ ->
+                            emit.effect(TripDetailsEffect.ShowSnackbar(R.string.trip_details_load_failed))
+                            delay(ITINERARY_RETRY_DELAY_MS)
+                            true
+                        }
                 }
                 .collect { mapped ->
                     emit.updatedState<TripDetailsUiState> { current ->
@@ -185,12 +179,13 @@ class TripDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun persistReorder(emit: Emitter<TripDetailsUiState, TripDetailsEffect>) {
-        val orderedIds = state.value.itinerary.mapNotNull { it.id.toLongOrNull() }
-        if (orderedIds.isEmpty()) return
+    private fun persistReorder(orderedIds: List<String>, emit: Emitter<TripDetailsUiState, TripDetailsEffect>) {
+        val orderedLongIds = orderedIds.mapNotNull { it.toLongOrNull() }
+        if (orderedLongIds.isEmpty()) return
+        val currentDate = selectedDate.value ?: return
         viewModelScope.launch {
             try {
-                itineraryRepository.reorderItems(tripId, orderedIds)
+                itineraryRepository.reorderItems(tripId, currentDate, orderedLongIds)
             } catch (e: Exception) {
                 emit.effect(TripDetailsEffect.ShowSnackbar(R.string.trip_details_reorder_failed))
             }

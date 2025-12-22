@@ -28,8 +28,7 @@ sealed interface TripDetailsEvent : Event {
     data class DaySelected(val date: LocalDate) : TripDetailsEvent
     data object AddPlacesClicked : TripDetailsEvent
     data object ReorderClicked : TripDetailsEvent
-    data object DoneClicked : TripDetailsEvent
-    data class ItineraryItemMoved(val fromIndex: Int, val toIndex: Int) : TripDetailsEvent
+    data class DoneClicked(val orderedIds: List<String>) : TripDetailsEvent
     data object BackClicked : TripDetailsEvent
 }
 

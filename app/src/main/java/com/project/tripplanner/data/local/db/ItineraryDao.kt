@@ -34,6 +34,9 @@ interface ItineraryDao {
     @Query("DELETE FROM itinerary_items WHERE tripId = :tripId")
     suspend fun deleteItemsForTrip(tripId: Long)
 
+    @Query("SELECT id FROM itinerary_items WHERE tripId = :tripId AND localDate = :localDate ORDER BY sortOrder, id")
+    suspend fun getItemIdsForDate(tripId: Long, localDate: LocalDate): List<Long>
+
     @Query("SELECT id FROM itinerary_items WHERE tripId = :tripId ORDER BY sortOrder, id")
     suspend fun getItemIdsForTrip(tripId: Long): List<Long>
 

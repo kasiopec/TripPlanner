@@ -63,6 +63,7 @@ fun TripDetailsEmptyState(
         uiState = uiState,
         snackbarHostState = snackbarHostState,
         onEvent = onEvent,
+        onDoneClick = {},
         listState = listState,
         modifier = modifier
     ) {
