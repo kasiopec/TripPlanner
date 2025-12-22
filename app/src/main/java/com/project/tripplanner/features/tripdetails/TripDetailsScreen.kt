@@ -201,6 +201,7 @@ internal fun TripDetailsScaffold(
     val colors = TripPlannerTheme.colors
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val ctaVisible by rememberCtaVisibility(listState)
+    val statusLabelResId = uiState.tripStatusLabelResId
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -210,7 +211,9 @@ internal fun TripDetailsScaffold(
                 title = {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Headline2(text = uiState.tripTitle, color = colors.onBackground)
-                        MetaText(text = uiState.tripDateRange, color = colors.onSurfaceVariant)
+                        if (statusLabelResId != null) {
+                            MetaText(text = stringResource(statusLabelResId), color = colors.onSurfaceVariant)
+                        }
                     }
                 },
                 navigationIcon = {
@@ -223,7 +226,8 @@ internal fun TripDetailsScaffold(
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = colors.background
+                    containerColor = colors.background,
+                    scrolledContainerColor = colors.background
                 ),
                 scrollBehavior = scrollBehavior
             )
@@ -361,6 +365,7 @@ private fun TripDetailsScreenPreview() {
                 isInitialLoading = false,
                 tripTitle = "Rome Trip",
                 tripDateRange = "May 12, 2025 - May 16, 2025",
+                tripStatusLabelResId = R.string.trip_status_in_progress,
                 days = sampleDays,
                 selectedDate = startDate,
                 itinerary = sampleItinerary

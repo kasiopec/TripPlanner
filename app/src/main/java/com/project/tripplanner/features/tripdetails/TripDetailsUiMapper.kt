@@ -6,6 +6,8 @@ import com.project.tripplanner.data.model.ItineraryType
 import com.project.tripplanner.ui.components.DayItem
 import com.project.tripplanner.ui.components.ItineraryUiModel
 import com.project.tripplanner.utils.time.DateFormatter
+import com.project.tripplanner.utils.time.TripDateStatus
+import com.project.tripplanner.utils.time.getTripDateStatus
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -20,6 +22,24 @@ class TripDetailsUiMapper @Inject constructor(
 
     fun formatDateRange(startDate: LocalDate, endDate: LocalDate): String {
         return dateFormatter.formatDateRange(startDate, endDate)
+    }
+
+    fun getTripStatusLabelResId(
+        startDate: LocalDate,
+        endDate: LocalDate,
+        nowDate: LocalDate
+    ): Int {
+        return when (
+            getTripDateStatus(
+                startDate = startDate,
+                endDate = endDate,
+                nowDate = nowDate
+            )
+        ) {
+            TripDateStatus.Upcoming -> R.string.home_status_upcoming
+            TripDateStatus.InProgress -> R.string.trip_status_in_progress
+            TripDateStatus.Ended -> R.string.trip_status_ended
+        }
     }
 
     fun buildDayItems(

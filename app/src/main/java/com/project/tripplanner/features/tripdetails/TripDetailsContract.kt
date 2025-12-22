@@ -16,6 +16,7 @@ data class TripDetailsUiState(
     val error: ErrorState? = null,
     val tripTitle: String = "",
     val tripDateRange: String = "",
+    @get:StringRes val tripStatusLabelResId: Int? = null,
     val days: List<DayItem> = emptyList(),
     val selectedDate: LocalDate = LocalDate.now(),
     val itinerary: List<ItineraryUiModel> = emptyList(),
@@ -35,5 +36,5 @@ sealed interface TripDetailsEvent : Event {
 sealed interface TripDetailsEffect : Effect {
     data object NavigateBack : TripDetailsEffect
     data class NavigateToActivityForm(val tripId: Long, val date: LocalDate) : TripDetailsEffect
-    data class ShowSnackbar(@StringRes val messageResId: Int) : TripDetailsEffect
+    data class ShowSnackbar(@get:StringRes val messageResId: Int) : TripDetailsEffect
 }

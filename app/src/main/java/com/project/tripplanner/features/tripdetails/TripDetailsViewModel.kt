@@ -9,9 +9,14 @@ import com.project.tripplanner.R
 import com.project.tripplanner.data.KEY_LAST_OPENED_TRIP_ID
 import com.project.tripplanner.data.KEY_LAST_OPENED_TRIP_DATE
 import com.project.tripplanner.data.UserPrefsStorage
+import com.project.tripplanner.data.model.Trip
 import com.project.tripplanner.navigation.Screen
 import com.project.tripplanner.repositories.ItineraryRepository
 import com.project.tripplanner.repositories.TripRepository
+import com.project.tripplanner.utils.time.ClockProvider
+import com.project.tripplanner.utils.time.TripDateStatus
+import com.project.tripplanner.utils.time.getTripDateStatus
+import com.project.tripplanner.utils.time.nowLocalDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
 import javax.inject.Inject
@@ -33,7 +38,8 @@ class TripDetailsViewModel @Inject constructor(
     private val tripRepository: TripRepository,
     private val itineraryRepository: ItineraryRepository,
     private val uiMapper: TripDetailsUiMapper,
-    private val userPrefsStorage: UserPrefsStorage
+    private val userPrefsStorage: UserPrefsStorage,
+    private val clockProvider: ClockProvider
 ) : BaseViewModel<TripDetailsEvent, TripDetailsUiState, TripDetailsEffect>(TripDetailsUiState()) {
 
     private val tripId: Long = savedStateHandle.get<Long>(Screen.TripDetails.ARG_TRIP_ID) ?: -1L
@@ -91,7 +97,7 @@ class TripDetailsViewModel @Inject constructor(
         emit.updatedState<TripDetailsUiState> { current ->
             val reordered = event.orderedIds.mapNotNull { id -> current.itinerary.find { it.id == id } }
             current.copy(
-                itinerary = if (reordered.isEmpty()) current.itinerary else reordered,
+                itinerary = reordered.ifEmpty { current.itinerary },
                 isReorderMode = false
             )
         }
@@ -125,7 +131,8 @@ class TripDetailsViewModel @Inject constructor(
                     return@launch
                 }
                 userPrefsStorage.put(KEY_LAST_OPENED_TRIP_ID, tripId)
-                val initialDate = trip.startDate
+                val nowDate = clockProvider.nowLocalDate(trip.timezone)
+                val initialDate = resolveInitialSelectedDate(trip, nowDate)
                 selectedDate.value = initialDate
                 userPrefsStorage.put(KEY_LAST_OPENED_TRIP_DATE, initialDate.toString())
                 emit.updatedState<TripDetailsUiState> { current ->
@@ -134,6 +141,11 @@ class TripDetailsViewModel @Inject constructor(
                         error = null,
                         tripTitle = trip.destination,
                         tripDateRange = uiMapper.formatDateRange(trip.startDate, trip.endDate),
+                        tripStatusLabelResId = uiMapper.getTripStatusLabelResId(
+                            startDate = trip.startDate,
+                            endDate = trip.endDate,
+                            nowDate = nowDate
+                        ),
                         days = uiMapper.buildDayItems(trip.startDate, trip.endDate, initialDate),
                         selectedDate = initialDate
                     )
@@ -189,6 +201,20 @@ class TripDetailsViewModel @Inject constructor(
             } catch (e: Exception) {
                 emit.effect(TripDetailsEffect.ShowSnackbar(R.string.trip_details_reorder_failed))
             }
+        }
+    }
+
+    private fun resolveInitialSelectedDate(trip: Trip, nowDate: LocalDate): LocalDate {
+        return when (
+            getTripDateStatus(
+                startDate = trip.startDate,
+                endDate = trip.endDate,
+                nowDate = nowDate
+            )
+        ) {
+            TripDateStatus.InProgress -> nowDate
+            TripDateStatus.Upcoming,
+            TripDateStatus.Ended -> trip.startDate
         }
     }
 }
