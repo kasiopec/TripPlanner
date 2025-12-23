@@ -38,6 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import com.project.tripplanner.R
 import com.project.tripplanner.data.model.ItineraryType
+import com.project.tripplanner.features.tripdetails.ItineraryUiModel
 import com.project.tripplanner.ui.components.text.Headline3
 import com.project.tripplanner.ui.components.text.LabelText
 import com.project.tripplanner.ui.components.text.MetaText
@@ -258,6 +259,7 @@ private fun ItineraryItemCardCollapsedPreview() {
                     categoryLabelResId = R.string.itinerary_type_activity,
                     durationText = "2h",
                     type = ItineraryType.Activity,
+                    locationQuery = null,
                     hasMap = false,
                     hasDocs = false
                 ),
@@ -280,6 +282,7 @@ private fun ItineraryItemCardExpandedPreview() {
                     categoryLabelResId = R.string.itinerary_type_activity,
                     durationText = "2h",
                     type = ItineraryType.Activity,
+                    locationQuery = "Colosseum, Rome",
                     hasMap = true,
                     hasDocs = false
                 ),

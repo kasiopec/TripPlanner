@@ -55,7 +55,7 @@ import com.mohamedrejeb.compose.dnd.reorder.rememberReorderState
 import com.project.tripplanner.ui.components.CalendarRow
 import com.project.tripplanner.ui.components.DayItem
 import com.project.tripplanner.ui.components.ItineraryItemCard
-import com.project.tripplanner.ui.components.ItineraryUiModel
+import com.project.tripplanner.features.tripdetails.ItineraryUiModel
 import com.project.tripplanner.ui.components.SplitButton
 import com.project.tripplanner.ui.components.text.Headline2
 import com.project.tripplanner.ui.components.text.Headline3
@@ -178,6 +178,14 @@ fun TripDetailsScreen(
                                 } else {
                                     expandedItineraryItemIds - item.id
                                 }
+                            },
+                            onMapClick = {
+                                onEvent(
+                                    TripDetailsEvent.MapClicked(
+                                        itemId = item.id,
+                                        locationQuery = item.locationQuery
+                                    )
+                                )
                             }
                         )
                     }
@@ -345,6 +353,7 @@ private fun TripDetailsScreenPreview() {
             categoryLabelResId = R.string.itinerary_type_activity,
             durationText = "2h",
             type = ItineraryType.Activity,
+            locationQuery = "Colosseum, Rome",
             hasMap = true,
             hasDocs = false
         ),
@@ -354,6 +363,7 @@ private fun TripDetailsScreenPreview() {
             categoryLabelResId = R.string.itinerary_type_activity,
             durationText = "1.5h",
             type = ItineraryType.Activity,
+            locationQuery = "Roman Forum, Rome",
             hasMap = true,
             hasDocs = false
         )

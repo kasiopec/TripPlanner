@@ -113,6 +113,13 @@
     <string name="trip_details_done">Done</string>
     <string name="trip_details_load_failed">Could not load itinerary. Please try again.</string>
     <string name="trip_details_reorder_failed">Could not save your new order. Please try again.</string>
+    <string name="trip_details_location_sheet_title">Add location</string>
+    <string name="trip_details_location_sheet_label">Location</string>
+    <string name="trip_details_location_sheet_placeholder">Search or enter a location</string>
+    <string name="trip_details_location_sheet_save">Save location</string>
+    <string name="trip_details_location_sheet_search_maps">Search in Google Maps</string>
+    <string name="trip_details_location_save_failed">Could not save location. Please try again.</string>
+    <string name="trip_details_map_no_app">No maps app found.</string>
 
     <!-- Debug -->
     <string name="debug_title">Debug tools</string>

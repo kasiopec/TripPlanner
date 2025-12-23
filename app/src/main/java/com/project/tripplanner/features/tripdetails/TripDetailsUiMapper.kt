@@ -4,7 +4,7 @@ import com.project.tripplanner.R
 import com.project.tripplanner.data.model.ItineraryItem
 import com.project.tripplanner.data.model.ItineraryType
 import com.project.tripplanner.ui.components.DayItem
-import com.project.tripplanner.ui.components.ItineraryUiModel
+import com.project.tripplanner.features.tripdetails.ItineraryUiModel
 import com.project.tripplanner.utils.time.DateFormatter
 import com.project.tripplanner.utils.time.TripDateStatus
 import com.project.tripplanner.utils.time.getTripDateStatus
@@ -73,6 +73,7 @@ class TripDetailsUiMapper @Inject constructor(
                 categoryLabelResId = item.type.toLabelRes(),
                 durationText = formatTime(item.localTime),
                 type = item.type,
+                locationQuery = item.location,
                 hasMap = !item.location.isNullOrBlank(),
                 hasDocs = false
             )

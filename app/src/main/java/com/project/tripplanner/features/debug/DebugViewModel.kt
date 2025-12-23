@@ -22,6 +22,18 @@ import kotlinx.coroutines.launch
 private const val DEBUG_PLACE_TITLE_PREFIX = "[DEBUG_PLACE] "
 private const val DEBUG_PLACE_COUNT = 10
 private const val DEBUG_PLACE_TIME_STEP_MINUTES = 15L
+private val DEBUG_PLACE_LOCATIONS = listOf(
+    "Colosseum, Rome",
+    null,
+    "1 Infinite Loop, Cupertino, CA",
+    "Times Square, New York, NY",
+    null,
+    "Shibuya Crossing, Tokyo",
+    "Eiffel Tower, Paris",
+    null,
+    "Sagrada Familia, Barcelona",
+    "London Bridge, London"
+)
 
 @HiltViewModel
 class DebugViewModel @Inject constructor(
@@ -85,7 +97,7 @@ class DebugViewModel @Inject constructor(
                         localTime = time,
                         title = "$DEBUG_PLACE_TITLE_PREFIX Place $index",
                         type = ItineraryType.Activity,
-                        location = "Debug location $index",
+                        location = resolveDebugLocation(index),
                         notes = null
                     )
                 )
@@ -120,6 +132,11 @@ class DebugViewModel @Inject constructor(
         val stored = userPrefsStorage.getString(KEY_LAST_OPENED_TRIP_DATE)?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
         if (stored != null && !stored.isBefore(startDate) && !stored.isAfter(endDate)) return stored
         return startDate
+    }
+
+    private fun resolveDebugLocation(index: Int): String? {
+        val zeroBasedIndex = (index - 1).coerceAtLeast(0)
+        return DEBUG_PLACE_LOCATIONS.getOrNull(zeroBasedIndex)
     }
 
     private fun performAction(

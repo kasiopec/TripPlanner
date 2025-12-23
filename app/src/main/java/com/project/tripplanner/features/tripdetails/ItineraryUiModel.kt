@@ -1,7 +1,7 @@
-package com.project.tripplanner.ui.components
+package com.project.tripplanner.features.tripdetails
 
-import androidx.compose.runtime.Immutable
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Immutable
 import com.project.tripplanner.data.model.ItineraryType
 
 @Immutable
@@ -11,6 +11,7 @@ data class ItineraryUiModel(
     @StringRes val categoryLabelResId: Int,
     val durationText: String,
     val type: ItineraryType,
+    val locationQuery: String?,
     val hasMap: Boolean,
     val hasDocs: Boolean
 )

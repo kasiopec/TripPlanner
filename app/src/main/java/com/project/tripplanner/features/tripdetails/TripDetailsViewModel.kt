@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.launch
 
@@ -52,6 +53,11 @@ class TripDetailsViewModel @Inject constructor(
         addEventHandler<TripDetailsEvent.RetryClicked>(::onRetryClicked)
         addEventHandler<TripDetailsEvent.DaySelected>(::onDaySelected)
         addEventHandler<TripDetailsEvent.AddPlacesClicked>(::onAddPlacesClicked)
+        addEventHandler<TripDetailsEvent.MapClicked>(::onMapClicked)
+        addEventHandler<TripDetailsEvent.LocationQueryChanged>(::onLocationQueryChanged)
+        addEventHandler<TripDetailsEvent.LocationSaveClicked>(::onLocationSaveClicked)
+        addEventHandler<TripDetailsEvent.LocationSearchInMapsClicked>(::onLocationSearchInMapsClicked)
+        addEventHandler<TripDetailsEvent.LocationSheetDismissed>(::onLocationSheetDismissed)
         addEventHandler<TripDetailsEvent.ReorderClicked>(::onReorderClicked)
         addEventHandler<TripDetailsEvent.DoneClicked>(::onDoneClicked)
         addEventHandler<TripDetailsEvent.BackClicked>(::onBackClicked)
@@ -87,6 +93,101 @@ class TripDetailsViewModel @Inject constructor(
                 date = state.value.selectedDate
             )
         )
+    }
+
+    private fun onMapClicked(event: TripDetailsEvent.MapClicked, emit: Emitter<TripDetailsUiState, TripDetailsEffect>) {
+        val trimmedLocation = event.locationQuery?.trim()
+        if (trimmedLocation.isNullOrBlank()) {
+            emit.updatedState<TripDetailsUiState> { current ->
+                current.copy(
+                    locationSheetItemId = event.itemId,
+                    locationQuery = "",
+                    isLocationActionEnabled = false
+                )
+            }
+        } else {
+            emit.effect(TripDetailsEffect.OpenMap(trimmedLocation))
+        }
+    }
+
+    private fun onLocationQueryChanged(
+        event: TripDetailsEvent.LocationQueryChanged,
+        emit: Emitter<TripDetailsUiState, TripDetailsEffect>
+    ) {
+        val isEnabled = event.query.trim().isNotEmpty()
+        emit.updatedState<TripDetailsUiState> { current ->
+            current.copy(
+                locationQuery = event.query,
+                isLocationActionEnabled = isEnabled
+            )
+        }
+    }
+
+    private fun onLocationSaveClicked(
+        event: TripDetailsEvent.LocationSaveClicked,
+        emit: Emitter<TripDetailsUiState, TripDetailsEffect>
+    ) {
+        val itemId = state.value.locationSheetItemId?.toLongOrNull()
+        val locationToSave = state.value.locationQuery.trim()
+        if (itemId == null || locationToSave.isBlank()) {
+            emit.effect(TripDetailsEffect.ShowSnackbar(R.string.trip_details_location_save_failed))
+            return
+        }
+        viewModelScope.launch {
+            try {
+                val item = itineraryRepository.observeItem(itemId).firstOrNull()
+                if (item == null) {
+                    emit.effect(TripDetailsEffect.ShowSnackbar(R.string.trip_details_location_save_failed))
+                    return@launch
+                }
+                itineraryRepository.updateItem(item.copy(location = locationToSave))
+                emit.updatedState<TripDetailsUiState> { current ->
+                    current.copy(
+                        locationSheetItemId = null,
+                        locationQuery = "",
+                        isLocationActionEnabled = false
+                    )
+                }
+            } catch (e: Exception) {
+                emit.effect(TripDetailsEffect.ShowSnackbar(R.string.trip_details_location_save_failed))
+            }
+        }
+    }
+
+    private fun onLocationSearchInMapsClicked(
+        event: TripDetailsEvent.LocationSearchInMapsClicked,
+        emit: Emitter<TripDetailsUiState, TripDetailsEffect>
+    ) {
+        val trimmedQuery = state.value.locationQuery.trim()
+        if (trimmedQuery.isBlank()) {
+            emit.effect(TripDetailsEffect.ShowSnackbar(R.string.trip_details_location_save_failed))
+            return
+        }
+        emit.updatedState<TripDetailsUiState> { current ->
+            current.copy(
+                locationSheetItemId = null,
+                locationQuery = "",
+                isLocationActionEnabled = false
+            )
+        }
+        emit.effect(TripDetailsEffect.OpenMap(trimmedQuery))
+    }
+
+    private fun onLocationSheetDismissed(
+        event: TripDetailsEvent.LocationSheetDismissed,
+        emit: Emitter<TripDetailsUiState, TripDetailsEffect>
+    ) {
+        emit.updatedState<TripDetailsUiState> { current ->
+            if (current.locationSheetItemId == null) {
+                current
+            } else {
+                current.copy(
+                    locationSheetItemId = null,
+                    locationQuery = "",
+                    isLocationActionEnabled = false
+                )
+            }
+        }
     }
 
     private fun onReorderClicked(event: TripDetailsEvent.ReorderClicked, emit: Emitter<TripDetailsUiState, TripDetailsEffect>) {
