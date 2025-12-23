@@ -44,6 +44,7 @@ fun TripPlannerBottomBar(
     modifier: Modifier = Modifier,
     currentScreen: Screen? = null,
     onItemSelected: (Screen) -> Unit,
+    onTripDetailsClick: (() -> Unit)? = null,
     onLastItemLongPress: (() -> Unit)? = null
 ) {
     val items = listOf(
@@ -92,13 +93,16 @@ fun TripPlannerBottomBar(
                             indication = ripple(bounded = true, color = colors.primary),
                             onClick = {
                                 if (item.isSelectable) {
-                                    selectedItem = item
-                                    when (item.route) {
-                                        Screen.TripDetails.route -> onItemSelected(Screen.TripDetails)
-                                        Screen.Home.route -> onItemSelected(Screen.Home)
-                                        Screen.Login.route -> onItemSelected(Screen.Login)
-                                        else -> item.route?.let { route ->
-                                            Screen.fromRoute(route)?.let { onItemSelected(it) }
+                                    if (item.route == Screen.TripDetails.route) {
+                                        onTripDetailsClick?.invoke() ?: return@combinedClickable
+                                    } else {
+                                        selectedItem = item
+                                        when (item.route) {
+                                            Screen.Home.route -> onItemSelected(Screen.Home)
+                                            Screen.Login.route -> onItemSelected(Screen.Login)
+                                            else -> item.route?.let { route ->
+                                                Screen.fromRoute(route)?.let { onItemSelected(it) }
+                                            }
                                         }
                                     }
                                 } else {

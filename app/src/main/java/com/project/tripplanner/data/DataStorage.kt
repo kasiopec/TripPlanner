@@ -37,15 +37,49 @@ abstract class DataStorageImpl(
         }
     }
 
-    override fun getBoolean(key: String): Boolean? = getString(key)?.toBoolean()
+    override fun getBoolean(key: String): Boolean? {
+        val value = storage.all[key] ?: return null
+        return when (value) {
+            is Boolean -> value
+            is String -> value.toBooleanStrictOrNullCompat()
+            else -> null
+        }
+    }
 
-    override fun getFloat(key: String): Float? = getString(key)?.toFloat()
+    override fun getFloat(key: String): Float? {
+        val value = storage.all[key] ?: return null
+        return when (value) {
+            is Float -> value
+            is Int -> value.toFloat()
+            is Long -> value.toFloat()
+            is String -> value.toFloatOrNull()
+            else -> null
+        }
+    }
 
-    override fun getInt(key: String): Int? = getString(key)?.toInt()
+    override fun getInt(key: String): Int? {
+        val value = storage.all[key] ?: return null
+        return when (value) {
+            is Int -> value
+            is Long -> value.toInt()
+            is Float -> value.toInt()
+            is String -> value.toIntOrNull()
+            else -> null
+        }
+    }
 
-    override fun getLong(key: String): Long? = getString(key)?.toLong()
+    override fun getLong(key: String): Long? {
+        val value = storage.all[key] ?: return null
+        return when (value) {
+            is Long -> value
+            is Int -> value.toLong()
+            is Float -> value.toLong()
+            is String -> value.toLongOrNull()
+            else -> null
+        }
+    }
 
-    override fun getString(key: String) = storage.getString(key, null)
+    override fun getString(key: String): String? = storage.all[key] as? String
 
     override fun remove(key: String) {
         storage.edit { remove(key) }
@@ -53,5 +87,11 @@ abstract class DataStorageImpl(
 
     override fun clear() {
         storage.edit { clear() }
+    }
+
+    private fun String.toBooleanStrictOrNullCompat(): Boolean? = when (lowercase()) {
+        "true" -> true
+        "false" -> false
+        else -> null
     }
 }

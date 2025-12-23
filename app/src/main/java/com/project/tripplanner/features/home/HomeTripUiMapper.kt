@@ -4,6 +4,8 @@ import com.project.tripplanner.cover.TripCoverImageStorage
 import com.project.tripplanner.data.model.Trip
 import com.project.tripplanner.utils.time.ClockProvider
 import com.project.tripplanner.utils.time.DateFormatter
+import com.project.tripplanner.utils.time.TripDateStatus
+import com.project.tripplanner.utils.time.getTripDateStatus
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
@@ -18,7 +20,11 @@ class HomeTripUiMapper @Inject constructor(
     ): HomeTripsUi {
         val nowDate = clockProvider.now().toLocalDate()
         val mappedTrips = trips.map { trip ->
-            val status = getTripStatusUi(trip, nowDate)
+            val status = getTripDateStatus(
+                startDate = trip.startDate,
+                endDate = trip.endDate,
+                nowDate = nowDate
+            ).toTripStatusUi()
             val progress = if (status == TripStatusUi.InProgress) {
                 getTripProgress(trip, nowDate)
             } else {
@@ -70,12 +76,10 @@ class HomeTripUiMapper @Inject constructor(
         }
     }
 
-    private fun getTripStatusUi(trip: Trip, nowDate: LocalDate): TripStatusUi {
-        return when {
-            nowDate.isBefore(trip.startDate) -> TripStatusUi.None
-            nowDate.isAfter(trip.endDate) -> TripStatusUi.Ended
-            else -> TripStatusUi.InProgress
-        }
+    private fun TripDateStatus.toTripStatusUi(): TripStatusUi = when (this) {
+        TripDateStatus.Upcoming -> TripStatusUi.None
+        TripDateStatus.InProgress -> TripStatusUi.InProgress
+        TripDateStatus.Ended -> TripStatusUi.Ended
     }
 
     private fun getTripProgress(trip: Trip, nowDate: LocalDate): TripProgress? {

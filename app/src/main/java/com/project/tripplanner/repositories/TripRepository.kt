@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.map
 interface TripRepository {
     fun observeTrips(): Flow<List<Trip>>
     fun observeTrip(tripId: Long): Flow<Trip?>
+    suspend fun getTrip(tripId: Long): Trip?
     fun observeTripWithItinerary(tripId: Long): Flow<TripWithItinerary?>
     suspend fun createTrip(input: TripInput): Long
     suspend fun updateTrip(trip: Trip)
@@ -32,6 +33,10 @@ class TripRepositoryImpl @Inject constructor(
 
     override fun observeTrip(tripId: Long): Flow<Trip?> {
         return tripDao.observeTrip(tripId).map { it?.toDomain() }
+    }
+
+    override suspend fun getTrip(tripId: Long): Trip? {
+        return tripDao.getTrip(tripId)?.toDomain()
     }
 
     override fun observeTripWithItinerary(tripId: Long): Flow<TripWithItinerary?> {

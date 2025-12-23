@@ -9,7 +9,10 @@ sealed class Screen(
     object Home : Screen(route = "home_screen", title = "Home", isBottomBarVisible = true)
     object RegisterForm : Screen(route = "register_screen", title = "Registration")
     object ResetPassword : Screen(route = "reset_password_screen", title = "Reset password")
-    object TripDetails : Screen(route = "trip_details", title = "Trip details")
+    object TripDetails : Screen(route = "trip_details/{tripId}", title = "Trip details") {
+        const val ARG_TRIP_ID = "tripId"
+        fun createRoute(tripId: Long): String = "trip_details/$tripId"
+    }
     object TripForm : Screen(route = "trip_form_screen/{tripId}", title = "Trip Form") {
         const val ARG_TRIP_ID = "tripId"
         fun createRoute(tripId: Long? = null): String =
@@ -23,6 +26,7 @@ sealed class Screen(
             Home.route.substringBefore("/") -> Home
             RegisterForm.route.substringBefore("/") -> RegisterForm
             ResetPassword.route.substringBefore("/") -> ResetPassword
+            TripDetails.route.substringBefore("/") -> TripDetails
             "trip_form_screen" -> TripForm
             Debug.route.substringBefore("/") -> Debug
             else -> null

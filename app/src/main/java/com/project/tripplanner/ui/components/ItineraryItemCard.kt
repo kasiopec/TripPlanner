@@ -38,6 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import com.project.tripplanner.R
 import com.project.tripplanner.data.model.ItineraryType
+import com.project.tripplanner.features.tripdetails.ItineraryUiModel
 import com.project.tripplanner.ui.components.text.Headline3
 import com.project.tripplanner.ui.components.text.LabelText
 import com.project.tripplanner.ui.components.text.MetaText
@@ -52,6 +53,7 @@ fun ItineraryItemCard(
     modifier: Modifier = Modifier,
     itinerary: ItineraryUiModel,
     isExpanded: Boolean,
+    isReorderMode: Boolean = false,
     onExpandedChange: (Boolean) -> Unit,
     onMapClick: () -> Unit = {},
     onEditClick: () -> Unit = {},
@@ -122,25 +124,45 @@ fun ItineraryItemCard(
                 Spacer(modifier = Modifier.width(Dimensions.spacingS))
 
                 Column(modifier = Modifier.weight(1f)) {
+                    val categoryLabel = stringResource(id = itinerary.categoryLabelResId)
+                    val subtitleText = if (itinerary.durationText.isNotBlank()) {
+                        stringResource(
+                            R.string.itinerary_subtitle_format,
+                            categoryLabel,
+                            itinerary.durationText
+                        )
+                    } else {
+                        categoryLabel
+                    }
                     Headline3(
                         text = itinerary.title,
                         color = colors.onSurface
                     )
                     LabelText(
-                        text = stringResource(
-                            R.string.itinerary_subtitle_format,
-                            itinerary.categoryName,
-                            itinerary.durationText
-                        ),
+                        text = subtitleText,
                         color = colors.onSurfaceVariant
                     )
                 }
 
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_chevron_right_24),
+                    painter = painterResource(
+                        id = if (isReorderMode) {
+                            R.drawable.ic_menu_24
+                        } else {
+                            R.drawable.ic_chevron_right_24
+                        }
+                    ),
                     contentDescription = null,
                     modifier = Modifier
-                        .rotate(if (isExpanded) CHEVRON_ROTATION_EXPANDED else CHEVRON_ROTATION_COLLAPSED)
+                        .rotate(
+                            if (isReorderMode) {
+                                0f
+                            } else if (isExpanded) {
+                                CHEVRON_ROTATION_EXPANDED
+                            } else {
+                                CHEVRON_ROTATION_COLLAPSED
+                            }
+                        )
                         .size(Dimensions.iconSize20),
                     tint = colors.onSurfaceVariant
                 )
@@ -234,9 +256,10 @@ private fun ItineraryItemCardCollapsedPreview() {
                 itinerary = ItineraryUiModel(
                     id = "1",
                     title = "Colosseum",
-                    categoryName = "Sightseeing",
+                    categoryLabelResId = R.string.itinerary_type_activity,
                     durationText = "2h",
                     type = ItineraryType.Activity,
+                    locationQuery = null,
                     hasMap = false,
                     hasDocs = false
                 ),
@@ -256,9 +279,10 @@ private fun ItineraryItemCardExpandedPreview() {
                 itinerary = ItineraryUiModel(
                     id = "1",
                     title = "Colosseum",
-                    categoryName = "Sightseeing",
+                    categoryLabelResId = R.string.itinerary_type_activity,
                     durationText = "2h",
                     type = ItineraryType.Activity,
+                    locationQuery = "Colosseum, Rome",
                     hasMap = true,
                     hasDocs = false
                 ),

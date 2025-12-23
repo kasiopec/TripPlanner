@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">TripPlanner</string>
     <string name="email_hint">Email</string>
@@ -42,7 +43,7 @@
     <string name="trip_form_end_date_error">End date is required</string>
     <string name="trip_form_single_day_label">Single-day trip</string>
     <string name="trip_form_notes_label">Notes</string>
-    <string name="trip_form_notes_placeholder">Add any notes or details…</string>
+    <string name="trip_form_notes_placeholder">Add any notes or details:</string>
     <string name="trip_form_cover_label">Cover Image</string>
     <string name="trip_form_save_button">Save Trip</string>
     <string name="trip_form_date_range_error">End date must be after start date</string>
@@ -59,6 +60,7 @@
     <!-- Cover Picker -->
     <string name="cover_picker_tap_to_add">Tap to add picture</string>
     <string name="cover_picker_change">Change</string>
+
     <!-- Home Countdown -->
     <string name="home_countdown_title">NEXT ADVENTURE</string>
     <string name="home_countdown_days">DAYS</string>
@@ -67,6 +69,7 @@
     <string name="home_countdown_months">MONTHS</string>
     <string name="home_countdown_now">Now</string>
     <string name="home_compact_countdown_days_format">%1$dd</string>
+
     <!-- Home -->
     <string name="home_filter_all">All</string>
     <string name="home_filter_upcoming">Upcoming</string>
@@ -83,9 +86,11 @@
     <string name="home_title">My Adventures</string>
     <string name="add_places_button_label">Add places</string>
     <string name="add_places_reorder_button_label">Reorder</string>
+
     <!-- Trip Card -->
     <string name="trip_status_in_progress">On Trip</string>
     <string name="trip_status_ended">Ended</string>
+
     <!-- Calendar Row -->
     <string name="calendar_day_label">DAY %1$d</string>
     <string name="calendar_day_accessibility">Day %1$d, %2$s %3$d</string>
@@ -94,16 +99,37 @@
     <string name="itinerary_action_map">Map</string>
     <string name="itinerary_action_edit">Edit</string>
     <string name="itinerary_action_docs">Docs</string>
-    <string name="itinerary_subtitle_format">%1$s • %2$s</string>
+    <string name="itinerary_subtitle_format">%1$s - %2$s</string>
+    <string name="itinerary_type_flight">Flight</string>
+    <string name="itinerary_type_hotel">Hotel</string>
+    <string name="itinerary_type_activity">Activity</string>
+    <string name="itinerary_type_food">Food</string>
+    <string name="itinerary_type_shopping">Shopping</string>
 
     <!-- Trip Details -->
     <string name="trip_details_title">Trip Itinerary</string>
+    <string name="trip_details_empty_title">No places yet</string>
+    <string name="trip_details_empty_message">Tap Add places to start building this day.</string>
+    <string name="trip_details_done">Done</string>
+    <string name="trip_details_load_failed">Could not load itinerary. Please try again.</string>
+    <string name="trip_details_reorder_failed">Could not save your new order. Please try again.</string>
+    <string name="trip_details_location_sheet_title">Add location</string>
+    <string name="trip_details_location_sheet_label">Location</string>
+    <string name="trip_details_location_sheet_placeholder">Search or enter a location</string>
+    <string name="trip_details_location_sheet_save">Save location</string>
+    <string name="trip_details_location_sheet_search_maps">Search in Google Maps</string>
+    <string name="trip_details_location_save_failed">Could not save location. Please try again.</string>
+    <string name="trip_details_map_no_app">No maps app found.</string>
 
     <!-- Debug -->
     <string name="debug_title">Debug tools</string>
     <string name="debug_description">Utilities for local testing.</string>
+    <string name="debug_add_10_places">Add 10 places to current trip</string>
+    <string name="debug_delete_10_places">Delete debug places from current trip</string>
     <string name="debug_delete_trips">Delete all trips</string>
     <string name="debug_mark_all_ended">Mark all trips as ended</string>
+    <string name="debug_add_10_places_success">Added 10 places</string>
+    <string name="debug_delete_10_places_success">Deleted debug places</string>
     <string name="debug_delete_success">All trips deleted</string>
     <string name="debug_mark_ended_success">All trips marked as ended</string>
 </resources>

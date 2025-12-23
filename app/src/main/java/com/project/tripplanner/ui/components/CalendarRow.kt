@@ -74,7 +74,7 @@ private fun DayPill(
     onClick: () -> Unit
 ) {
     val colors = TripPlannerTheme.colors
-    val backgroundColor = if (dayItem.isSelected) colors.primary else colors.inactiveContainer
+    val backgroundColor = if (dayItem.isSelected) colors.primary else colors.surface
     val labelTextColor = if (dayItem.isSelected) colors.onPrimary else colors.secondary
     val dateTextColor = if (dayItem.isSelected) colors.onPrimary else colors.onSurface
 

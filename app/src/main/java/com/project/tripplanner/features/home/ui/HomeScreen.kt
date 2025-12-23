@@ -67,6 +67,7 @@ fun HomeScreen(
     snackbarHostState: SnackbarHostState,
     onRetry: () -> Unit,
     onTripClick: (Long) -> Unit,
+    onTripDetailsClick: (Long) -> Unit,
     onFilterSelected: (HomeFilterType) -> Unit,
     isBottomBarVisible: Boolean,
     currentScreen: Screen?,
@@ -85,6 +86,14 @@ fun HomeScreen(
                 visible = isBottomBarVisible && showChrome,
                 currentScreen = currentScreen,
                 onBottomBarItemClick = onBottomBarItemClick,
+                onTripDetailsClick = {
+                    val tripId = uiState.currentTrip?.id
+                        ?: uiState.countdownTrip?.id
+                        ?: uiState.listTrips.firstOrNull()?.id
+                    if (tripId != null) {
+                        onTripDetailsClick(tripId)
+                    }
+                },
                 onBottomBarDebugLongClick = onBottomBarDebugLongClick
             )
         },
@@ -172,6 +181,7 @@ private fun HomeBottomBar(
     visible: Boolean,
     currentScreen: Screen?,
     onBottomBarItemClick: (Screen) -> Unit,
+    onTripDetailsClick: () -> Unit,
     onBottomBarDebugLongClick: () -> Unit
 ) {
     AnimatedVisibility(
@@ -183,6 +193,7 @@ private fun HomeBottomBar(
         TripPlannerBottomBar(
             currentScreen = currentScreen,
             onItemSelected = onBottomBarItemClick,
+            onTripDetailsClick = onTripDetailsClick,
             onLastItemLongPress = onBottomBarDebugLongClick
         )
     }
@@ -414,6 +425,7 @@ private fun HomeScreenPreview() {
             snackbarHostState = SnackbarHostState(),
             onRetry = {},
             onTripClick = {},
+            onTripDetailsClick = {},
             onFilterSelected = {},
             isBottomBarVisible = true,
             currentScreen = Screen.fromRoute("home_screen"),

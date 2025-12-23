@@ -177,6 +177,9 @@ TripPlanner MVP Tasks
     - `days: List<DayItem>` and `selectedDate: LocalDate` for the day strip selection (derived from `Trip.startDate..Trip.endDate`).
     - `itinerary: List<ItineraryUiModel>` for the currently selected day (ready-to-render; screen must not re-derive/filter).
     - `isReorderMode: Boolean` toggled by the split button (drag-and-drop).
+    - Map/location sheet state to keep the UI "dumb":
+      - `locationSheetItemId: String?` (which itinerary item is currently editing location).
+      - `locationQuery: String` and `isLocationActionEnabled: Boolean` (manual entry skeleton; autocomplete can replace later).
   - Implement `TripDetailsViewModel` (Hilt) that loads the `Trip` and its itinerary from repositories:
     - Initial load should use single-shot APIs (`getTrip(id)`.
     - Keep selection/filtering/mapping in the ViewModel so the screen remains "dumb".
@@ -189,13 +192,21 @@ TripPlanner MVP Tasks
     - Day strip using the shared `CalendarRow`.
     - Itinerary list for the selected day using the shared TripDetails card (`ItineraryItemCard`) with expand/collapse actions.
     - Floating split CTA using the shared `SplitButton` floating. When scrolling button hides, when scroll up it shows. 
+    - Add a bottom sheet for location entry when an itinerary item has no location (manual-entry skeleton for future autocomplete).
   - Define dedicated screen-state composables under the feature package:
     - `TripDetailsLoading`, `TripDetailsEmptyState`.
     - 
 - Behavior and state:
   - Day selection updates `selectedDate` and the rendered itinerary list for that day.
   - "Add places" triggers an effect carrying `tripId` + `selectedDate` (for ActivityForm create flow).
-  - 
+  - Map action:
+    - If `ItineraryItem.location` is present -> Map icon is tinted and tapping opens Google Maps search for the saved value.
+    - If `ItineraryItem.location` is missing -> Map shows a "+" icon and tapping opens the in-app location sheet:
+      - User can type a location and tap "Save location" to persist it to the itinerary item.
+      - User can tap "Search in Google Maps" to open maps for the typed query (without auto-saving).
+    - All user-facing messages come from `strings.xml`; ViewModel emits only `@StringRes` IDs.
+  - Unit tests:
+    - Add `TripDetailsViewModelTest` to cover opening the sheet, enabling actions, saving location, and map-opening effect.
 ## 5. Activity form
 
 - Presentation:

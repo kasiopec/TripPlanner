@@ -24,6 +24,7 @@ supabaseBom = "3.2.3"
 googleServices = "4.4.3"
 crashlyticsGradlePlugin = "3.0.6"
 mockkVersion = "1.14.6"
+composeDnd = "0.4.0"
 
 [libraries]
 # Core Android
@@ -72,6 +73,7 @@ ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serializatio
 
 # Coil
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+compose-dnd = { module = "com.mohamedrejeb.dnd:compose-dnd", version.ref = "composeDnd" }
 
 # Supabase
 supabase-bom = { group = "io.github.jan-tennert.supabase", name = "bom", version.ref = "supabaseBom" }

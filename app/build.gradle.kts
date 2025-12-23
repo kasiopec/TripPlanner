@@ -110,6 +110,7 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.service.auth)
     implementation(libs.googleid)
+    implementation(libs.compose.dnd)
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)

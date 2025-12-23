@@ -100,9 +100,13 @@ Use Kotlin, Jetpack Compose, AndroidX, Material 3.
 - Keep ViewModels thin and readable:
   - ViewModels should orchestrate flows, events, effects, and state updates.
   - Move mapping/classification/progress/sort-order logic into a dedicated helper (for example `HomeTripUiMapper`) in the feature package.
+- Prefer story-style call sites:
+  - Extract non-trivial branching/computation into small helpers with outcome-based names (for example `resolveInitialSelectedDate(...)`) so the caller reads top-to-bottom.
+  - Use extension functions when behavior conceptually belongs to a type and is reused across call sites (for example `ClockProvider.nowLocalDate(...)`); place them in the closest shared package (for example `utils/time`).
+  - Avoid over-abstraction: only extract when it improves readability or there is a second real call site.
 - Name methods by outcome:
   - Avoid generic names like `mapTrips` when the method also sorts/selects/derives; prefer names that reflect results (for example `buildHomeTripsUi`, `filterListTrips`, `deriveStatusUi`, `statusSortOrder`).
-- Don’t add abstractions for hypothetical reuse:
+- Don't add abstractions for hypothetical reuse:
   - If reuse is not required today, keep the simplest feature-local solution; introduce shared abstractions only when there is a second real call site.
 
 ## UI Requirements
